@@ -70,21 +70,29 @@ const RecentPlayedContainer = (props) => {
 
           <div
             class="hs__item__play__button"
-            onClick={() => {
-              playFn(authToken, globalState.currentDeviceId, item.track.uri)
-            }}
+            // onClick={() => {
+            //   playFn(authToken, globalState.currentDeviceId, item.track.uri)
+            // }}
           >
-            {globalState &&
-            globalState.track &&
-            globalState.track.id == item.track.id ? (
-              <button class="button">
-                <FontAwesomeIcon icon={faPause} />
-              </button>
-            ) : (
-              <button class="button">
-                <FontAwesomeIcon icon={faPlay} />
-              </button>
-            )}
+            <a
+              href="javascript:void(0)"
+              onClick={(e) => {
+                e.stopPropagation()
+                playFn(authToken, globalState.currentDeviceId, item.track.uri)
+              }}
+            >
+              {globalState &&
+              globalState.track &&
+              globalState.track.id == item.track.id ? (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPause} />
+                </button>
+              ) : (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPlay} />
+                </button>
+              )}
+            </a>
           </div>
         </li>
       )

@@ -13,10 +13,12 @@ import listIcon from "../../images/list.svg"
 import searchIcon from "../../images/search.svg"
 import { Link, BrowserRouter, useHistory, useParams } from "react-router-dom"
 
+import { PlaylistContext } from "../../context/playlist"
+
 export const SideMenu = (props) => {
+  const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
 
-  const { sidePlayListData } = props
   return (
     <div>
       <div class="side is-hidden-touch">

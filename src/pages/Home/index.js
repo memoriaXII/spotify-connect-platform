@@ -24,10 +24,7 @@ export default (props) => {
     playFn,
     authToken,
     featuredPlaylistsData,
-    top50TracksList,
-    userTopTracksListData,
     userTopArtistListData,
-    viral50TracksList,
     userRecommendListData,
   } = props
   return (
@@ -93,13 +90,10 @@ export default (props) => {
       <PlaylistContainer featuredPlaylistsData={featuredPlaylistsData} />
 
       <div class="is-hidden-touch">
-        <ChartsContainer
-          viral50TracksList={viral50TracksList}
-          top50TracksList={top50TracksList}
-        />
+        <ChartsContainer />
       </div>
       <hr class="mt-0" style={{ border: "grey" }} />
-      <TopTracksContainer userTopTracksListData={userTopTracksListData} />
+      <TopTracksContainer />
 
       <hr class="mt-0" style={{ border: "grey" }} />
       <ArtistContainer

@@ -83,9 +83,17 @@ const PlaylistContainer = (props) => {
             />
           </div>
           <div class="hs__item__play__button">
-            <button class="button">
-              <FontAwesomeIcon icon={faPlay} />
-            </button>
+            <a
+              href="javascript:void(0)"
+              onClick={(e) => {
+                e.stopPropagation()
+                alert("shit")
+              }}
+            >
+              <button class="button">
+                <FontAwesomeIcon icon={faPlay} />
+              </button>
+            </a>
           </div>
         </li>
       )

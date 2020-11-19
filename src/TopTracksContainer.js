@@ -1,7 +1,9 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay } from "@fortawesome/free-solid-svg-icons"
+
+import { PlaylistContext } from "./context/playlist"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -12,7 +14,7 @@ function usePrevious(value) {
 }
 
 const TopTracksContainer = (props) => {
-  const { userTopTracksListData } = props
+  const { userTopTracksListData } = useContext(PlaylistContext)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,

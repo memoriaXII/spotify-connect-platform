@@ -1,10 +1,13 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 
+import { PlaylistContext } from "./context/playlist"
+
 const ChartsContainer = (props) => {
+  const { top50TracksList, viral50TracksList } = useContext(PlaylistContext)
   const settings = {
     arrows: true,
     dots: false,
@@ -24,7 +27,6 @@ const ChartsContainer = (props) => {
       },
     ],
   }
-  const { top50TracksList, viral50TracksList } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -75,19 +77,9 @@ const ChartsContainer = (props) => {
         {viral50TracksList.map((item, index) => {
           return (
             <div class="container">
-              <div
-                key={index}
-                class="columns is-gapless is-mobile"
-                style={{ marginTop: 20 }}
-              >
+              <div key={index} class="columns is-gapless is-mobile mt-2">
                 <div
-                  class="column is-1 has-text-centered"
-                  style={{ margin: "auto" }}
-                >
-                  <span>{index + 1}</span>
-                </div>
-                <div
-                  class="column is-2"
+                  class="column is-2 has-text-centered"
                   style={{
                     backgroundSize: "cover",
                     borderRadius: 5,
@@ -99,7 +91,7 @@ const ChartsContainer = (props) => {
                     })`,
                   }}
                 ></div>
-                <div class="column is-6">
+                <div class="column is-10">
                   <span class="title is-7 has-text-black">
                     {item.track && item.track.name}
                     <br />

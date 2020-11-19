@@ -14,14 +14,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
+import AlbumContainer from "../../AlbumContainer"
+
 export default (props) => {
   const { trimHeader, authToken, setTrimHeader } = props
+  const [albumInfo, setAlbumInfo] = useState({})
+  const [albumTracks, setAlbumTracks] = useState([])
+  const [relatedAlbums, setRelatedAlbums] = useState([])
 
-  const [playlistInfo, setPlaylistInfo] = useState({})
-  const [playlistTracks, setPlaylistTracks] = useState([])
-
-  const getSinglePlaylistDes = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/playlists/${id}`
+  const getSingleAlbumDes = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/albums/${id}`
     axios
       .get(url, {
         method: "GET",
@@ -36,15 +38,15 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        setPlaylistInfo(response.data)
+        setAlbumInfo(response.data)
       })
       .catch((err) => {
         // Handle Error Here
         console.error(err)
       })
   }
-  const getSinglePlaylistTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/playlists/${id}/tracks`
+  const getSingleAlbumTracks = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/albums/${id}/tracks`
     axios
       .get(url, {
         method: "GET",
@@ -59,8 +61,39 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data.items, "playlist content")
-        setPlaylistTracks(response.data.items)
+        console.log(response.data.items, "Album content")
+        setAlbumTracks(response.data.items)
+        getRelatedAlbums(authToken, response.data.items[0].artists[0].id)
+      })
+      .catch((err) => {
+        // Handle Error Here
+        console.error(err)
+      })
+  }
+
+  const getRelatedAlbums = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/artists/${id}/albums`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        console.log(response.data, "related ablums")
+        let cleanArtistAlbumsArray = response.data.items.filter(
+          (ele, ind) =>
+            ind ===
+            response.data.items.findIndex((elem) => elem.name === ele.name)
+        )
+        setRelatedAlbums(cleanArtistAlbumsArray)
       })
       .catch((err) => {
         // Handle Error Here
@@ -71,11 +104,11 @@ export default (props) => {
   useLayoutEffect(() => {
     setTrimHeader(false)
     if (authToken) {
-      getSinglePlaylistDes(authToken, props.match.params.id)
-      getSinglePlaylistTracks(authToken, props.match.params.id)
+      //  getRelatedTracks(authToken, props.match.params.id)
+      getSingleAlbumDes(authToken, props.match.params.id)
+      getSingleAlbumTracks(authToken, props.match.params.id)
     }
   }, [authToken, props.match.params.id])
-
   return (
     <div>
       <div class="main__wrap summary">
@@ -83,7 +116,7 @@ export default (props) => {
           class="summary__img"
           style={{
             backgroundImage: `url(${
-              playlistInfo && playlistInfo.images && playlistInfo.images[0].url
+              albumInfo && albumInfo.images && albumInfo.images[0].url
             })`,
           }}
         ></div>
@@ -92,26 +125,20 @@ export default (props) => {
             <ul>
               <li>
                 <span class="summary__text--black summary__text--for-me">
-                  {playlistInfo &&
-                    playlistInfo.type &&
-                    playlistInfo.type.toUpperCase()}
+                  {albumInfo && albumInfo.type && albumInfo.type.toUpperCase()}
                 </span>
               </li>
               <li>
-                <strong class="summary__text--title">
-                  {playlistInfo.name}
-                </strong>
+                <strong class="summary__text--title">{albumInfo.name}</strong>
               </li>
               <li>
-                <p class="will-hidden has-text-grey">
-                  {playlistInfo.description}
-                </p>
+                <p class="will-hidden has-text-grey">{albumInfo.description}</p>
               </li>
               <li class="summary__text--by-spotify has-text-grey">
                 <p>
                   Created by
                   <span class="summary__text--black">
-                    {playlistInfo.owner && playlistInfo.owner.display_name}
+                    {albumInfo.owner && albumInfo.owner.display_name}
                   </span>
                   &bull; 30 songs, 1 hr 49 min
                 </p>
@@ -155,7 +182,7 @@ export default (props) => {
           class="summary__img"
           style={{
             backgroundImage: `url(${
-              playlistInfo && playlistInfo.images && playlistInfo.images[0].url
+              albumInfo && albumInfo.images && albumInfo.images[0].url
             })`,
           }}
         ></div>
@@ -164,7 +191,7 @@ export default (props) => {
             <ul>
               <li>
                 <strong class="summary__text--title title is-4">
-                  {playlistInfo.name}
+                  {albumInfo.name}
                 </strong>
               </li>
             </ul>
@@ -185,7 +212,7 @@ export default (props) => {
           </div>
         </div>
       </div>
-      <div class="main__wrap">
+      <div class="main__wrap mt-5">
         <table class="playlist">
           <colgroup>
             <col width="3%" />
@@ -210,7 +237,7 @@ export default (props) => {
             <th class="playlist__th"></th>
           </tr>
 
-          {playlistTracks.map((item, index) => {
+          {albumTracks.map((item, index) => {
             return (
               <tr class="playlist__tr" key={index}>
                 <td
@@ -220,17 +247,17 @@ export default (props) => {
                   <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
                 </td>
                 <td style={{ verticalAlign: "middle" }}>
-                  <img
+                  {/* <img
                     style={{ borderRadius: 5 }}
                     src={item.track.album.images[0].url}
                     alt=""
-                  />
+                  /> */}
                 </td>
                 <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
-                  {item.track.name}
+                  {item.name}
 
                   <p class="mt-2 has-text-grey">
-                    {item.track.artists.map((d) => d.name).join(", ")}
+                    {item.artists.map((d) => d.name).join(", ")}
                   </p>
                 </td>
 
@@ -242,7 +269,7 @@ export default (props) => {
                     verticalAlign: "middle",
                   }}
                 >
-                  {item.track.album.name}
+                  {item.name}
                 </td>
                 <td
                   class="playlist__td playlist__td--hour title is-7"
@@ -250,7 +277,7 @@ export default (props) => {
                     verticalAlign: "middle",
                   }}
                 >
-                  {millisToMinutesAndSeconds(item.track.duration_ms)}
+                  {millisToMinutesAndSeconds(item.duration_ms)}
                 </td>
                 <td class="playlist__td playlist__td--dislike"></td>
                 <td
@@ -267,6 +294,9 @@ export default (props) => {
           })}
         </table>
       </div>
+      <hr />
+
+      <AlbumContainer newReleaseData={relatedAlbums} isArtistAlbum={true} />
     </div>
   )
 }

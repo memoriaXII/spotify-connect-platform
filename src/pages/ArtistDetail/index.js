@@ -17,7 +17,8 @@ import AlbumContainer from "../../AlbumContainer"
 import ColorThief from "colorthief"
 
 export default (props) => {
-  const { trimHeader, authToken } = props
+  const { trimHeader, authToken, setTrimHeader } = props
+
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
   const [artistInfo, setArtistInfo] = useState({})
@@ -115,6 +116,7 @@ export default (props) => {
   }
 
   useLayoutEffect(() => {
+    setTrimHeader(false)
     if (authToken) {
       getArtistAlbums(authToken, props.match.params.id)
       getArtistTopTracks(authToken, props.match.params.id)
@@ -155,7 +157,7 @@ export default (props) => {
 
   return (
     <div>
-      <div class="main__wrap summary">
+      <div class="summary">
         <div
           class="summary__banner"
           // style={{
@@ -260,7 +262,7 @@ export default (props) => {
           class="summary__img"
           crossOrigin={"anonymous"}
           ref={artistRef}
-          alt={"example"}
+          alt={""}
           src={artistInfo && artistInfo.images && artistInfo.images[1].url}
         />
         {/* <div
@@ -406,6 +408,7 @@ export default (props) => {
           </div>
         </div>
       </div>
+      <hr />
 
       <AlbumContainer
         newReleaseData={artistAlbums}

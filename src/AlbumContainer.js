@@ -3,6 +3,8 @@ import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay } from "@fortawesome/free-solid-svg-icons"
 
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
+
 function usePrevious(value) {
   const ref = useRef()
   useEffect(() => {
@@ -12,6 +14,7 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
+  let history = useHistory()
   const { newReleaseData, isArtistAlbum } = props
   const container = useRef(null)
   const [state, setstate] = useState({
@@ -45,7 +48,14 @@ const AlbumContainer = (props) => {
   const buildItems = () => {
     return newReleaseData.map((item, index) => {
       return (
-        <li class="hs__item" key={index}>
+        <li
+          class="hs__item"
+          key={index}
+          onClick={() => {
+            // console.log(item.id, "item")
+            history.push(`/album/${item.id}`)
+          }}
+        >
           <div class="hs__item__image__wrapper">
             <img
               class="hs__item__image"
