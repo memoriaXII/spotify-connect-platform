@@ -190,6 +190,7 @@ function App() {
         setGradientNum(null)
       }
     } else {
+      setTrimHeader(false)
       setGradientNum(null)
       // this.documentStyle.setProperty(
       //   "--navbar-background-color",
@@ -975,7 +976,7 @@ function App() {
       syncDevice(authToken)
     }, 1000)
     return () => clearInterval(syncTimeout)
-  }, [authToken])
+  }, [authToken, globalState])
 
   return (
     <>
