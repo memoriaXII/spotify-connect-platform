@@ -54,7 +54,7 @@ const TopTracksContainer = (props) => {
             />
           </div>
           <div class="hs__item__description">
-            <span class="hs__item__title">{item.name}</span>
+            <span class="hs__item__title has-text-black">{item.name}</span>
             <span class="hs__item__subtitle">{item.artists[0].name}</span>
           </div>
 
@@ -126,7 +126,12 @@ const TopTracksContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-white">Top tracks</h2>
+        <h2 class="hs__headline title is-4 has-text-black">
+          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+            LIBRARY
+          </p>
+          Top tracks
+        </h2>
         {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>

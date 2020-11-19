@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -19,6 +20,8 @@ const urlDetection = (text) => {
 }
 
 const PlaylistContainer = (props) => {
+  let history = useHistory()
+
   const { featuredPlaylistsData } = props
   const container = useRef(null)
   const [state, setstate] = useState({
@@ -52,12 +55,19 @@ const PlaylistContainer = (props) => {
   const buildItems = () => {
     return featuredPlaylistsData.map((item, index) => {
       return (
-        <li class="hs__item" key={index}>
+        <li
+          class="hs__item"
+          key={index}
+          onClick={() => {
+            // console.log(item.id, "item")
+            history.push(`/playlist/${item.id}`)
+          }}
+        >
           <div class="hs__item__image__wrapper">
             <img class="hs__item__image" src={item.images[0].url} alt="" />
           </div>
           <div class="hs__item__description">
-            <span class="hs__item__title">{item.name}</span>
+            <span class="hs__item__title has-text-black">{item.name}</span>
             {/* <span class="hs__item__subtitle">{item.description}</span> */}
             <div
               className="subtitle is-6 has-text-grey"
@@ -140,7 +150,10 @@ const PlaylistContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-white">
+        <h2 class="hs__headline title is-5 has-text-black">
+          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+            LIBRARY
+          </p>
           Popular playlists
         </h2>
         {buildControls()}

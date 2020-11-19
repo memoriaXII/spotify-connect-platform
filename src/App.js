@@ -1,19 +1,29 @@
-import logo from "./logo.svg"
 import "./App.scss"
-import React, { useRef, useState, useEffect } from "react"
-import { SpotifyAuth, Scopes } from "react-spotify-auth"
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+  useLayoutEffect,
+} from "react"
+
+import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom"
 import Cookies from "js-cookie"
 
-import AlbumContainer from "./AlbumContainer"
-import PlaylistContainer from "./PlaylistContainer"
-import ArtistContainer from "./ArtistContainer"
-import CategoriesContainer from "./CategoriesContainer"
-import TopTracksContainer from "./TopTracksContainer"
-import RecentPlayedContainer from "./RecentPlayedContainer"
-import AdvertismentContainer from "./AdvertismentContainer"
-import ChartsContainer from "./ChartsContainer"
-import Player from "./Player"
+import { useSpring, a, config } from "react-spring"
+import { useDrag } from "react-use-gesture"
 
+import { millisToMinutesAndSeconds } from "./utils/utils"
+import { previousFn, nextFn } from "./apis/playerControl"
+import memoize from "memoize-one"
+
+import Player from "./Player"
+import { PlayerControl } from "./components/PlayerControl"
+import { SideMenu } from "./components/SideMenu"
+
+import { PlaylistProvider } from "./context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faCoffee,
@@ -24,23 +34,56 @@ import {
   faPause,
   faPlayCircle,
   faForward,
+  faPauseCircle,
+  faStepBackward,
+  faStepForward,
+  faChevronDown,
+  faEllipsisH,
+  faHome,
+  faSync,
+  faRandom,
+  faVolumeUp,
+  faList,
+  faMobile,
+  faExpand,
+  faExpandAlt,
+  faSearch,
+  faTimesCircle,
+  faBan,
+  faHeart,
 } from "@fortawesome/free-solid-svg-icons"
 
 import playIcon from "./images/play.svg"
 import volumeIcon from "./images/volume.svg"
+import homeIcon from "./images/home.svg"
+import listIcon from "./images/list.svg"
+import searchIcon from "./images/search.svg"
 
-const axios = require("axios")
+import { useLocation } from "react-router-dom"
+import axios from "axios"
+
+import ColorThief from "colorthief"
+
+import Home from "./pages/Home"
+import PlaylistDetail from "./pages/PlaylistDetail"
+import ArtistDetail from "./pages/ArtistDetail"
 
 function App() {
+  const { deviceWidth, deviceHeight } = useWindowDimensions()
+  const imgRef = useRef(null)
+  const height = 380
+  var playerSyncInterval = 5
+  var playerProgressInterval = 5
+  var seekUpdateInterval = 100
   const clientId = "9e214f26fedf458082c801c1eb63f09c"
-  const redirectUri = "http://localhost:3000"
+  const redirectUri = window.location.origin
   const scopes = [
     "user-read-recently-played",
     "user-library-read",
     "user-top-read",
+    "user-modify-playback-state",
     "user-read-currently-playing",
     "user-read-playback-state",
-    "user-modify-playback-state",
     "user-follow-modify",
     "user-follow-read",
     "user-read-private",
@@ -53,12 +96,18 @@ function App() {
     "streaming",
     "app-remote-control",
   ]
+
+  var syncTimeout
+  var intervalId2
+  var intervalId
+
+  // const [playerSyncInterval, setPlayerSyncInterval] = useState(5)
+  const [playerBackground, setPlayBackground] = useState("")
   const [leftScrollStatus, setLeftScrollStatus] = useState(false)
   const [rightScrollStatus, setRightScrollStatus] = useState(false)
   const [chartPlayListData, setChartPlayListData] = useState([])
   const [chartAlbumData, setChartAlbumData] = useState([])
   const [chartArtistData, setChartArtistData] = useState([])
-  const [categoriesData, setCategoriesData] = useState([])
   const [newReleaseData, setNewReleaseData] = useState([])
   const [featuredPlaylistsData, setFeaturedPlaylistsData] = useState([])
   const [authToken, setAuthToken] = useState("")
@@ -67,13 +116,254 @@ function App() {
   const [userTopArtistListData, setUserTopArtistListData] = useState([])
   const [userTopTracksListData, setUserTopTracksListData] = useState([])
   const [userCurrentPlayingTrack, setUserCurrentPlayingTrack] = useState({})
-  const [userPlayedTracksListData, setUserPlayedTracksListData] = useState([])
   const [userRecommendListData, setUserRecommendListData] = useState([])
   const [currentPlayingState, setCurrentPlayingState] = useState({})
+  const [gradientNum, setGradientNum] = useState(null)
   const [top50TracksList, setTop50TracksList] = useState([])
   const [viral50TracksList, setViral50TracksList] = useState([])
+  const [userCustomState, setUserCustomState] = useState({
+    autoPlay: true,
+    offset: 0,
+    syncExternalDevice: true,
+    uris: ["spotify:track:0gkVD2tr14wCfJhqhdE94L"],
+  })
 
+  const [globalState, updateGlobalState] = useState({
+    currentDeviceId: "",
+    deviceId: "",
+    devices: [],
+    error: "",
+    errorType: "",
+    isActive: false,
+    isInitializing: false,
+    isMagnified: false,
+    isPlaying: false,
+    isSaved: false,
+    isUnsupported: false,
+    needsUpdate: false,
+    nextTracks: [],
+    position: 0,
+    previousTracks: [],
+    status: false,
+    track: {},
+    volume: 1,
+    contextUrl: "",
+  })
+  const getToken = () => {
+    const windowSetting = typeof window !== "undefined" && window
+
+    return (
+      windowSetting &&
+      windowSetting.localStorage &&
+      localStorage.getItem("spotifyAuthToken")
+    )
+  }
   const ref = useRef(null)
+  const scrollContainer = useRef(null)
+
+  const [trimHeader, setTrimHeader] = useState(false)
+
+  const handleScroll = () => {
+    if (
+      window &&
+      scrollContainer &&
+      scrollContainer.current &&
+      scrollContainer.current.scrollTop
+    ) {
+      // console.log(
+      //   scrollContainer.current.scrollTop,
+      //   " scrollContainer.current.scrollTop"
+      // )
+      const init = 306
+      const nowTop =
+        init -
+        (scrollContainer &&
+          scrollContainer.current &&
+          scrollContainer.current.scrollTop * 1.2)
+      setGradientNum(nowTop)
+      if (nowTop < 35 && nowTop !== null) {
+        setTrimHeader(true)
+      } else {
+        setTrimHeader(false)
+      }
+    } else {
+      // this.documentStyle.setProperty(
+      //   "--navbar-background-color",
+      //   this.scrolledNavbarBackgroundColor
+      // )
+    }
+  }
+
+  useLayoutEffect(() => {
+    window.addEventListener("scroll", handleScroll, true)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [scrollContainer])
+
+  let player = null
+
+  function validateURI(input) {
+    const validTypes = ["album", "artist", "playlist", "show", "track"]
+
+    /* istanbul ignore else */
+    if (input && input.indexOf(":") > -1) {
+      const [key, type, id] = input.split(":")
+
+      /* istanbul ignore else */
+      if (
+        key === "spotify" &&
+        validTypes.indexOf(type) >= 0 &&
+        id.length === 22
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  function getSpotifyURIType(uri) {
+    const [, type = ""] = uri.split(":")
+    return type
+  }
+
+  const getPlayOptions = memoize((data) => {
+    const playOptions = {
+      context_uri: undefined,
+      uris: undefined,
+    }
+    if (data) {
+      const ids = Array.isArray(data) ? data : [data]
+
+      if (!ids.every((d) => validateURI(d))) {
+        // eslint-disable-next-line no-console
+        console.error("Invalid URI")
+
+        return playOptions
+      }
+
+      if (ids.some((d) => getSpotifyURIType(d) === "track")) {
+        if (!ids.every((d) => getSpotifyURIType(d) === "track")) {
+          // eslint-disable-next-line no-console
+          console.warn("You can't mix tracks URIs with other types")
+        }
+
+        playOptions.uris = ids.filter(
+          (d) => validateURI(d) && getSpotifyURIType(d) === "track"
+        )
+      } else {
+        if (ids.length > 1) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            "Albums, Artists, Playlists and Podcasts can't have multiple URIs"
+          )
+        }
+
+        // eslint-disable-next-line prefer-destructuring
+        playOptions.context_uri = ids[0]
+      }
+    }
+
+    return playOptions
+  })
+
+  async function getPlaybackState(token) {
+    return fetch(`https://api.spotify.com/v1/me/player`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      method: "GET",
+    }).then((d) => {
+      if (d.status === 204) {
+        return null
+      }
+
+      return d.json()
+    })
+  }
+
+  let emptyTrack = {
+    artists: "",
+    durationMs: 0,
+    id: "",
+    image: "",
+    name: "",
+    uri: "",
+  }
+
+  async function setVolume(validateToken, volume, deviceID) {
+    return fetch(
+      `https://api.spotify.com/v1/me/player/volume?volume_percent=${volume}&device_id=${deviceID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${validateToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+  }
+
+  const syncDevice = async (validateToken) => {
+    try {
+      const player = await getPlaybackState(validateToken)
+      let track = emptyTrack
+      if (!player) {
+        throw new Error("No player")
+      }
+      if (player.item) {
+        track = {
+          artists: player.item.artists.map((d) => d.name).join(", "),
+          durationMs: player.item.duration_ms,
+          id: player.item.id,
+          image: player.item.album.images[0].url,
+          name: player.item.name,
+          uri: player.item.uri,
+        }
+      }
+
+      updateGlobalState({
+        error: "",
+        errorType: "",
+        isActive: true,
+        isPlaying: player.is_playing,
+        nextTracks: [],
+        previousTracks: [],
+        progressMs: player.item ? player.progress_ms : 0,
+        status: true,
+        track: track,
+        volume: player.device.volume_percent / 100,
+        currentDeviceId: player.device.id,
+        position: Number(
+          ((player.progress_ms / track.durationMs) * 100).toFixed(1)
+        ),
+      })
+    } catch (error) {}
+  }
+
+  function usePrevious(value) {
+    const ref = useRef()
+    useEffect(() => {
+      ref.current = value
+    })
+    return ref.current
+  }
+
+  function isEqualArray(A, B) {
+    if (!Array.isArray(A) || !Array.isArray(B) || A.length !== B.length) {
+      return false
+    }
+
+    let result = true
+
+    A.forEach((a) =>
+      B.forEach((b) => {
+        result = a === b
+      })
+    )
+
+    return result
+  }
 
   const handleNav = (direction) => {
     if (direction === "left" && ref) {
@@ -83,68 +373,62 @@ function App() {
     }
   }
 
-  function millisToMinutesAndSeconds(millis) {
-    var minutes = Math.floor(millis / 60000)
-    var seconds = ((millis % 60000) / 1000).toFixed(0)
-    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+  const isExternalPlayer = (data) => {
+    const { currentDeviceId, deviceId, status } = globalState
+    return currentDeviceId && currentDeviceId !== deviceId
   }
 
-  const getPlayingHistory = (validateToken) => {
-    const url = `https://api.spotify.com/v1/me/player/recently-played?limit=20&after=1404811043508`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {
-        console.log(response, "history")
-        setUserPlayedTracksListData(response.data.items)
-        let cleanArray = response.data.items.filter(
-          (ele, ind) =>
-            ind ===
-            response.data.items.findIndex(
-              (elem) => elem.track.id === ele.track.id
-            )
-        )
-        setUserPlayedTracksListData(cleanArray)
-      })
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
-  }
+  useEffect(() => {
+    if (globalState) {
+      isExternalPlayer(globalState)
+    }
+  }, [globalState])
 
-  const getCurrentPlaying = (validateToken) => {
-    const url = `https://api.spotify.com/v1/me/player/currently-playing?market=TW`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {
-        setUserCurrentPlayingTrack(response.data.item)
-        setCurrentPlayingState(response.data)
-      })
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
+  const playFn = useCallback(
+    (validateToken, id, uri, contextUri) => {
+      const parsedValues = {
+        artistSongs: contextUri && contextUri.map((x) => x.uri),
+      }
+
+      let body
+      const { position } = globalState
+      const { offset } = userCustomState
+      const { artistSongs } = parsedValues
+      if (contextUri) {
+        // const isArtist = contextUri.indexOf("artist") >= 0
+        // let position
+        // if (!isArtist) {
+        //   position = { position: 0 }
+        // }
+        body = JSON.stringify({ uris: artistSongs, offset: { position: 0 } })
+      }
+      if (uri) {
+        body = JSON.stringify({ uris: [uri], offset: { position: 0 } })
+      }
+
+      return fetch(
+        `https://api.spotify.com/v1/me/player/play?device_id=${id}`,
+        {
+          body,
+          headers: {
+            Authorization: `Bearer ${validateToken}`,
+            "Content-Type": "application/json",
+          },
+          method: "PUT",
+        }
+      )
+    },
+    [globalState, authToken]
+  )
+
+  async function getDevices(validateToken) {
+    return fetch(`https://api.spotify.com/v1/me/player/devices`, {
+      headers: {
+        Authorization: `Bearer ${validateToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "GET",
+    }).then((d) => d.json())
   }
 
   const getNewReleases = (validateToken) => {
@@ -164,30 +448,6 @@ function App() {
       })
       .then(function (response) {
         setNewReleaseData(response.data.albums.items)
-      })
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
-  }
-
-  const getCategories = (validateToken) => {
-    const url = `https://api.spotify.com/v1/browse/categories`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {
-        setCategoriesData(response.data.categories.items)
       })
       .catch((err) => {
         // Handle Error Here
@@ -273,7 +533,6 @@ function App() {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response, "profile")
         setSidePlayListData(response.data.items)
         // setUserProfile(response.data)
       })
@@ -401,7 +660,6 @@ function App() {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data, "viral50")
         let cleanViral50TracksLisArray = response.data.items.filter(
           (ele, ind) =>
             ind ===
@@ -444,37 +702,106 @@ function App() {
     const token = window.location.hash.substr(1).split("&")[0].split("=")[1]
     if (token) {
       setAuthToken(token)
+      localStorage.setItem("spotifyAuthToken", token)
+    } else if (getToken()) {
+      setAuthToken(getToken())
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (authToken) {
-      // omg()
+      initializePlayer(authToken)
       getViral50TracksList(authToken)
       getTop50TracksList(authToken)
       getRecommendList(authToken)
-      getPlayingHistory(authToken)
-      getCurrentPlaying(authToken)
       getUserTracksTopList(authToken)
       getUserArtistsTopList(authToken)
       getUserAllPlayLists(authToken)
       getUserCurrentProfile(authToken)
       getUserCurrentPlaylists(authToken)
-      getCategories(authToken)
       getNewReleases(authToken)
       getFeaturedPlaylists(authToken)
     }
+    return () => (
+      player ? player.disconnect() : "",
+      clearInterval(playerSyncInterval),
+      clearInterval(playerProgressInterval),
+      clearInterval(syncTimeout)
+    )
   }, [authToken])
 
-  // useEffect(() => {
-  //   const intervalId = setInterval(() => {
-  //     getCurrentPlaying(authToken)
-  //   }, 1500)
+  const handlePlayerStatus = async ({ device_id }) => {
+    const { currentDeviceId, devices } = await initializeDevices(device_id)
+    updateGlobalState({
+      currentDeviceId: currentDeviceId,
+      deviceId: device_id,
+      devices: devices,
+      isInitializing: false,
+      status: device_id ? true : false,
+    })
+  }
 
-  //   return () => clearInterval(intervalId)
-  // }, [authToken])
+  const initializeDevices = async (id) => {
+    const { devices } = await getDevices(authToken)
+    let currentDeviceId = id
+    const savedDeviceId = sessionStorage.getItem("rswpDeviceId")
 
-  const omg = () => {
+    if (!savedDeviceId || !devices.find((d) => d.id === savedDeviceId)) {
+      sessionStorage.setItem("rswpDeviceId", currentDeviceId)
+    } else {
+      currentDeviceId = savedDeviceId
+    }
+
+    return { currentDeviceId, devices }
+  }
+
+  const setAlbumImage = (album) => {
+    const width = Math.min(...album.images.map((d) => d.width))
+    const thumb = album.images.find((d) => d.width === width) || {}
+    return thumb.url
+  }
+
+  const handlePlayerStateChanges = async (state) => {
+    try {
+      /* istanbul ignore else */
+      if (state) {
+        const isPlaying = !state.paused
+        const {
+          album,
+          artists,
+          duration_ms,
+          id,
+          name,
+          uri,
+        } = state.track_window.current_track
+        // const volume = await player.getVolume()
+
+        const track = {
+          artists: artists.map((d) => d.name).join(", "),
+          durationMs: duration_ms,
+          id,
+          image: album && album.images[0].url,
+          name,
+          uri,
+        }
+
+        updateGlobalState({
+          isActive: true,
+          isPlaying: isPlaying,
+          nextTracks: state.track_window.next_tracks,
+          previousTracks: state.track_window.previous_tracks,
+          track: track,
+          contextUrl: state.context.uri,
+          position: state.position,
+        })
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
+  }
+
+  const initializePlayer = (validateToken) => {
     window.onSpotifyWebPlaybackSDKReady = () => {}
     async function waitForSpotifyWebPlaybackSDKToLoad() {
       return new Promise((resolve) => {
@@ -498,298 +825,509 @@ function App() {
         })
       })
     }
-
     ;(async () => {
       const { Player } = await waitForSpotifyWebPlaybackSDKToLoad()
-      const sdk = new Player({
+      player = new Player({
         name: "Rex web player",
         volume: 1.0,
         getOAuthToken: (callback) => {
-          console.log(authToken)
-          callback(authToken)
+          callback(validateToken)
         },
       })
-      console.log("Paused!")
-      sdk.seek(60 * 1000).then(() => {
-        console.log("Changed position!")
-      })
-      sdk.getVolume().then((volume) => {
-        let volume_percentage = volume * 100
-        console.log(`The volume of the player is ${volume_percentage}%`)
-      })
-      sdk.on("player_state_changed", (state) => {
-        if (!state) {
-          console.error(
-            "User is not playing music through the Web Playback SDK"
-          )
-          return
+      player.addListener("ready", handlePlayerStatus)
+      player.addListener("not_ready", handlePlayerStatus)
+      player.addListener("player_state_changed", handlePlayerStateChanges)
+      player.addListener(
+        "initialization_error",
+        (error) => {
+          console.log(error, "error")
         }
-        let {
-          current_track,
-          next_tracks: [next_track],
-        } = state.track_window
-
-        console.log("Currently Playing", current_track)
-        setUserCurrentPlayingTrack(current_track)
-        console.log("Playing Next", next_track)
-      })
-      let connected = await sdk.connect()
-      if (connected) {
-        let state = await waitUntilUserHasSelectedPlayer(sdk)
-        await sdk.resume()
-        await sdk.setVolume(0.5)
-        let {
-          id,
-          uri: track_uri,
-          name: track_name,
-          duration_ms,
-          artists,
-          album: { name: album_name, uri: album_uri, images: album_images },
-        } = state.track_window.current_track
-        console.log(`You're listening to ${track_name} by ${artists[0].name}!`)
-        console.log(duration_ms, "duration_ms")
-      }
+        // handlePlayerErrors("initialization_error", error.message)
+      )
+      player.addListener(
+        "authentication_error",
+        (error) => {
+          console.log(error, "error")
+        }
+        // handlePlayerErrors("authentication_error", error.message)
+      )
+      player.addListener(
+        "account_error",
+        (error) => {
+          console.log(error, "error")
+        }
+        // handlePlayerErrors("account_error", error.message)
+      )
+      player.addListener(
+        "playback_error",
+        (error) => {
+          console.log(error, "error")
+        }
+        // handlePlayerErrors("playback_error", error.message)
+      )
+      player.connect()
     })()
   }
 
   const progressBarStyles = {
     width:
-      (currentPlayingState && currentPlayingState.progress_ms * 100) /
-        userCurrentPlayingTrack.duration_ms +
-      "%",
+      globalState && globalState.track
+        ? (globalState.progressMs * 100) / globalState.track.durationMs + "%"
+        : null,
   }
+
+  async function seek(validateToken, position) {
+    return fetch(
+      `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`,
+      {
+        headers: {
+          Authorization: `Bearer ${validateToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+  }
+
+  const handleChangeRange = async (position) => {
+    const { track } = globalState
+    try {
+      const percentage = position / 100
+
+      if (isExternalPlayer) {
+        await seek(authToken, Math.round(track.durationMs * percentage))
+        updateGlobalState({
+          position,
+          progressMs: Math.round(track.durationMs * percentage),
+          ...globalState,
+        })
+      } else if (player) {
+        const state = await player.getCurrentState()
+
+        if (state) {
+          await player.seek(
+            Math.round(
+              state.track_window.current_track.duration_ms * percentage
+            )
+          )
+        } else {
+          updateGlobalState({ position: 0, ...globalState })
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
+  }
+
+  const setDeviceVolume = async (volume, deviceId) => {
+    /* istanbul ignore else */
+    if (isExternalPlayer) {
+      await setVolume(authToken, Math.round(volume * 100), deviceId)
+      // await syncDevice()
+    } else if (player) {
+      await player.setVolume(volume)
+    }
+    updateGlobalState({
+      volume: volume,
+      ...globalState,
+    })
+  }
+
+  const toggleSyncInterval = async (shouldSync) => {
+    try {
+      if (isExternalPlayer && shouldSync && playerSyncInterval == undefined) {
+        alert("shit")
+      }
+      if ((!shouldSync || !isExternalPlayer) && playerSyncInterval) {
+        alert("shit")
+        clearInterval(playerSyncInterval)
+        playerSyncInterval = undefined
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const toggleProgressBar = () => {
+    const { isPlaying } = globalState
+
+    if (isPlaying) {
+      /* istanbul ignore else */
+      if (!playerProgressInterval) {
+        playerProgressInterval = window.setInterval(
+          updateSeekBar,
+          seekUpdateInterval
+        )
+      }
+    } else if (playerProgressInterval) {
+      clearInterval(playerProgressInterval)
+      playerProgressInterval = undefined
+    }
+  }
+
+  const toggleOffset = async () => {
+    const { currentDeviceId, isPlaying } = globalState
+    const { uris, offset } = userCustomState
+    if (isPlaying && Array.isArray(uris)) {
+      await playFn(authToken, { deviceId: currentDeviceId, offset, uris })
+    }
+  }
+
+  const updateSeekBar = async () => {
+    const { progressMs, track } = globalState
+    // alert(isExternalPlayer)
+    try {
+      /* istanbul ignore else */
+      if (isExternalPlayer) {
+        let position = progressMs / track.durationMs
+        position = Number.isFinite(position) ? position : 0
+        updateGlobalState({
+          position: Number((position * 100).toFixed(1)),
+          progressMs: progressMs + seekUpdateInterval,
+          ...globalState,
+        })
+      } else if (player) {
+        const state = await player.getCurrentState()
+
+        /* istanbul ignore else */
+        if (state) {
+          const position =
+            state.position / state.track_window.current_track.duration_ms
+          updateGlobalState({
+            position: Number((position * 100).toFixed(1)),
+            ...globalState,
+          })
+        }
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
+  }
+  const prevState = usePrevious(globalState)
+  const prevCustomState = usePrevious(userCustomState)
+
+  useLayoutEffect(() => {
+    const {
+      currentDeviceId,
+      deviceId,
+      error,
+      isInitializing,
+      isPlaying,
+      status,
+      track,
+    } = globalState
+    const { autoPlay, offset, syncExternalDevice, uris } = userCustomState
+    const isReady = prevState && prevState.status !== true && status === true
+    const changedURIs = Array.isArray(uris)
+      ? !isEqualArray(prevCustomState && prevCustomState.uris, uris)
+      : prevCustomState && prevCustomState.uris !== uris
+    const playOptions = getPlayOptions(uris)
+    const canPlay =
+      !!currentDeviceId && !!(playOptions.context_uri || playOptions.uris)
+    const shouldPlay = (changedURIs && isPlaying) || !!(isReady && autoPlay)
+    if (canPlay && shouldPlay) {
+      if (isExternalPlayer) {
+        syncTimeout = setInterval(() => {
+          syncDevice(authToken)
+        }, 1000)
+      }
+    }
+    if (
+      prevState &&
+      prevState.currentDeviceId !== currentDeviceId &&
+      currentDeviceId
+    ) {
+      // toggleSyncInterval(isExternalPlayer)
+      // updateSeekBar()
+    }
+    if (prevState && prevState.isPlaying !== isPlaying) {
+      // toggleProgressBar()
+      // toggleSyncInterval(isExternalPlayer)
+    }
+  }, [prevState, globalState])
+
+  const [{ y }, set] = useSpring(() => ({ y: height }))
+
+  const open = ({ canceled }) => {
+    // when cancel is true, it means that the user passed the upwards threshold
+    // so we change the spring config to create a nice wobbly effect
+    set({
+      y: 0,
+      immediate: false,
+      config: canceled ? config.wobbly : config.stiff,
+    })
+  }
+  const close = (velocity = 0) => {
+    set({ y: height, immediate: false, config: { ...config.stiff, velocity } })
+  }
+
+  const bind = useDrag(
+    ({ last, vxvy: [, vy], movement: [, my], cancel, canceled }) => {
+      // if the user drags up passed a threshold, then we cancel
+      // the drag so that the sheet resets to its open position
+      if (my < -70) cancel()
+
+      // when the user releases the sheet, we check whether it passed
+      // the threshold for it to close, or if we reset it to its open positino
+      if (last) {
+        my > height * 0.5 || vy > 0.5 ? close(vy) : open({ canceled })
+      }
+      // when the user keeps dragging, we just move the sheet according to
+      // the cursor position
+      else set({ y: my, immediate: true })
+    },
+    {
+      initial: () => [0, y.get()],
+      filterTaps: true,
+      bounds: { top: 0 },
+      rubberband: true,
+    }
+  )
+
+  const display = y.to((py) => (py < height ? "block" : "none"))
+
+  const bgStyle = {
+    transform: y.to(
+      [0, height],
+      ["translateY(-8%) scale(1.16)", "translateY(0px) scale(1.05)"]
+    ),
+    opacity: y.to([0, height], [0.4, 1], "clamp"),
+  }
+
+  useEffect(() => {
+    const rgbToHex = (r, g, b) =>
+      "#" +
+      [r, g, b]
+        .map((x) => {
+          const hex = x.toString(16)
+          return hex.length === 1 ? "0" + hex : hex
+        })
+        .join("")
+    if (globalState && globalState.track && globalState.track.image) {
+      const colorThief = new ColorThief()
+      const img = imgRef.current
+      img.onload = () => {
+        // image  has been loaded
+        const result = colorThief.getColor(img)
+        rgbToHex(result[0], result[1], result[2])
+        console.log(rgbToHex(result[0], result[1], result[2]))
+        setPlayBackground(rgbToHex(result[0], result[1], result[2]))
+      }
+      const rgbToHex = (r, g, b) =>
+        "#" +
+        [r, g, b]
+          .map((x) => {
+            const hex = x.toString(16)
+            return hex.length === 1 ? "0" + hex : hex
+          })
+          .join("")
+    }
+  }, [globalState])
 
   return (
     <>
       <div ng-app="app" ng-cloak>
-        <div
-          id="bg-artwork"
-          style={{
-            backgroundImage: `url(${
-              userCurrentPlayingTrack &&
-              userCurrentPlayingTrack.album &&
-              userCurrentPlayingTrack.album.images[0].url
-            })`,
-          }}
-        ></div>
-        <div id="bg-layer"></div>
-        <div class="header bg-dark pfx layer2 b0 bbottom  bcdefault left-right top p2">
-          <div class="dib">
-            <button
-              class="button is-rounded is-small is-dark"
-              onClick={handlelogin}
-            >
-              Login
-            </button>
-            <input
-              class="rounded--medium outline0 b0 p1 pl2 is-rounded is-small is-dark"
-              placeholder="Search..."
-              type="search"
+        <PlaylistProvider>
+          <div class="wrap">
+            <div class="list-area">
+              <SideMenu sidePlayListData={sidePlayListData} />
+              <div class="main" ref={scrollContainer}>
+                <div
+                  class="main__wrap top-scroll-bg"
+                  style={{ background: trimHeader ? "white" : "" }}
+                  // style={{
+                  //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
+                  // }}
+                ></div>
+                <div class="main__wrap top-bar">
+                  <ul class="top-bar__left top-bar__wrap">
+                    {/* <li>
+                      <i class="top-bar__icon fas fa-chevron-left"></i>
+                    </li>
+                    <li>
+                      <i class="top-bar__icon fas fa-chevron-right"></i>
+                    </li> */}
+                    <li class="top-bar__search">
+                      {/* <i class="top-bar__search--icon top-bar__icon fas fa-search has-text-grey-light">
+                        <FontAwesomeIcon icon={faSearch} />
+                      </i> */}
+                      <input
+                        type="text"
+                        class="input is-small is-rounded"
+                        style={{ background: "rgba(160, 160, 160, 0.1)" }}
+                        placeholder="Search"
+                      />
+                    </li>
+                  </ul>
+                  <ul class="top-bar__right top-bar__wrap">
+                    {/* <li>
+                      <i class="top-bar__icon top-bar__right--user-icon far fa-user-circle"></i>
+                    </li> */}
+                    <li>
+                      {/* <img
+                        src={userprofile.images && userprofile.images[0].url}
+                        class="avatar-small circle"
+                      />
+                      {userprofile.display_name} */}
+
+                      <button
+                        class="button is-rounded is-small is-light"
+                        onClick={handlelogin}
+                      >
+                        LOGIN
+                      </button>
+                    </li>
+                    <li>
+                      <i class="fas fa-chevron-down"></i>
+                    </li>
+                  </ul>
+                </div>
+
+                <section class="section">
+                  <div class="hs__wrapper">
+                    {/* <AdvertismentContainer
+                      userRecommendListData={userRecommendListData}
+                    /> */}
+                    {/* <CategoriesContainer /> */}
+
+                    <Switch>
+                      <Route
+                        exact
+                        path="/"
+                        render={(props) => (
+                          <Home
+                            {...props}
+                            userRecommendListData={userRecommendListData}
+                            newReleaseData={newReleaseData}
+                            featuredPlaylistsData={featuredPlaylistsData}
+                            component={Home}
+                            globalState={globalState}
+                            playFn={playFn}
+                            authToken={authToken}
+                            viral50TracksList={viral50TracksList}
+                            top50TracksList={top50TracksList}
+                            userTopArtistListData={userTopArtistListData}
+                            userTopTracksListData={userTopTracksListData}
+                          />
+                        )}
+                      />
+
+                      <Route
+                        path="/playlist/:id"
+                        render={(props) => (
+                          <PlaylistDetail
+                            {...props}
+                            authToken={authToken}
+                            trimHeader={trimHeader}
+                          />
+                        )}
+                      />
+
+                      <Route
+                        path="/artist/:id"
+                        render={(props) => (
+                          <ArtistDetail
+                            {...props}
+                            authToken={authToken}
+                            trimHeader={trimHeader}
+                          />
+                        )}
+                      />
+                    </Switch>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <PlayerControl
+              imgRef={imgRef}
+              playerBackground={playerBackground}
+              setDeviceVolume={setDeviceVolume}
+              globalState={globalState}
+              currentPlayingState={currentPlayingState}
+              userCurrentPlayingTrack={userCurrentPlayingTrack}
+              progressBarStyles={progressBarStyles}
+              playFn={playFn}
+              authToken={authToken}
+              onChangeRange={handleChangeRange}
             />
           </div>
-          <div class="pull-right dib mt1 mr2">
-            <div class="ohidden dib va-middle">
-              <img
-                src={userprofile.images && userprofile.images[0].url}
-                class="avatar-small circle"
-              />
-            </div>
-            <p class="text-default fs dib m0 p0 ml1">
-              {userprofile.display_name}
-            </p>
-          </div>
-        </div>
-
-        <div class="columns is-variable is-8" style={{ zIndex: 99 }}>
-          <div class="column is-2 is-hidden-mobile">
-            <div
-              class="wi-220px bg-dark m0 pfx top-bottom t-45 oscroll pb4"
-              style={{ marginBottom: 310 }}
-              ng-controller="menuCtrl as menu"
-            >
-              <ul class="bg-dark list m0 mt2 p0 pl2 lineheight2">
-                <li ng-repeat="item in mainMenuItems" class="va-middle">
-                  <span
-                    class="ml3 text-default fs dib truncate wi-150px va-middle"
-                    style={{ color: "white" }}
-                  >
-                    Playlists
-                  </span>
-                  {sidePlayListData.map((item, index) => {
-                    return (
-                      <span class="ml3 text-default fs dib truncate wi-150px va-middle">
-                        {item.name}
-                      </span>
-                    )
-                  })}
-                </li>
-              </ul>
-              <div
-                class="div"
-                style={{
-                  height: 150,
-                  zIndex: 99,
-                }}
-              ></div>
-
-              <div class="player pfx left-right bottom">
-                <div class="player__currentTrack is-hidden-mobile wi-220px">
-                  <div class="track wi-220px p1 b0 btop bsolid bcdefault dib m0 p0 bg-gray">
-                    <p
-                      class="text-white m0 p2 mb1 fs"
-                      style={{ margin: "auto" }}
-                    >
-                      + New Playlist
-                    </p>
+          {/* <div class="js-modal">
+            <div class="bg-area"></div>
+            <div class="modal">
+              <div>
+                <h1 class="modal__title">Create Playlist</h1>
+                <i class="modal__close-btn fas fa-times"></i>
+              </div>
+              <div class="modal__contents">
+                <div class="modal__image">
+                  <div class="modal__image--box">
+                    <i class="modal__image--icon fab fa-itunes-note"></i>
+                    <p>Choose image</p>
                   </div>
                 </div>
-                <div
-                  class="player__currentTrack is-hidden-mobile wi-220px"
-                  style={{ marginBottom: 95 }}
-                >
-                  <div class="album wi-220px b0 btop bsolid bcdefault">
-                    <img
-                      src={
-                        userCurrentPlayingTrack &&
-                        userCurrentPlayingTrack.album &&
-                        userCurrentPlayingTrack.album.images[0].url
-                      }
-                      class="wi-220px m0 dib p0 di"
+                <div class="modal__text-box">
+                  <div class="modal__name">
+                    <p class="modal__text">Name</p>
+                    <input
+                      type="text"
+                      class="modal__text-input"
+                      placeholder="My playlist #8"
                     />
                   </div>
-                  <div class="track wi-220px p1 b0 btop bsolid bcdefault dib m0 p0 bg-gray">
-                    <p class="text-white m0 p0 mb1 fs">
-                      {userCurrentPlayingTrack && userCurrentPlayingTrack.name}
-                    </p>
-                    <p class="text-ivory m0 p0 fss">
-                      {userCurrentPlayingTrack &&
-                        userCurrentPlayingTrack.artists &&
-                        userCurrentPlayingTrack.artists[0].name}
-                    </p>
+                  <div>
+                    <p class="modal__text">Description</p>
+                    <textarea
+                      class="modal__text-area"
+                      placeholder="Give your playlist a catchy description."
+                    ></textarea>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="column is-12-mobile is-10-tablet" style={{ zIndex: 99 }}>
-            <section class="section mt4">
-              <div class="hs__wrapper">
-                {/* <Player
-                  currentPlayingState={currentPlayingState}
-                  userCurrentPlayingTrack={userCurrentPlayingTrack}
-                /> */}
-
-                <AdvertismentContainer
-                  userRecommendListData={userRecommendListData}
-                />
-                <ChartsContainer
-                  viral50TracksList={viral50TracksList}
-                  top50TracksList={top50TracksList}
-                />
-
-                <RecentPlayedContainer
-                  userPlayedTracksListData={userPlayedTracksListData}
-                />
-                <TopTracksContainer
-                  userTopTracksListData={userTopTracksListData}
-                />
-                <AlbumContainer newReleaseData={newReleaseData} />
-                <ArtistContainer
-                  userTopArtistListData={userTopArtistListData}
-                />
-                <PlaylistContainer
-                  featuredPlaylistsData={featuredPlaylistsData}
-                />
-                <CategoriesContainer categoriesData={categoriesData} />
-              </div>
-            </section>
-          </div>
-        </div>
-
-        <div
-          class="player__controls bg-gray b0 btop bsolid bcdefault p6 "
-          style={{
-            position: "fixed",
-            bottom: 0,
-            zIndex: 101,
-          }}
-        >
-          <div class="dt tl-fixed wi-100">
-            <div class="dtc tl-fixed pl1 wi-210px">
-              <div class="dtc wi-50">
-                <span class="icon icon--small" style={{ color: "grey" }}>
-                  <FontAwesomeIcon icon={faBackward} />
-                </span>
-                <div class=" dib  bwidth p1 play ml2  mr2">
-                  <span class="icon icon--small">
-                    {/* <FontAwesomeIcon icon={faPlayCircle} /> */}
-                    <FontAwesomeIcon icon={faPause} />
-                  </span>
-                </div>
-                <span class="icon icon--small" style={{ color: "grey" }}>
-                  <FontAwesomeIcon icon={faForward} />
-                </span>
-              </div>
-              <div class="dtc wi-50">
-                <input
-                  type="range"
-                  name="points"
-                  min="1"
-                  max="100"
-                  value="100"
-                  class="va-middle mr1 ml1 wi-100 rangeSlider"
-                />
+              <div class="modal__btn">
+                <p class="modal__btn--text">CREATE</p>
               </div>
             </div>
-            <div class="dtc pl2">
-              <div class="dt tl-fixed">
-                <div class="dtc">
-                  <img class="icon icon--small" src={volumeIcon} alt="" />
-                  {/* <svg x="0px" y="0px" viewBox="0 0 30 30" class="icon icon--small fill-gray"><use xlink:href="#volume"></use></svg> */}
-                </div>
-                <div class="dtc">
-                  <p class="m0 p0 pl1 ml2 mr2 ml2 text-white dib fss">
-                    {millisToMinutesAndSeconds(
-                      currentPlayingState && currentPlayingState.progress_ms
-                    )}
-                  </p>
-                  {/* <p class="m0 p0 mr1 ml2 text-white dib fss">{{ 0 | date : 'm:ss' }}</p> */}
-                </div>
-                <div class="dtc wi-100">
-                  <div className="progress">
-                    <div className="progress__bar" style={progressBarStyles} />
-                  </div>
-                  {/* <input
-                      type="range"
-                      name="points"
-                      min="1"
-                      max="100"
-                      class="rangeSlider va-middle mr1 ml1  dtc wi-100"
-                      value={
-                        (currentPlayingState.progress_ms * 100) /
-                        userCurrentPlayingTrack.duration_ms
-                      }
-                    /> */}
-                </div>
-                <div class="dtc">
-                  <p class="m0 p0 pl1 ml2 mr2 ml2 text-white dib fss">
-                    {millisToMinutesAndSeconds(
-                      userCurrentPlayingTrack &&
-                        userCurrentPlayingTrack.duration_ms
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="dtc tl-fixed tar pr1 wi-50px">
-              {/* <svg x="0px" y="0px" viewBox="0 0 30 30" class="icon icon--small fill-white va-middle"><use xlink:href="#shuffle"></use></svg>
-          <svg x="0px" y="0px" viewBox="0 0 30 30" class="icon icon--small fill-green ml1 va-middle"><use xlink:href="#repeat"></use></svg> */}
-            </div>
-          </div>
-        </div>
+          </div> */}
+          {/* <div
+            id="bg-artwork"
+            style={{
+              backgroundImage: `url(${
+                globalState && globalState.track && globalState.track.image
+              })`,
+            }}
+          ></div>
+          <div id="bg-layer"></div> */}
+        </PlaylistProvider>
       </div>
     </>
   )
 }
 
 export default App
+
+function getWindowDimensions() {
+  const { innerWidth: deviceWidth, innerHeight: deviceHeight } = window
+  return {
+    deviceWidth,
+    deviceHeight,
+  }
+}
+
+function useWindowDimensions() {
+  const [windowDimensions, setWindowDimensions] = useState(
+    getWindowDimensions()
+  )
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions())
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  return windowDimensions
+}
