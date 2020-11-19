@@ -33,7 +33,7 @@ export const SideMenu = (props) => {
               </li>
             </Link>
 
-            <Link to="/playlist/2323">
+            <Link to="/browse">
               <li class="nav__list">
                 <i class="nav__icon far fa-compass">
                   <img src={listIcon} alt="" />
