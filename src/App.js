@@ -81,32 +81,10 @@ function App() {
   var playerSyncInterval = 5
   var playerProgressInterval = 5
   var seekUpdateInterval = 100
-  const clientId = "9e214f26fedf458082c801c1eb63f09c"
-  const redirectUri = window.location.origin
-  const scopes = [
-    "user-read-recently-played",
-    "user-library-read",
-    "user-top-read",
-    "user-modify-playback-state",
-    "user-read-currently-playing",
-    "user-read-playback-state",
-    "user-follow-modify",
-    "user-follow-read",
-    "user-read-private",
-    "user-read-email",
-    "ugc-image-upload",
-    "playlist-modify-private",
-    "playlist-read-collaborative",
-    "playlist-read-private",
-    "playlist-modify-public",
-    "streaming",
-    "app-remote-control",
-  ]
-
   var syncTimeout
   var intervalId2
   var intervalId
-
+  let player = null
   const location = useLocation()
 
   // const [playerSyncInterval, setPlayerSyncInterval] = useState(5)
@@ -206,8 +184,6 @@ function App() {
       window.removeEventListener("scroll", handleScroll), setGradientNum(null)
     )
   }, [scrollContainer])
-
-  let player = null
 
   function validateURI(input) {
     const validTypes = ["album", "artist", "playlist", "show", "track"]
@@ -515,16 +491,6 @@ function App() {
     window.location = window.location.href.includes("localhost")
       ? "http://localhost:8888/login"
       : "https://spotify-auth-proxy-server.herokuapp.com/login"
-    // window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}&show_dialog=true`
-    // window.spotifyCallback = (payload) => {
-    //   fetch("https://api.spotify.com/v1/me", {
-    //     headers: {
-    //       Authorization: `Bearer ${payload}`,
-    //     },
-    //   }).then((response) => {
-    //     return response.json()
-    //   })
-    // }
   }
 
   const getUserCurrentProfile = (validateToken) => {
