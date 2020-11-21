@@ -72,6 +72,8 @@ import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
 
+import queryString from "query-string"
+
 function App() {
   const { deviceWidth, deviceHeight } = useWindowDimensions()
   const imgRef = useRef(null)
@@ -79,32 +81,10 @@ function App() {
   var playerSyncInterval = 5
   var playerProgressInterval = 5
   var seekUpdateInterval = 100
-  const clientId = "9e214f26fedf458082c801c1eb63f09c"
-  const redirectUri = window.location.origin
-  const scopes = [
-    "user-read-recently-played",
-    "user-library-read",
-    "user-top-read",
-    "user-modify-playback-state",
-    "user-read-currently-playing",
-    "user-read-playback-state",
-    "user-follow-modify",
-    "user-follow-read",
-    "user-read-private",
-    "user-read-email",
-    "ugc-image-upload",
-    "playlist-modify-private",
-    "playlist-read-collaborative",
-    "playlist-read-private",
-    "playlist-modify-public",
-    "streaming",
-    "app-remote-control",
-  ]
-
   var syncTimeout
   var intervalId2
   var intervalId
-
+  let player = null
   const location = useLocation()
 
   // const [playerSyncInterval, setPlayerSyncInterval] = useState(5)
@@ -204,8 +184,6 @@ function App() {
       window.removeEventListener("scroll", handleScroll), setGradientNum(null)
     )
   }, [scrollContainer])
-
-  let player = null
 
   function validateURI(input) {
     const validTypes = ["album", "artist", "playlist", "show", "track"]
@@ -510,16 +488,9 @@ function App() {
   }
 
   const handlelogin = () => {
-    window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}&show_dialog=true`
-    window.spotifyCallback = (payload) => {
-      fetch("https://api.spotify.com/v1/me", {
-        headers: {
-          Authorization: `Bearer ${payload}`,
-        },
-      }).then((response) => {
-        return response.json()
-      })
-    }
+    window.location = window.location.href.includes("localhost")
+      ? "http://localhost:8888/login"
+      : "https://spotify-auth-proxy-server.herokuapp.com/login"
   }
 
   const getUserCurrentProfile = (validateToken) => {
@@ -595,7 +566,9 @@ function App() {
   }
 
   useEffect(() => {
-    const token = window.location.hash.substr(1).split("&")[0].split("=")[1]
+    let parsed = queryString.parse(window.location.search)
+    // console.log(parsed.access_token, "parsed")
+    const token = parsed.access_token
     if (token) {
       setAuthToken(token)
       localStorage.setItem("spotifyAuthToken", token)
@@ -637,11 +610,12 @@ function App() {
     const { devices } = await getDevices(authToken)
     let currentDeviceId = id
     const savedDeviceId = sessionStorage.getItem("rswpDeviceId")
-
-    if (!savedDeviceId || !devices.find((d) => d.id === savedDeviceId)) {
-      sessionStorage.setItem("rswpDeviceId", currentDeviceId)
-    } else {
-      currentDeviceId = savedDeviceId
+    if (devices) {
+      if (!savedDeviceId || !devices.find((d) => d.id === savedDeviceId)) {
+        sessionStorage.setItem("rswpDeviceId", currentDeviceId)
+      } else {
+        currentDeviceId = savedDeviceId
+      }
     }
 
     return { currentDeviceId, devices }
