@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
+import { PlaylistContext } from "./context/playlist"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -12,7 +13,8 @@ function usePrevious(value) {
 }
 
 const RecentPlayedContainer = (props) => {
-  const { userPlayedTracksListData } = props
+  const { playFn, globalState, authToken } = props
+  const { userPlayedTracksListData } = useContext(PlaylistContext)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -54,17 +56,38 @@ const RecentPlayedContainer = (props) => {
             />
           </div>
           <div class="hs__item__description">
-            <div style={{ marginTop: 20 }}></div>
-            <span class="hs__item__title" style={{ fontSize: 15 }}>
+            <div></div>
+            <span class="hs__item__title has-text-black">
               {item.track.name}
             </span>
             <span class="hs__item__subtitle">{item.track.artists[0].name}</span>
           </div>
 
-          <div class="hs__item__play__button">
-            <button class="button">
-              <FontAwesomeIcon icon={faPlay} />
-            </button>
+          <div
+            class="hs__item__play__button"
+            // onClick={() => {
+            //   playFn(authToken, globalState.currentDeviceId, item.track.uri)
+            // }}
+          >
+            <a
+              href="javascript:void(0)"
+              onClick={(e) => {
+                e.stopPropagation()
+                playFn(authToken, globalState.currentDeviceId, item.track.uri)
+              }}
+            >
+              {globalState &&
+              globalState.track &&
+              globalState.track.id == item.track.id ? (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPause} />
+                </button>
+              ) : (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPlay} />
+                </button>
+              )}
+            </a>
           </div>
         </li>
       )
@@ -129,7 +152,13 @@ const RecentPlayedContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-white">Recent played</h2>
+        <h2 class="hs__headline title is-5 has-text-black">
+          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+            LIBRARY
+          </p>
+          Recent played
+        </h2>
+
         {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>

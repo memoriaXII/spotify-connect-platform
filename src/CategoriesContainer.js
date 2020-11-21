@@ -1,5 +1,6 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
+import { PlaylistContext } from "./context/playlist"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -10,7 +11,8 @@ function usePrevious(value) {
 }
 
 const CategoriesContainer = (props) => {
-  const { categoriesData } = props
+  // const { categoriesData } = props
+  const { categoriesData } = useContext(PlaylistContext)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -41,22 +43,25 @@ const CategoriesContainer = (props) => {
   }
 
   const buildItems = () => {
-    return categoriesData.map((item, index) => {
-      return (
-        <li class="hs__item" key={index}>
-          <div class="hs__item__image__wrapper">
-            <img class="hs__item__image" src={item.icons[0].url} alt="" />
-          </div>
-          <div class="hs__item__description" style={{ margin: "auto" }}>
-            <div style={{ marginTop: 20 }}></div>
-            <span class="hs__item__title" style={{ fontSize: 15 }}>
-              {item.name}
-            </span>
-            {/* <span class="hs__item__subtitle">{item.user.name}</span> */}
-          </div>
-        </li>
-      )
-    })
+    return (
+      categoriesData &&
+      categoriesData.map((item, index) => {
+        return (
+          <li class="hs__item" key={index}>
+            <div class="hs__item__image__wrapper">
+              <img class="hs__item__image" src={item.icons[0].url} alt="" />
+            </div>
+            <div class="hs__item__description" style={{ margin: "auto" }}>
+              <div style={{ marginTop: 20 }}></div>
+              <span class="hs__item__title" style={{ fontSize: 15 }}>
+                {item.name}
+              </span>
+              {/* <span class="hs__item__subtitle">{item.user.name}</span> */}
+            </div>
+          </li>
+        )
+      })
+    )
   }
 
   const buildControls = () => {

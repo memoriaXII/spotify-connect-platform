@@ -1,17 +1,20 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 
+import { PlaylistContext } from "./context/playlist"
+
 const ChartsContainer = (props) => {
+  const { top50TracksList, viral50TracksList } = useContext(PlaylistContext)
   const settings = {
     arrows: true,
     dots: false,
     speed: 500,
     infinite: true,
-    slidesPerRow: 3,
-    rows: 3,
+    slidesPerRow: 4,
+    rows: 4,
     nextArrow: <SampleNextArrow />,
     prevArrow: <SamplePrevArrow />,
     responsive: [
@@ -24,8 +27,6 @@ const ChartsContainer = (props) => {
       },
     ],
   }
-  const { top50TracksList, viral50TracksList } = props
-  console.log(top50TracksList, "top50")
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -41,12 +42,6 @@ const ChartsContainer = (props) => {
             <div class="container">
               <div key={index} class="columns is-gapless is-mobile mt-2">
                 <div
-                  class="column is-1 has-text-left"
-                  style={{ margin: "auto" }}
-                >
-                  <span>{index + 1}</span>
-                </div>
-                <div
                   class="column is-2 has-text-centered"
                   style={{
                     backgroundSize: "cover",
@@ -59,8 +54,8 @@ const ChartsContainer = (props) => {
                     })`,
                   }}
                 ></div>
-                <div class="column is-6">
-                  <span class="title is-7 has-text-white">
+                <div class="column is-10">
+                  <span class="title is-7 has-text-black">
                     {item.track && item.track.name}
                     <br />
                     <span class="has-text-grey">
@@ -82,19 +77,9 @@ const ChartsContainer = (props) => {
         {viral50TracksList.map((item, index) => {
           return (
             <div class="container">
-              <div
-                key={index}
-                class="columns is-gapless is-mobile"
-                style={{ marginTop: 20 }}
-              >
+              <div key={index} class="columns is-gapless is-mobile mt-2">
                 <div
-                  class="column is-1 has-text-centered"
-                  style={{ margin: "auto" }}
-                >
-                  <span>{index + 1}</span>
-                </div>
-                <div
-                  class="column is-2"
+                  class="column is-2 has-text-centered"
                   style={{
                     backgroundSize: "cover",
                     borderRadius: 5,
@@ -106,8 +91,8 @@ const ChartsContainer = (props) => {
                     })`,
                   }}
                 ></div>
-                <div class="column is-6">
-                  <span class="title is-7 has-text-white">
+                <div class="column is-10">
+                  <span class="title is-7 has-text-black">
                     {item.track && item.track.name}
                     <br />
                     <span class="has-text-grey">
@@ -126,7 +111,12 @@ const ChartsContainer = (props) => {
   return (
     <div class="mb4">
       <div class="ad__header">
-        <h2 class="ad__headline title is-5 has-text-white">Charts</h2>
+        <h2 class="ad__headline title is-4 has-text-black">
+          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+            MUSIC
+          </p>
+          Charts
+        </h2>
       </div>
 
       <TabsGroup buildItems={buildItems} buildItems2={buildItems2} />
@@ -191,7 +181,7 @@ const Tabs = (props) => {
                   src={elem.props.icon}
                   alt=""
                 /> */}
-                <a class="has-text-white">{elem.props.title}</a>
+                <a class="has-text-black">{elem.props.title}</a>
               </li>
             )
           })}
@@ -209,9 +199,6 @@ const TabsGroup = (props) => {
     <Tabs selected={0}>
       <TabsContent title="Popular">{buildItems()}</TabsContent>
       <TabsContent title="Viral">{buildItems2()}</TabsContent>
-      <TabsContent title="Discovered">
-        {/* <div class="box">omasdasd</div> */}
-      </TabsContent>
     </Tabs>
   )
 }

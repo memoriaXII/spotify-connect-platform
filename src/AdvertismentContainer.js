@@ -11,7 +11,6 @@ function usePrevious(value) {
 
 const AdvertismentContainer = (props) => {
   const { userRecommendListData } = props
-  console.log(userRecommendListData)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -157,7 +156,7 @@ const AdvertismentContainer = (props) => {
   return (
     <div class="mb4">
       <div class="ad__header">
-        <h2 class="ad__headline title is-5 has-text-white">Editor choice</h2>
+        <h2 class="ad__headline title is-4 has-text-black">Editor choice</h2>
         {buildControls()}
       </div>
       <ul className="ad item-container" ref={container}>
