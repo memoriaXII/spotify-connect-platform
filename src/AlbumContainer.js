@@ -3,6 +3,8 @@ import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay } from "@fortawesome/free-solid-svg-icons"
 
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
+
 function usePrevious(value) {
   const ref = useRef()
   useEffect(() => {
@@ -12,7 +14,8 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
-  const { newReleaseData } = props
+  let history = useHistory()
+  const { newReleaseData, isArtistAlbum } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -45,7 +48,14 @@ const AlbumContainer = (props) => {
   const buildItems = () => {
     return newReleaseData.map((item, index) => {
       return (
-        <li class="hs__item" key={index}>
+        <li
+          class="hs__item"
+          key={index}
+          onClick={() => {
+            // console.log(item.id, "item")
+            history.push(`/album/${item.id}`)
+          }}
+        >
           <div class="hs__item__image__wrapper">
             <img
               class="hs__item__image"
@@ -54,7 +64,9 @@ const AlbumContainer = (props) => {
             />
           </div>
           <div class="hs__item__description">
-            <span class="hs__item__title">{item && item.name}</span>
+            <span class="hs__item__title has-text-black">
+              {item && item.name}
+            </span>
             <span class="hs__item__subtitle">
               {item && item.artists[0].name}
             </span>
@@ -127,8 +139,19 @@ const AlbumContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-white">
-          New release for you
+        <h2 class="hs__headline has-text-black">
+          {isArtistAlbum ? (
+            <>
+              <p class="title is-5 mt-4">Albums</p>
+            </>
+          ) : (
+            <div class="title is-5">
+              <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+                ALBUMS
+              </p>
+              New release
+            </div>
+          )}
         </h2>
         {buildControls()}
       </div>

@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -12,13 +13,27 @@ function usePrevious(value) {
 }
 
 const ArtistContainer = (props) => {
-  const { userTopArtistListData } = props
+  let history = useHistory()
+  const { userTopArtistListData, playFn, authToken, globalState } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
     canScrollLeft: false,
     canScrollRight: false,
   })
+
+  async function getArtistSongs(validateToken, artistId) {
+    return fetch(
+      `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=TW`,
+      {
+        headers: {
+          Authorization: `Bearer ${validateToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
+      }
+    ).then((d) => d.json())
+  }
 
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current
@@ -35,6 +50,16 @@ const ArtistContainer = (props) => {
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
+  async function pauseFn(validateToken) {
+    return fetch(`https://api.spotify.com/v1/me/player/pause`, {
+      headers: {
+        Authorization: `Bearer ${validateToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+    })
+  }
+
   const debounceCheckForOverflow = debounce(checkForOverflow, 1000)
   const debounceCheckForScrollPosition = debounce(checkForScrollPosition, 200)
 
@@ -45,7 +70,14 @@ const ArtistContainer = (props) => {
   const buildItems = () => {
     return userTopArtistListData.map((item, index) => {
       return (
-        <li class="hs__item" key={index}>
+        <li
+          class="hs__item"
+          key={index}
+          onClick={() => {
+            // console.log(item.id, "item")
+            history.push(`/artist/${item.id}`)
+          }}
+        >
           <div
             class="hs__item__image__wrapper"
             style={{ borderRadius: `${50}%` }}
@@ -59,15 +91,40 @@ const ArtistContainer = (props) => {
           </div>
           <div class="hs__item__description" style={{ margin: "auto" }}>
             <div style={{ marginTop: 20 }}></div>
-            <span class="hs__item__title" style={{ fontSize: 15 }}>
+            <span
+              class="hs__item__title has-text-black has-text-weight-bold"
+              style={{ fontSize: 15 }}
+            >
               {item.name}
             </span>
             {/* <span class="hs__item__subtitle">{item.user.name}</span> */}
           </div>
           <div class="hs__item__play__artist__button">
-            <button class="button">
-              <FontAwesomeIcon icon={faPlay} />
-            </button>
+            <a
+              href="javascript:void(0)"
+              onClick={async (e) => {
+                e.stopPropagation()
+                const { tracks } = await getArtistSongs(authToken, item.id)
+                playFn(authToken, globalState.currentDeviceId, "", tracks)
+              }}
+            >
+              <button class="button">
+                {globalState &&
+                globalState.track &&
+                globalState.track.artists &&
+                globalState.track.artists.includes(item && item.name) ? (
+                  <FontAwesomeIcon
+                    icon={faPause}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      pauseFn(authToken)
+                    }}
+                  />
+                ) : (
+                  <FontAwesomeIcon icon={faPlay} />
+                )}
+              </button>
+            </a>
           </div>
         </li>
       )
@@ -132,7 +189,7 @@ const ArtistContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-white">Popular Artists</h2>
+        <h2 class="hs__headline title is-5 has-text-black">Popular Artists</h2>
         {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>
