@@ -152,7 +152,7 @@ export const PlayerControl = (props) => {
   }
 
   return (
-    <div class="playbar">
+    <div class="playbar is-hidden-mobile">
       <div class="album-cover">
         <div class="album-cover__img">
           <img

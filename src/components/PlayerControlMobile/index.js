@@ -5,12 +5,13 @@ import React, {
   useCallback,
   useContext,
 } from "react"
+import { useLocation } from "react-router-dom"
 import { useSpring, a, config } from "react-spring"
 import { useDrag } from "react-use-gesture"
+import Slider from "react-slick"
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faCoffee,
   faFastForward,
   faFastBackward,
   faBackward,
@@ -30,6 +31,10 @@ import {
   faBan,
   faHeart,
   faHome,
+  faChevronCircleDown,
+  faEllipsisH,
+  faChevronDown,
+  faBullseye,
 } from "@fortawesome/free-solid-svg-icons"
 
 import volumeIcon from "../.././images/volume.svg"
@@ -38,10 +43,19 @@ import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
-const height = 380
+
+// Import css files
+import "slick-carousel/slick/slick.css"
+import "slick-carousel/slick/slick-theme.css"
+
 export const PlayerControlMobile = (props) => {
+  const customSlider = useRef()
+  let location = useLocation()
   const [isMagnified, setMagnified] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const {
+    cachedAlbumsArray,
+    deviceHeight,
     imgRef,
     playerBackground,
     setDeviceVolume,
@@ -53,6 +67,7 @@ export const PlayerControlMobile = (props) => {
     authToken,
     onChangeRange,
   } = props
+  const height = deviceHeight
   const { position, volume } = globalState
   const [utilsState, setUtilsState] = useState({
     isOpen: false,
@@ -69,7 +84,7 @@ export const PlayerControlMobile = (props) => {
     loaderColor: "#ccc",
     loaderSize: 32,
     savedColor: "#1cb954",
-    sliderColor: "#666",
+    sliderColor: "#fff",
     sliderHandleBorderRadius: "50%",
     sliderHandleColor: "#fff",
     sliderHeight: 0.5,
@@ -77,13 +92,6 @@ export const PlayerControlMobile = (props) => {
     sliderTrackColor: "#ccc",
     trackArtistColor: "#999",
     trackNameColor: "#333",
-  }
-
-  const nextStyles = {
-    ...getMergedStyles,
-    sliderHeight: isMagnified
-      ? getMergedStyles.sliderHeight + 4
-      : getMergedStyles.sliderHeight,
   }
 
   const handleSize = getMergedStyles.sliderHeight + 6
@@ -133,20 +141,6 @@ export const PlayerControlMobile = (props) => {
     // return () => clearInterval(timeout)
   }
 
-  const Wrapper = ({ styles }) => {
-    return (
-      <div
-        style={{
-          display: "flex",
-          position: "relative",
-          transition: "height 0.3s",
-          zIndex: 10,
-          height: `${styles.sliderHeight}px`,
-        }}
-      ></div>
-    )
-  }
-
   const mouseEnter = () => {
     setMagnified(true)
   }
@@ -192,18 +186,30 @@ export const PlayerControlMobile = (props) => {
     }
   )
 
-  const display = y.to((py) => (py < height ? "block" : "none"))
-
-  const bgStyle = {
-    transform: y.to(
-      [0, height],
-      ["translateY(-8%) scale(1.16)", "translateY(0px) scale(1.05)"]
-    ),
-    opacity: y.to([0, height], [0.4, 1], "clamp"),
+  const settings = {
+    arrows: false,
+    dots: false,
+    speed: 500,
+    infinite: false,
+    autoplay: false,
+    lazyLoad: true,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    initialSlide: 1,
+    beforeChange: (current, next) => setCurrentIndex(next),
   }
 
+  //   useEffect(() => {
+  //     let cleanTop50TracksLisArray = cachedAlbumsArray.filter((ele, ind) => {
+  //       return globalState.track.id === ele.id
+  //     })
+  //     const index = cachedAlbumsArray.indexOf(cleanTop50TracksLisArray[0])
+  //     console.log("test", index)
+  //     customSlider.current.slickGoTo(index, false)
+  //   }, [cachedAlbumsArray, globalState])
+
   return (
-    <div>
+    <div class="is-hidden-tablet">
       <div class="album-cover" onClick={open}>
         <div class="album-cover__img">
           <img
@@ -239,7 +245,7 @@ export const PlayerControlMobile = (props) => {
         </div>
       </div>
       <div
-        class="columns is-mobile has-text-black has-text-centered mb-2 mt-2"
+        class="columns is-mobile has-text-black has-text-centered"
         style={{ borderTop: `${1}px solid grey` }}
       >
         <div class="column">
@@ -259,13 +265,53 @@ export const PlayerControlMobile = (props) => {
         className="sheet"
         {...bind()}
         style={{
-          display,
-          bottom: `calc(-100vh + ${height - 100}px)`,
           y,
+          height: deviceHeight,
+          bottom: 0,
           background: playerBackground,
         }}
       >
-        <div class="album-cover">
+        <div class="columns is-mobile">
+          <div
+            class="column has-text-left"
+            onClick={() => {
+              close()
+            }}
+          >
+            <FontAwesomeIcon icon={faChevronDown} />
+          </div>
+          <div class="column"></div>
+          <div class="column has-text-right ">
+            <FontAwesomeIcon icon={faEllipsisH} />
+          </div>
+        </div>
+        <div
+          class="sheet__bg"
+          style={
+            {
+              // background: playerBackground,
+              // background: `linear-gradient(to top,  #e66465 10%, ${artistBackground} 20%`,
+            }
+          }
+        ></div>
+        <div class="sheet__cover">
+          {/* <Slider
+            ref={(slider) => (customSlider.current = slider)}
+            {...settings}
+          >
+            {cachedAlbumsArray.map((item, index) => {
+              return (
+                <div key={index}>
+                  <img
+                    crossOrigin={"anonymous"}
+                    ref={imgRef}
+                    alt={""}
+                    src={item && item.album.images[0].url}
+                  />
+                </div>
+              )
+            })}
+          </Slider> */}
           <div>
             <img
               crossOrigin={"anonymous"}
@@ -274,142 +320,128 @@ export const PlayerControlMobile = (props) => {
               src={globalState && globalState.track && globalState.track.image}
             />
           </div>
-          <div class="album-cover__text-box">
+          <div class="album-cover__text-box has-text-centered">
             <div class="album-cover__wrap">
-              <p
-                class="album-cover__title truncate"
-                style={{ fontSize: 12, width: 200 }}
-              >
+              <p class="album-cover__title has-text-centered has-text-white">
                 {globalState && globalState.track && globalState.track.name}
               </p>
-              <div class="album-cover__icon-box">
-                {/* <i class="album-cover__icon far fa-heart">
-                        <FontAwesomeIcon icon={faHeart} />
-                      </i>
-                      <i class="album-cover__icon fas fa-ban has-text-grey-light">
-                        <FontAwesomeIcon icon={faBan} />
-                      </i> */}
-              </div>
-            </div>
-            <div>
-              <p class="album-cover__artist">
+              <p class="album-cover__artist has-text-centered title is-7 has-text-grey">
                 {globalState && globalState.track && globalState.track.artists}
               </p>
             </div>
           </div>
-        </div>
-        <div class="play-btns mt-6">
-          <ul class="play-btns__wrap play-btns__icon-box">
-            <li class="play-btns__list">
-              <i class="play-btns__icon fas fa-random has-text-grey-light">
-                <FontAwesomeIcon icon={faRandom} />
-              </i>
-            </li>
-            <li class="play-btns__list">
-              <i
-                class="play-btns__icon fas fa-step-backward has-text-grey-light"
-                onClick={() => {
-                  previousFn(authToken)
-                }}
-              >
-                <FontAwesomeIcon icon={faBackward} />
-              </i>
-            </li>
-            <li class="play-btns__list">
-              {globalState.isPlaying ? (
+          <div class="play-btns mt-4">
+            <ul class="play-btns__wrap play-btns__range-bar mb-6 mt-6">
+              <li>
+                <p class="has-text-grey-light">
+                  {globalState.isPlaying
+                    ? millisToMinutesAndSeconds(globalState.progressMs)
+                    : millisToMinutesAndSeconds(globalState.progressMs)}
+                </p>
+              </li>
+              <li class="play-btns__bar">
+                <div
+                  onMouseEnter={mouseEnter}
+                  onMouseLeave={mouseLeave}
+                  style={{ width: `${100}%` }}
+                >
+                  <RangeSlider
+                    style={{ cursor: "pointer" }}
+                    axis="x"
+                    onChange={handleChangeRange}
+                    styles={{
+                      options: {
+                        handleBorder: 0,
+                        handleBorderRadius:
+                          getMergedStyles.sliderHandleBorderRadius,
+                        handleColor: getMergedStyles.sliderHandleColor,
+                        handleSize: isMagnified ? handleSize + 4 : handleSize,
+                        height: isMagnified
+                          ? getMergedStyles.sliderHeight + 4
+                          : getMergedStyles.sliderHeight + 4,
+                        padding: 0,
+                        rangeColor: getMergedStyles.sliderColor,
+                        trackBorderRadius:
+                          getMergedStyles.sliderTrackBorderRadius,
+                        trackColor: getMergedStyles.sliderTrackColor,
+                      },
+                    }}
+                    x={position}
+                    xMin={0}
+                    xMax={100}
+                    xStep={0.1}
+                  />
+                </div>
+              </li>
+              <li>
+                <p class="has-text-grey-light">
+                  {globalState.isPlaying
+                    ? millisToMinutesAndSeconds(
+                        globalState &&
+                          globalState.track &&
+                          globalState.track.durationMs
+                      )
+                    : millisToMinutesAndSeconds(
+                        userCurrentPlayingTrack &&
+                          userCurrentPlayingTrack.duration_ms
+                      )}
+                </p>
+              </li>
+            </ul>
+            <ul class="play-btns__wrap play-btns__icon-box">
+              <li class="play-btns__list">
+                <i class="play-btns__icon fas fa-random has-text-grey-light">
+                  <FontAwesomeIcon icon={faRandom} />
+                </i>
+              </li>
+              <li class="play-btns__list">
                 <i
-                  class="play-btns__icon far fa-play-circle"
+                  class="play-btns__icon fas fa-step-backward has-text-white"
                   onClick={() => {
-                    pauseFn(authToken)
+                    previousFn(authToken)
                   }}
                 >
-                  <FontAwesomeIcon icon={faPause} />
+                  <FontAwesomeIcon icon={faBackward} />
                 </i>
-              ) : (
+              </li>
+              <li class="play-btns__list">
+                {globalState.isPlaying ? (
+                  <i
+                    class="play-btns__icon far fa-play-circle has-text-white"
+                    onClick={() => {
+                      pauseFn(authToken)
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPause} />
+                  </i>
+                ) : (
+                  <i
+                    class="play-btns__icon far fa-play-circle"
+                    onClick={() => {
+                      playFn(authToken, globalState.currentDeviceId)
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlayCircle} />
+                  </i>
+                )}
+              </li>
+              <li class="play-btns__list">
                 <i
-                  class="play-btns__icon far fa-play-circle"
+                  class="play-btns__icon fas fa-step-forward has-text-white"
                   onClick={() => {
-                    playFn(authToken, globalState.currentDeviceId)
+                    nextFn(authToken)
                   }}
                 >
-                  <FontAwesomeIcon icon={faPlayCircle} />
+                  <FontAwesomeIcon icon={faForward} />
                 </i>
-              )}
-            </li>
-            <li class="play-btns__list">
-              <i
-                class="play-btns__icon fas fa-step-forward has-text-grey-light"
-                onClick={() => {
-                  nextFn(authToken)
-                }}
-              >
-                <FontAwesomeIcon icon={faForward} />
-              </i>
-            </li>
-            <li class="play-btns__list">
-              <i class="play-btns__icon fas fa-sync has-text-grey-light">
-                <FontAwesomeIcon icon={faSync} />
-              </i>
-            </li>
-          </ul>
-          <ul class="play-btns__wrap play-btns__range-bar">
-            <li>
-              <p class="has-text-grey-light">
-                {globalState.isPlaying
-                  ? millisToMinutesAndSeconds(globalState.progressMs)
-                  : millisToMinutesAndSeconds(globalState.progressMs)}
-              </p>
-            </li>
-            <li class="play-btns__bar">
-              {/* <input type="range" value="60" min="0" max="100" /> */}
-              <div
-                onMouseEnter={mouseEnter}
-                onMouseLeave={mouseLeave}
-                style={{ width: `${100}%` }}
-              >
-                <RangeSlider
-                  style={{ cursor: "pointer" }}
-                  axis="x"
-                  onChange={handleChangeRange}
-                  styles={{
-                    options: {
-                      handleBorder: 0,
-                      handleBorderRadius:
-                        getMergedStyles.sliderHandleBorderRadius,
-                      handleColor: getMergedStyles.sliderHandleColor,
-                      handleSize: isMagnified ? handleSize + 4 : handleSize,
-                      height: isMagnified
-                        ? getMergedStyles.sliderHeight + 4
-                        : getMergedStyles.sliderHeight + 4,
-                      padding: 0,
-                      rangeColor: getMergedStyles.sliderColor,
-                      trackBorderRadius:
-                        getMergedStyles.sliderTrackBorderRadius,
-                      trackColor: getMergedStyles.sliderTrackColor,
-                    },
-                  }}
-                  x={position}
-                  xMin={0}
-                  xMax={100}
-                  xStep={0.1}
-                />
-              </div>
-            </li>
-            <li>
-              <p class="has-text-grey-light">
-                {globalState.isPlaying
-                  ? millisToMinutesAndSeconds(
-                      globalState &&
-                        globalState.track &&
-                        globalState.track.durationMs
-                    )
-                  : millisToMinutesAndSeconds(
-                      userCurrentPlayingTrack &&
-                        userCurrentPlayingTrack.duration_ms
-                    )}
-              </p>
-            </li>
-          </ul>
+              </li>
+              <li class="play-btns__list">
+                <i class="play-btns__icon fas fa-sync has-text-grey-light">
+                  <FontAwesomeIcon icon={faSync} />
+                </i>
+              </li>
+            </ul>
+          </div>
         </div>
       </a.div>
     </div>

@@ -50,7 +50,7 @@ export default (props) => {
                     <br />
                     {item.artists.map((i, index) => {
                       return (
-                        <span class="subtitle is-7 has-text-grey">
+                        <span class="title is-7 has-text-grey ">
                           by {i.name}
                         </span>
                       )
@@ -79,6 +79,7 @@ export default (props) => {
           })}
         </ul>
       </div>
+      <hr />
       <AlbumContainer newReleaseData={newReleaseData} />
       <RecentPlayedContainer
         globalState={globalState}

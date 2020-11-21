@@ -44,8 +44,6 @@ const RecentPlayedContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
-  // console.log(globalState.track.artists, "globalstate")
-
   const buildItems = () => {
     return userPlayedTracksListData.map((item, index) => {
       return (
@@ -57,12 +55,9 @@ const RecentPlayedContainer = (props) => {
               alt=""
             />
           </div>
-          <div class="hs__item__description mt-0">
-            <div style={{ marginTop: 20 }}></div>
-            <span
-              class="hs__item__title has-text-black mt-0"
-              style={{ fontSize: 15 }}
-            >
+          <div class="hs__item__description">
+            <div></div>
+            <span class="hs__item__title has-text-black">
               {item.track.name}
             </span>
             <span class="hs__item__subtitle">{item.track.artists[0].name}</span>

@@ -18,14 +18,12 @@ import {
 } from "react-router-dom"
 import Cookies from "js-cookie"
 
-import { useSpring, a, config } from "react-spring"
-import { useDrag } from "react-use-gesture"
-
 import { millisToMinutesAndSeconds } from "./utils/utils"
 import { previousFn, nextFn } from "./apis/playerControl"
 import memoize from "memoize-one"
 
 import Player from "./Player"
+import { PlayerControlMobile } from "./components/PlayerControlMobile"
 import { PlayerControl } from "./components/PlayerControl"
 import { SideMenu } from "./components/SideMenu"
 
@@ -121,6 +119,7 @@ function App() {
   const [authToken, setAuthToken] = useState("")
   const [userprofile, setUserProfile] = useState({})
   const [sidePlayListData, setSidePlayListData] = useState([])
+  const [cachedAlbumsArray, setCachedAlbumsArray] = useState([])
   const [userTopArtistListData, setUserTopArtistListData] = useState([])
   const [userCurrentPlayingTrack, setUserCurrentPlayingTrack] = useState({})
   const [userRecommendListData, setUserRecommendListData] = useState([])
@@ -658,6 +657,23 @@ function App() {
     try {
       /* istanbul ignore else */
       if (state) {
+        // let {
+        //   current_track,
+        //   next_tracks: [next_track],
+        // } = state.track_window
+
+        console.log("Currently Playing", state.track_window)
+        // console.log([
+        //   ...state.track_window.previous_tracks,
+        //   ...state.track_window.next_tracks,
+        // ])
+
+        setCachedAlbumsArray([
+          ...state.track_window.previous_tracks,
+          state.track_window.current_track,
+          ...state.track_window.next_tracks,
+        ])
+
         const isPlaying = !state.paused
         const {
           album,
@@ -726,6 +742,14 @@ function App() {
         getOAuthToken: (callback) => {
           callback(validateToken)
         },
+      })
+      player.getCurrentState().then((state) => {
+        if (!state) {
+          console.error(
+            "User is not playing music through the Web Playback SDK"
+          )
+          return
+        }
       })
       player.addListener("ready", handlePlayerStatus)
       player.addListener("not_ready", handlePlayerStatus)
@@ -893,54 +917,6 @@ function App() {
   const prevState = usePrevious(globalState)
   const prevCustomState = usePrevious(userCustomState)
 
-  const [{ y }, set] = useSpring(() => ({ y: height }))
-
-  const open = ({ canceled }) => {
-    // when cancel is true, it means that the user passed the upwards threshold
-    // so we change the spring config to create a nice wobbly effect
-    set({
-      y: 0,
-      immediate: false,
-      config: canceled ? config.wobbly : config.stiff,
-    })
-  }
-  const close = (velocity = 0) => {
-    set({ y: height, immediate: false, config: { ...config.stiff, velocity } })
-  }
-
-  const bind = useDrag(
-    ({ last, vxvy: [, vy], movement: [, my], cancel, canceled }) => {
-      // if the user drags up passed a threshold, then we cancel
-      // the drag so that the sheet resets to its open position
-      if (my < -70) cancel()
-
-      // when the user releases the sheet, we check whether it passed
-      // the threshold for it to close, or if we reset it to its open positino
-      if (last) {
-        my > height * 0.5 || vy > 0.5 ? close(vy) : open({ canceled })
-      }
-      // when the user keeps dragging, we just move the sheet according to
-      // the cursor position
-      else set({ y: my, immediate: true })
-    },
-    {
-      initial: () => [0, y.get()],
-      filterTaps: true,
-      bounds: { top: 0 },
-      rubberband: true,
-    }
-  )
-
-  const display = y.to((py) => (py < height ? "block" : "none"))
-
-  const bgStyle = {
-    transform: y.to(
-      [0, height],
-      ["translateY(-8%) scale(1.16)", "translateY(0px) scale(1.05)"]
-    ),
-    opacity: y.to([0, height], [0.4, 1], "clamp"),
-  }
-
   useEffect(() => {
     const rgbToHex = (r, g, b) =>
       "#" +
@@ -957,7 +933,6 @@ function App() {
         // image  has been loaded
         const result = colorThief.getColor(img)
         rgbToHex(result[0], result[1], result[2])
-        console.log(rgbToHex(result[0], result[1], result[2]))
         setPlayBackground(rgbToHex(result[0], result[1], result[2]))
       }
       const rgbToHex = (r, g, b) =>
@@ -977,6 +952,40 @@ function App() {
     }, 1000)
     return () => clearInterval(syncTimeout)
   }, [authToken, globalState])
+
+  async function AutoQueue(validateToken, id) {
+    // 28d1471867123796840eec57b437e8db17e97dfb
+    let body = JSON.stringify({
+      device_ids: [id],
+      play: true,
+    })
+    return fetch(`https://api.spotify.com/v1/me/player`, {
+      headers: {
+        Authorization: `Bearer ${validateToken}`,
+        "Content-Type": "application/json",
+      },
+      body,
+      method: "PUT",
+    })
+  }
+
+  // useEffect(() => {
+  //   if (
+  //     globalState &&
+  //     prevState &&
+  //     globalState !== prevState &&
+  //     prevState.currentDeviceId &&
+  //     globalState.currentDeviceId &&
+  //     prevState.currentDeviceId !== globalState.currentDeviceId
+  //   ) {
+  //     ;(async () => {
+  //       const response = await AutoQueue(authToken, prevState.currentDeviceId)
+  //       if (response.status == 204) {
+  //         return AutoQueue(authToken, globalState.currentDeviceId)
+  //       }
+  //     })()
+  //   }
+  // }, [authToken, globalState, prevState])
 
   return (
     <>
@@ -1125,6 +1134,7 @@ function App() {
                 </section>
               </div>
             </div>
+
             <PlayerControl
               imgRef={imgRef}
               playerBackground={playerBackground}
@@ -1138,16 +1148,20 @@ function App() {
               onChangeRange={handleChangeRange}
             />
           </div>
-
-          {/* <div
-            id="bg-artwork"
-            style={{
-              backgroundImage: `url(${
-                globalState && globalState.track && globalState.track.image
-              })`,
-            }}
-          ></div>
-          <div id="bg-layer"></div> */}
+          <PlayerControlMobile
+            cachedAlbumsArray={cachedAlbumsArray}
+            deviceHeight={deviceHeight}
+            imgRef={imgRef}
+            playerBackground={playerBackground}
+            setDeviceVolume={setDeviceVolume}
+            globalState={globalState}
+            currentPlayingState={currentPlayingState}
+            userCurrentPlayingTrack={userCurrentPlayingTrack}
+            progressBarStyles={progressBarStyles}
+            playFn={playFn}
+            authToken={authToken}
+            onChangeRange={handleChangeRange}
+          />
         </PlaylistProvider>
       </div>
     </>

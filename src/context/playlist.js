@@ -110,12 +110,12 @@ export const PlaylistProvider = (props) => {
   )
 
   useEffect(() => {
-    getUserTracksTopList()
-    getInitViral50TracksList()
-    getInitTop50TracksList()
-    getUserCategories()
-    getUserPlayingHistory()
-    getUserAllPlayLists()
+    // getUserTracksTopList()
+    // getInitViral50TracksList()
+    // getInitTop50TracksList()
+    // getUserCategories()
+    // getUserPlayingHistory()
+    // getUserAllPlayLists()
   }, [])
   return (
     <PlaylistContext.Provider

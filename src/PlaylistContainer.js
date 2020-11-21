@@ -70,10 +70,10 @@ const PlaylistContainer = (props) => {
             <span class="hs__item__title has-text-black">{item.name}</span>
             {/* <span class="hs__item__subtitle">{item.description}</span> */}
             <div
-              className="subtitle is-6 has-text-grey"
+              className="subtitle is-7 has-text-grey"
               style={{
                 letterSpacing: 1,
-                lineHeight: 1.5,
+                lineHeight: 1.2,
               }}
               dangerouslySetInnerHTML={{
                 __html: urlDetection(
@@ -87,7 +87,6 @@ const PlaylistContainer = (props) => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
-                alert("shit")
               }}
             >
               <button class="button">

@@ -100,27 +100,31 @@ const ArtistContainer = (props) => {
             {/* <span class="hs__item__subtitle">{item.user.name}</span> */}
           </div>
           <div class="hs__item__play__artist__button">
-            <button
-              class="button"
-              onClick={async () => {
+            <a
+              href="javascript:void(0)"
+              onClick={async (e) => {
+                e.stopPropagation()
                 const { tracks } = await getArtistSongs(authToken, item.id)
                 playFn(authToken, globalState.currentDeviceId, "", tracks)
               }}
             >
-              {globalState &&
-              globalState.track &&
-              globalState.track.artists &&
-              globalState.track.artists.includes(item && item.name) ? (
-                <FontAwesomeIcon
-                  icon={faPause}
-                  onClick={() => {
-                    pauseFn(authToken)
-                  }}
-                />
-              ) : (
-                <FontAwesomeIcon icon={faPlay} />
-              )}
-            </button>
+              <button class="button">
+                {globalState &&
+                globalState.track &&
+                globalState.track.artists &&
+                globalState.track.artists.includes(item && item.name) ? (
+                  <FontAwesomeIcon
+                    icon={faPause}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      pauseFn(authToken)
+                    }}
+                  />
+                ) : (
+                  <FontAwesomeIcon icon={faPlay} />
+                )}
+              </button>
+            </a>
           </div>
         </li>
       )
