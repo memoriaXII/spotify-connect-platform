@@ -72,6 +72,8 @@ import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
 
+import queryString from "query-string"
+
 function App() {
   const { deviceWidth, deviceHeight } = useWindowDimensions()
   const imgRef = useRef(null)
@@ -510,16 +512,19 @@ function App() {
   }
 
   const handlelogin = () => {
-    window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}&show_dialog=true`
-    window.spotifyCallback = (payload) => {
-      fetch("https://api.spotify.com/v1/me", {
-        headers: {
-          Authorization: `Bearer ${payload}`,
-        },
-      }).then((response) => {
-        return response.json()
-      })
-    }
+    window.location = window.location.href.includes("localhost")
+      ? "http://localhost:8888/login"
+      : "https://spotify-auth-proxy-server.herokuapp.com/login"
+    // window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}&show_dialog=true`
+    // window.spotifyCallback = (payload) => {
+    //   fetch("https://api.spotify.com/v1/me", {
+    //     headers: {
+    //       Authorization: `Bearer ${payload}`,
+    //     },
+    //   }).then((response) => {
+    //     return response.json()
+    //   })
+    // }
   }
 
   const getUserCurrentProfile = (validateToken) => {
@@ -595,7 +600,9 @@ function App() {
   }
 
   useEffect(() => {
-    const token = window.location.hash.substr(1).split("&")[0].split("=")[1]
+    let parsed = queryString.parse(window.location.search)
+    // console.log(parsed.access_token, "parsed")
+    const token = parsed.access_token
     if (token) {
       setAuthToken(token)
       localStorage.setItem("spotifyAuthToken", token)
@@ -637,11 +644,12 @@ function App() {
     const { devices } = await getDevices(authToken)
     let currentDeviceId = id
     const savedDeviceId = sessionStorage.getItem("rswpDeviceId")
-
-    if (!savedDeviceId || !devices.find((d) => d.id === savedDeviceId)) {
-      sessionStorage.setItem("rswpDeviceId", currentDeviceId)
-    } else {
-      currentDeviceId = savedDeviceId
+    if (devices) {
+      if (!savedDeviceId || !devices.find((d) => d.id === savedDeviceId)) {
+        sessionStorage.setItem("rswpDeviceId", currentDeviceId)
+      } else {
+        currentDeviceId = savedDeviceId
+      }
     }
 
     return { currentDeviceId, devices }
