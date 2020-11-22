@@ -21,7 +21,6 @@ export default (props) => {
   const {
     newReleaseData,
     globalState,
-    playFn,
     authToken,
     featuredPlaylistsData,
     userTopArtistListData,
@@ -30,7 +29,7 @@ export default (props) => {
   return (
     <div>
       <div class="ad__header mt-3">
-        <h2 class="ad__headline title is-4 has-text-black">Browse</h2>
+        <h2 class="ad__headline title is-4 has-text-black">Home</h2>
       </div>
       <hr class="mt-3" />
       <div class="app-omg mb-5">
@@ -43,11 +42,12 @@ export default (props) => {
                     ALBUMS
                   </p>
                   <p
-                    class="title is-6 has-text-black mt-1 mb-0 truncate"
+                    class="title is-7 mt-1  truncate mb-1"
                     style={{ width: 270 }}
                   >
                     {item.name}
-                    <br />
+                  </p>
+                  <p class="title is-7 mt-0truncate">
                     {item.artists.map((i, index) => {
                       return (
                         <span class="title is-7 has-text-grey ">
@@ -81,11 +81,7 @@ export default (props) => {
       </div>
       <hr />
       <AlbumContainer newReleaseData={newReleaseData} />
-      <RecentPlayedContainer
-        globalState={globalState}
-        playFn={playFn}
-        authToken={authToken}
-      />
+      <RecentPlayedContainer globalState={globalState} authToken={authToken} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
       <PlaylistContainer featuredPlaylistsData={featuredPlaylistsData} />
@@ -99,7 +95,6 @@ export default (props) => {
       <hr class="mt-0" style={{ border: "grey" }} />
       <ArtistContainer
         globalState={globalState}
-        playFn={playFn}
         authToken={authToken}
         userTopArtistListData={userTopArtistListData}
       />
