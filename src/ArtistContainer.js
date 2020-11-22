@@ -1,8 +1,9 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
+import { PlayerContext } from "./context/player"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -14,7 +15,8 @@ function usePrevious(value) {
 
 const ArtistContainer = (props) => {
   let history = useHistory()
-  const { userTopArtistListData, playFn, authToken, globalState } = props
+  const { playFn } = useContext(PlayerContext)
+  const { userTopArtistListData, authToken, globalState } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,

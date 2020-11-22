@@ -35,9 +35,11 @@ import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
+import { PlayerContext } from "../../context/player"
 
 export const PlayerControl = (props) => {
   const [isMagnified, setMagnified] = useState(true)
+  const { playFn } = useContext(PlayerContext)
   const {
     imgRef,
     playerBackground,
@@ -46,7 +48,6 @@ export const PlayerControl = (props) => {
     currentPlayingState,
     userCurrentPlayingTrack,
     progressBarStyles,
-    playFn,
     authToken,
     onChangeRange,
   } = props
@@ -66,7 +67,7 @@ export const PlayerControl = (props) => {
     loaderColor: "#ccc",
     loaderSize: 32,
     savedColor: "#1cb954",
-    sliderColor: "#666",
+    sliderColor: "#601ce9",
     sliderHandleBorderRadius: "50%",
     sliderHandleColor: "#fff",
     sliderHeight: 0.5,

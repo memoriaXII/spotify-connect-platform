@@ -19,60 +19,36 @@ import {
 import Cookies from "js-cookie"
 
 import { millisToMinutesAndSeconds } from "./utils/utils"
+import { useWindowDimensions } from "./utils/customHook"
 import { previousFn, nextFn } from "./apis/playerControl"
 import memoize from "memoize-one"
+import queryString from "query-string"
 
 import Player from "./Player"
 import { PlayerControlMobile } from "./components/PlayerControlMobile"
 import { PlayerControl } from "./components/PlayerControl"
 import { SideMenu } from "./components/SideMenu"
+import { Topbar } from "./components/Topbar"
 
 import { PlaylistProvider } from "./context/playlist"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import {
-  faCoffee,
-  faFastForward,
-  faFastBackward,
-  faBackward,
-  faPlay,
-  faPause,
-  faPlayCircle,
-  faForward,
-  faPauseCircle,
-  faStepBackward,
-  faStepForward,
-  faChevronDown,
-  faEllipsisH,
-  faHome,
-  faSync,
-  faRandom,
-  faVolumeUp,
-  faList,
-  faMobile,
-  faExpand,
-  faExpandAlt,
-  faSearch,
-  faTimesCircle,
-  faBan,
-  faHeart,
-} from "@fortawesome/free-solid-svg-icons"
+import { PlayerProvider } from "./context/player"
 
 import playIcon from "./images/play.svg"
 import volumeIcon from "./images/volume.svg"
 import homeIcon from "./images/home.svg"
 import listIcon from "./images/list.svg"
 import searchIcon from "./images/search.svg"
+import logoIcon from "./images/logo.svg"
 
 import axios from "axios"
 
 import ColorThief from "colorthief"
 
 import Home from "./pages/Home"
+
 import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
-
-import queryString from "query-string"
 
 function App() {
   const { deviceWidth, deviceHeight } = useWindowDimensions()
@@ -85,9 +61,17 @@ function App() {
   var intervalId2
   var intervalId
   let player = null
+  let emptyTrack = {
+    artists: "",
+    durationMs: 0,
+    id: "",
+    image: "",
+    name: "",
+    uri: "",
+  }
+
   const location = useLocation()
 
-  // const [playerSyncInterval, setPlayerSyncInterval] = useState(5)
   const [playerBackground, setPlayBackground] = useState("")
   const [leftScrollStatus, setLeftScrollStatus] = useState(false)
   const [rightScrollStatus, setRightScrollStatus] = useState(false)
@@ -105,6 +89,9 @@ function App() {
   const [userRecommendListData, setUserRecommendListData] = useState([])
   const [currentPlayingState, setCurrentPlayingState] = useState({})
   const [gradientNum, setGradientNum] = useState(null)
+  const ref = useRef(null)
+  const scrollContainer = useRef(null)
+  const [trimHeader, setTrimHeader] = useState(false)
   const [userCustomState, setUserCustomState] = useState({
     autoPlay: true,
     offset: 0,
@@ -133,6 +120,16 @@ function App() {
     volume: 1,
     contextUrl: "",
   })
+  const prevState = usePrevious(globalState)
+  const prevCustomState = usePrevious(userCustomState)
+
+  const progressBarStyles = {
+    width:
+      globalState && globalState.track
+        ? (globalState.progressMs * 100) / globalState.track.durationMs + "%"
+        : null,
+  }
+
   const getToken = () => {
     const windowSetting = typeof window !== "undefined" && window
 
@@ -142,9 +139,6 @@ function App() {
       localStorage.getItem("spotifyAuthToken")
     )
   }
-  const ref = useRef(null)
-  const scrollContainer = useRef(null)
-  const [trimHeader, setTrimHeader] = useState(false)
 
   const handleScroll = () => {
     if (
@@ -171,10 +165,6 @@ function App() {
     } else {
       setTrimHeader(false)
       setGradientNum(null)
-      // this.documentStyle.setProperty(
-      //   "--navbar-background-color",
-      //   this.scrolledNavbarBackgroundColor
-      // )
     }
   }
 
@@ -185,70 +175,10 @@ function App() {
     )
   }, [scrollContainer])
 
-  function validateURI(input) {
-    const validTypes = ["album", "artist", "playlist", "show", "track"]
-
-    /* istanbul ignore else */
-    if (input && input.indexOf(":") > -1) {
-      const [key, type, id] = input.split(":")
-
-      /* istanbul ignore else */
-      if (
-        key === "spotify" &&
-        validTypes.indexOf(type) >= 0 &&
-        id.length === 22
-      ) {
-        return true
-      }
-    }
-
-    return false
-  }
-
   function getSpotifyURIType(uri) {
     const [, type = ""] = uri.split(":")
     return type
   }
-
-  const getPlayOptions = memoize((data) => {
-    const playOptions = {
-      context_uri: undefined,
-      uris: undefined,
-    }
-    if (data) {
-      const ids = Array.isArray(data) ? data : [data]
-
-      if (!ids.every((d) => validateURI(d))) {
-        // eslint-disable-next-line no-console
-        console.error("Invalid URI")
-
-        return playOptions
-      }
-
-      if (ids.some((d) => getSpotifyURIType(d) === "track")) {
-        if (!ids.every((d) => getSpotifyURIType(d) === "track")) {
-          // eslint-disable-next-line no-console
-          console.warn("You can't mix tracks URIs with other types")
-        }
-
-        playOptions.uris = ids.filter(
-          (d) => validateURI(d) && getSpotifyURIType(d) === "track"
-        )
-      } else {
-        if (ids.length > 1) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            "Albums, Artists, Playlists and Podcasts can't have multiple URIs"
-          )
-        }
-
-        // eslint-disable-next-line prefer-destructuring
-        playOptions.context_uri = ids[0]
-      }
-    }
-
-    return playOptions
-  })
 
   async function getPlaybackState(token) {
     return fetch(`https://api.spotify.com/v1/me/player`, {
@@ -260,19 +190,12 @@ function App() {
     }).then((d) => {
       if (d.status === 204) {
         return null
+      } else if (d.status === 401) {
+        localStorage.removeItem("spotifyAuthToken")
       }
 
       return d.json()
     })
-  }
-
-  let emptyTrack = {
-    artists: "",
-    durationMs: 0,
-    id: "",
-    image: "",
-    name: "",
-    uri: "",
   }
 
   async function setVolume(validateToken, volume, deviceID) {
@@ -305,7 +228,6 @@ function App() {
           uri: player.item.uri,
         }
       }
-
       updateGlobalState({
         error: "",
         errorType: "",
@@ -333,77 +255,10 @@ function App() {
     return ref.current
   }
 
-  function isEqualArray(A, B) {
-    if (!Array.isArray(A) || !Array.isArray(B) || A.length !== B.length) {
-      return false
-    }
-
-    let result = true
-
-    A.forEach((a) =>
-      B.forEach((b) => {
-        result = a === b
-      })
-    )
-
-    return result
-  }
-
-  const handleNav = (direction) => {
-    if (direction === "left" && ref) {
-      ref.current.scrollLeft -= 200
-    } else {
-      ref.current.scrollLeft += 200
-    }
-  }
-
   const isExternalPlayer = (data) => {
     const { currentDeviceId, deviceId, status } = globalState
     return currentDeviceId && currentDeviceId !== deviceId
   }
-
-  useEffect(() => {
-    if (globalState) {
-      isExternalPlayer(globalState)
-    }
-  }, [globalState])
-
-  const playFn = useCallback(
-    (validateToken, id, uri, contextUri) => {
-      const parsedValues = {
-        artistSongs: contextUri && contextUri.map((x) => x.uri),
-      }
-
-      let body
-      const { position } = globalState
-      const { offset } = userCustomState
-      const { artistSongs } = parsedValues
-      if (contextUri) {
-        // const isArtist = contextUri.indexOf("artist") >= 0
-        // let position
-        // if (!isArtist) {
-        //   position = { position: 0 }
-        // }
-        body = JSON.stringify({ uris: artistSongs, offset: { position: 0 } })
-      }
-      if (uri) {
-        body = JSON.stringify({ uris: [uri], offset: { position: 0 } })
-      }
-
-      return fetch(
-        `https://api.spotify.com/v1/me/player/play?device_id=${id}`,
-        {
-          body,
-          headers: {
-            Authorization: `Bearer ${validateToken}`,
-            "Content-Type": "application/json",
-          },
-          method: "PUT",
-        }
-      )
-    },
-    [globalState, authToken]
-  )
 
   async function getDevices(validateToken) {
     return fetch(`https://api.spotify.com/v1/me/player/devices`, {
@@ -487,12 +342,6 @@ function App() {
       })
   }
 
-  const handlelogin = () => {
-    window.location = window.location.href.includes("localhost")
-      ? "http://localhost:8888/login"
-      : "https://spotify-auth-proxy-server.herokuapp.com/login"
-  }
-
   const getUserCurrentProfile = (validateToken) => {
     const url = `https://api.spotify.com/v1/me`
     axios
@@ -565,36 +414,6 @@ function App() {
       })
   }
 
-  useEffect(() => {
-    let parsed = queryString.parse(window.location.search)
-    // console.log(parsed.access_token, "parsed")
-    const token = parsed.access_token
-    if (token) {
-      setAuthToken(token)
-      localStorage.setItem("spotifyAuthToken", token)
-    } else if (getToken()) {
-      setAuthToken(getToken())
-    }
-  }, [])
-
-  useLayoutEffect(() => {
-    if (authToken) {
-      initializePlayer(authToken)
-      getRecommendList(authToken)
-      getUserArtistsTopList(authToken)
-      getUserCurrentProfile(authToken)
-      getUserCurrentPlaylists(authToken)
-      getNewReleases(authToken)
-      getFeaturedPlaylists(authToken)
-    }
-    return () => (
-      player ? player.disconnect() : "",
-      clearInterval(playerSyncInterval),
-      clearInterval(playerProgressInterval)
-      // clearInterval(syncTimeout)
-    )
-  }, [authToken])
-
   const handlePlayerStatus = async ({ device_id }) => {
     const { currentDeviceId, devices } = await initializeDevices(device_id)
     updateGlobalState({
@@ -619,12 +438,6 @@ function App() {
     }
 
     return { currentDeviceId, devices }
-  }
-
-  const setAlbumImage = (album) => {
-    const width = Math.min(...album.images.map((d) => d.width))
-    const thumb = album.images.find((d) => d.width === width) || {}
-    return thumb.url
   }
 
   const handlePlayerStateChanges = async (state) => {
@@ -760,13 +573,6 @@ function App() {
     })()
   }
 
-  const progressBarStyles = {
-    width:
-      globalState && globalState.track
-        ? (globalState.progressMs * 100) / globalState.track.durationMs + "%"
-        : null,
-  }
-
   async function seek(validateToken, position) {
     return fetch(
       `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`,
@@ -812,10 +618,8 @@ function App() {
   }
 
   const setDeviceVolume = async (volume, deviceId) => {
-    /* istanbul ignore else */
     if (isExternalPlayer) {
       await setVolume(authToken, Math.round(volume * 100), deviceId)
-      // await syncDevice()
     } else if (player) {
       await player.setVolume(volume)
     }
@@ -828,10 +632,8 @@ function App() {
   const toggleSyncInterval = async (shouldSync) => {
     try {
       if (isExternalPlayer && shouldSync && playerSyncInterval == undefined) {
-        alert("shit")
       }
       if ((!shouldSync || !isExternalPlayer) && playerSyncInterval) {
-        alert("shit")
         clearInterval(playerSyncInterval)
         playerSyncInterval = undefined
       }
@@ -888,8 +690,6 @@ function App() {
       console.error(error)
     }
   }
-  const prevState = usePrevious(globalState)
-  const prevCustomState = usePrevious(userCustomState)
 
   useEffect(() => {
     const rgbToHex = (r, g, b) =>
@@ -920,15 +720,7 @@ function App() {
     }
   }, [globalState])
 
-  useLayoutEffect(() => {
-    syncTimeout = setInterval(() => {
-      syncDevice(authToken)
-    }, 1000)
-    return () => clearInterval(syncTimeout)
-  }, [authToken, globalState])
-
   async function AutoQueue(validateToken, id) {
-    // 28d1471867123796840eec57b437e8db17e97dfb
     let body = JSON.stringify({
       device_ids: [id],
       play: true,
@@ -943,268 +735,223 @@ function App() {
     })
   }
 
-  // useEffect(() => {
-  //   if (
-  //     globalState &&
-  //     prevState &&
-  //     globalState !== prevState &&
-  //     prevState.currentDeviceId &&
-  //     globalState.currentDeviceId &&
-  //     prevState.currentDeviceId !== globalState.currentDeviceId
-  //   ) {
-  //     ;(async () => {
-  //       const response = await AutoQueue(authToken, prevState.currentDeviceId)
-  //       if (response.status == 204) {
-  //         return AutoQueue(authToken, globalState.currentDeviceId)
-  //       }
-  //     })()
-  //   }
-  // }, [authToken, globalState, prevState])
+  useEffect(() => {
+    if (globalState) {
+      isExternalPlayer(globalState)
+    }
+  }, [globalState])
+
+  useLayoutEffect(() => {
+    syncTimeout = setInterval(() => {
+      syncDevice(authToken)
+    }, 1000)
+    return () => clearInterval(syncTimeout)
+  }, [authToken, globalState])
+
+  useEffect(() => {
+    let parsed = queryString.parse(window.location.search)
+    const token = parsed.access_token
+    if (token) {
+      setAuthToken(token)
+      localStorage.setItem("spotifyAuthToken", token)
+    } else if (getToken()) {
+      setAuthToken(getToken())
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (authToken) {
+      initializePlayer(authToken)
+      getRecommendList(authToken)
+      getUserArtistsTopList(authToken)
+      getUserCurrentProfile(authToken)
+      getUserCurrentPlaylists(authToken)
+      getNewReleases(authToken)
+      getFeaturedPlaylists(authToken)
+    }
+    return () => (
+      player ? player.disconnect() : "",
+      clearInterval(playerSyncInterval),
+      clearInterval(playerProgressInterval)
+      // clearInterval(syncTimeout)
+    )
+  }, [authToken])
+
+  const handlelogin = () => {
+    window.location = window.location.href.includes("localhost")
+      ? "http://localhost:8888/login"
+      : "https://spotify-auth-proxy-server.herokuapp.com/login"
+  }
 
   return (
     <>
       <div ng-app="app" ng-cloak>
-        <PlaylistProvider>
-          <div class="wrap">
-            <div class="list-area">
-              <SideMenu />
-              <div class="main" ref={scrollContainer}>
-                <div
-                  class="main__wrap top-scroll-bg"
-                  style={{
-                    display: trimHeader ? "block" : "none",
-                    background: trimHeader ? "white" : "white",
-                    zIndex: 3,
-                  }}
-                  // style={{
-                  //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
-                  // }}
-                ></div>
-                <div
-                  class="main__wrap summary on ml-0"
-                  style={{
-                    display: trimHeader ? "block" : "none",
-                    borderBottom: `1px solid #eee`,
-                  }}
-                >
-                  <div class="summary__box ml-0">
-                    {/* <p class="title is-5"> Home</p> */}
-                    <div class="summary__text ml-0">
-                      <ul>
-                        <li>
-                          <strong class="summary__text--title title is-4">
-                            {location.pathname === "/" ? "Home" : null}
-                          </strong>
-                        </li>
-                      </ul>
-                    </div>
+        <PlayerProvider>
+          <PlaylistProvider>
+            <div class="wrap">
+              {!authToken ? (
+                <div class="login__section">
+                  <div class="login__section__content">
+                    <h1 class="title is-1 has-text-white">
+                      <div class="columns is-gapless">
+                        <div class="column is-2">
+                          <span class="icon is-large" style={{ width: 120 }}>
+                            <img src={logoIcon} alt="" />
+                          </span>
+                        </div>
+                        <div class="column is-10" style={{ margin: "auto" }}>
+                          Spotify Connect
+                          <p class="title is-5 has-text-white mt-2 ml-1">
+                            Continue to play and hear half of the music
+                            seamlessly.
+                          </p>
+                          <div class="buttons">
+                            <button
+                              class="button is-rounded is-outlined has-text-weight-bold"
+                              onClick={handlelogin}
+                            >
+                              LOGIN
+                            </button>
+                            <button class="button is-black is-rounded has-text-weight-bold">
+                              SIGNUP
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </h1>
                   </div>
                 </div>
-                {/* omg */}
-
-                <div class="main__wrap top-bar">
-                  <ul class="top-bar__left top-bar__wrap">
-                    {/* <li>
-                      <i class="top-bar__icon fas fa-chevron-left"></i>
-                    </li>
-                    <li>
-                      <i class="top-bar__icon fas fa-chevron-right"></i>
-                    </li> */}
-                    <li class="top-bar__search">
-                      {/* <i class="top-bar__search--icon top-bar__icon fas fa-search has-text-grey-light">
-                        <FontAwesomeIcon icon={faSearch} />
-                      </i> */}
-                      <input
-                        type="text"
-                        class="input is-small is-rounded is-light"
-                        placeholder="Search"
-                      />
-                    </li>
-                  </ul>
-                  <ul class="top-bar__right top-bar__wrap">
-                    {/* <li>
-                      <i class="top-bar__icon top-bar__right--user-icon far fa-user-circle"></i>
-                    </li> */}
-                    <li>
-                      {/* <img
-                        src={userprofile.images && userprofile.images[0].url}
-                        class="avatar-small circle"
-                      />
-                      {userprofile.display_name} */}
-
-                      <button
-                        class="button is-rounded is-small is-light"
-                        onClick={handlelogin}
+              ) : (
+                <>
+                  <div class="list-area">
+                    <SideMenu />
+                    <div class="main" ref={scrollContainer}>
+                      <div
+                        class="main__wrap top-scroll-bg"
+                        style={{
+                          display: trimHeader ? "block" : "none",
+                          background: trimHeader ? "white" : "white",
+                          zIndex: 3,
+                        }}
+                        // style={{
+                        //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
+                        // }}
+                      ></div>
+                      <div
+                        class="main__wrap summary on ml-0"
+                        style={{
+                          display: trimHeader ? "block" : "none",
+                          borderBottom: `1px solid #eee`,
+                        }}
                       >
-                        LOGIN
-                      </button>
-                    </li>
-                    <li>
-                      <i class="fas fa-chevron-down"></i>
-                    </li>
-                  </ul>
-                </div>
+                        <div class="summary__box ml-0">
+                          <div class="summary__text ml-0">
+                            <ul>
+                              <li>
+                                <strong class="summary__text--title title is-4">
+                                  {location.pathname === "/" ? "Home" : null}
+                                </strong>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <Topbar userprofile={userprofile} />
 
-                <section class="section">
-                  <div class="hs__wrapper">
-                    {/* <AdvertismentContainer
+                      <section class="section">
+                        <div class="hs__wrapper">
+                          {/* <AdvertismentContainer
                       userRecommendListData={userRecommendListData}
                     /> */}
-                    {/* <CategoriesContainer /> */}
+                          {/* <CategoriesContainer /> */}
 
-                    <Switch>
-                      <Route
-                        exact
-                        path="/"
-                        render={(props) => (
-                          <Home
-                            {...props}
-                            userRecommendListData={userRecommendListData}
-                            newReleaseData={newReleaseData}
-                            featuredPlaylistsData={featuredPlaylistsData}
-                            component={Home}
-                            globalState={globalState}
-                            playFn={playFn}
-                            authToken={authToken}
-                            userTopArtistListData={userTopArtistListData}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/playlist/:id"
-                        render={(props) => (
-                          <PlaylistDetail
-                            {...props}
-                            authToken={authToken}
-                            trimHeader={trimHeader}
-                            setTrimHeader={setTrimHeader}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/artist/:id"
-                        render={(props) => (
-                          <ArtistDetail
-                            {...props}
-                            setTrimHeader={setTrimHeader}
-                            authToken={authToken}
-                            trimHeader={trimHeader}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/album/:id"
-                        render={(props) => (
-                          <AlbumDetail
-                            {...props}
-                            setTrimHeader={setTrimHeader}
-                            authToken={authToken}
-                            trimHeader={trimHeader}
-                          />
-                        )}
-                      />
-                    </Switch>
+                          <Switch>
+                            <Route
+                              exact
+                              path="/"
+                              render={(props) => (
+                                <Home
+                                  {...props}
+                                  userRecommendListData={userRecommendListData}
+                                  newReleaseData={newReleaseData}
+                                  featuredPlaylistsData={featuredPlaylistsData}
+                                  component={Home}
+                                  globalState={globalState}
+                                  authToken={authToken}
+                                  userTopArtistListData={userTopArtistListData}
+                                />
+                              )}
+                            />
+                            <Route
+                              path="/playlist/:id"
+                              render={(props) => (
+                                <PlaylistDetail
+                                  {...props}
+                                  authToken={authToken}
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                />
+                              )}
+                            />
+                            <Route
+                              path="/artist/:id"
+                              render={(props) => (
+                                <ArtistDetail
+                                  {...props}
+                                  setTrimHeader={setTrimHeader}
+                                  authToken={authToken}
+                                  trimHeader={trimHeader}
+                                />
+                              )}
+                            />
+                            <Route
+                              path="/album/:id"
+                              render={(props) => (
+                                <AlbumDetail
+                                  {...props}
+                                  setTrimHeader={setTrimHeader}
+                                  authToken={authToken}
+                                  trimHeader={trimHeader}
+                                />
+                              )}
+                            />
+                          </Switch>
+                        </div>
+                      </section>
+                    </div>
                   </div>
-                </section>
-              </div>
+                  <PlayerControl
+                    imgRef={imgRef}
+                    playerBackground={playerBackground}
+                    setDeviceVolume={setDeviceVolume}
+                    globalState={globalState}
+                    currentPlayingState={currentPlayingState}
+                    userCurrentPlayingTrack={userCurrentPlayingTrack}
+                    progressBarStyles={progressBarStyles}
+                    authToken={authToken}
+                    onChangeRange={handleChangeRange}
+                  />
+                  <PlayerControlMobile
+                    cachedAlbumsArray={cachedAlbumsArray}
+                    deviceHeight={deviceHeight}
+                    imgRef={imgRef}
+                    playerBackground={playerBackground}
+                    setDeviceVolume={setDeviceVolume}
+                    globalState={globalState}
+                    currentPlayingState={currentPlayingState}
+                    userCurrentPlayingTrack={userCurrentPlayingTrack}
+                    progressBarStyles={progressBarStyles}
+                    authToken={authToken}
+                    onChangeRange={handleChangeRange}
+                  />
+                </>
+              )}
             </div>
-
-            <PlayerControl
-              imgRef={imgRef}
-              playerBackground={playerBackground}
-              setDeviceVolume={setDeviceVolume}
-              globalState={globalState}
-              currentPlayingState={currentPlayingState}
-              userCurrentPlayingTrack={userCurrentPlayingTrack}
-              progressBarStyles={progressBarStyles}
-              playFn={playFn}
-              authToken={authToken}
-              onChangeRange={handleChangeRange}
-            />
-          </div>
-          <PlayerControlMobile
-            cachedAlbumsArray={cachedAlbumsArray}
-            deviceHeight={deviceHeight}
-            imgRef={imgRef}
-            playerBackground={playerBackground}
-            setDeviceVolume={setDeviceVolume}
-            globalState={globalState}
-            currentPlayingState={currentPlayingState}
-            userCurrentPlayingTrack={userCurrentPlayingTrack}
-            progressBarStyles={progressBarStyles}
-            playFn={playFn}
-            authToken={authToken}
-            onChangeRange={handleChangeRange}
-          />
-        </PlaylistProvider>
+          </PlaylistProvider>
+        </PlayerProvider>
       </div>
     </>
   )
 }
 
 export default App
-
-function getWindowDimensions() {
-  const { innerWidth: deviceWidth, innerHeight: deviceHeight } = window
-  return {
-    deviceWidth,
-    deviceHeight,
-  }
-}
-
-function useWindowDimensions() {
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions()
-  )
-
-  useEffect(() => {
-    function handleResize() {
-      setWindowDimensions(getWindowDimensions())
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
-  return windowDimensions
-}
-
-// useLayoutEffect(() => {
-//   const {
-//     currentDeviceId,
-//     deviceId,
-//     error,
-//     isInitializing,
-//     isPlaying,
-//     status,
-//     track,
-//   } = globalState
-//   const { autoPlay, offset, syncExternalDevice, uris } = userCustomState
-//   const isReady = prevState && prevState.status !== true && status === true
-//   const changedURIs = Array.isArray(uris)
-//     ? !isEqualArray(prevCustomState && prevCustomState.uris, uris)
-//     : prevCustomState && prevCustomState.uris !== uris
-//   const playOptions = getPlayOptions(uris)
-//   const canPlay =
-//     !!currentDeviceId && !!(playOptions.context_uri || playOptions.uris)
-//   const shouldPlay = (changedURIs && isPlaying) || !!(isReady && autoPlay)
-//   if (canPlay && shouldPlay) {
-//     if (isExternalPlayer) {
-//       syncTimeout = setInterval(() => {
-//         syncDevice(authToken)
-//       }, 1000)
-//     }
-//   }
-//   if (
-//     prevState &&
-//     prevState.currentDeviceId !== currentDeviceId &&
-//     currentDeviceId
-//   ) {
-//     // toggleSyncInterval(isExternalPlayer)
-//     // updateSeekBar()
-//   }
-//   if (prevState && prevState.isPlaying !== isPlaying) {
-//     // toggleProgressBar()
-//     // toggleSyncInterval(isExternalPlayer)
-//   }
-// }, [prevState, globalState])
