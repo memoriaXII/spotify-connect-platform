@@ -45,29 +45,32 @@ const TopTracksContainer = (props) => {
   }
 
   const buildItems = () => {
-    return userTopTracksListData.map((item, index) => {
-      return (
-        <li class="hs__item" key={index}>
-          <div class="hs__item__image__wrapper">
-            <img
-              class="hs__item__image"
-              src={item && item.album.images && item.album.images[0].url}
-              alt=""
-            />
-          </div>
-          <div class="hs__item__description">
-            <span class="hs__item__title has-text-black">{item.name}</span>
-            <span class="hs__item__subtitle">{item.artists[0].name}</span>
-          </div>
+    return (
+      userTopTracksListData &&
+      userTopTracksListData.map((item, index) => {
+        return (
+          <li class="hs__item" key={index}>
+            <div class="hs__item__image__wrapper">
+              <img
+                class="hs__item__image"
+                src={item && item.album.images && item.album.images[0].url}
+                alt=""
+              />
+            </div>
+            <div class="hs__item__description">
+              <span class="hs__item__title has-text-black">{item.name}</span>
+              <span class="hs__item__subtitle">{item.artists[0].name}</span>
+            </div>
 
-          <div class="hs__item__play__button">
-            <button class="button">
-              <FontAwesomeIcon icon={faPlay} />
-            </button>
-          </div>
-        </li>
-      )
-    })
+            <div class="hs__item__play__button">
+              <button class="button">
+                <FontAwesomeIcon icon={faPlay} />
+              </button>
+            </div>
+          </li>
+        )
+      })
+    )
   }
 
   const buildControls = () => {
@@ -117,7 +120,11 @@ const TopTracksContainer = (props) => {
   const prevState = usePrevious(userTopTracksListData)
 
   useEffect(() => {
-    if (undefined !== prevState && userTopTracksListData.length) {
+    if (
+      userTopTracksListData &&
+      undefined !== prevState &&
+      userTopTracksListData.length
+    ) {
       if (prevState.length !== userTopTracksListData.length) {
         checkForOverflow()
         checkForScrollPosition()
