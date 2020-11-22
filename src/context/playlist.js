@@ -109,14 +109,26 @@ export const PlaylistProvider = (props) => {
     [categoriesData]
   )
 
+  const getToken = () => {
+    const windowSetting = typeof window !== "undefined" && window
+
+    return (
+      windowSetting &&
+      windowSetting.localStorage &&
+      localStorage.getItem("spotifyAuthToken")
+    )
+  }
+
   useEffect(() => {
-    // getUserTracksTopList()
-    // getInitViral50TracksList()
-    // getInitTop50TracksList()
-    // getUserCategories()
-    // getUserPlayingHistory()
-    // getUserAllPlayLists()
-  }, [])
+    if (getToken()) {
+      getUserTracksTopList()
+      getInitViral50TracksList()
+      getInitTop50TracksList()
+      getUserCategories()
+      getUserPlayingHistory()
+      getUserAllPlayLists()
+    }
+  }, [getToken()])
   return (
     <PlaylistContext.Provider
       value={{

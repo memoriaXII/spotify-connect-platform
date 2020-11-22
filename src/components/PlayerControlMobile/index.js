@@ -43,12 +43,14 @@ import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
+import { PlayerContext } from "../../context/player"
 
 // Import css files
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 
 export const PlayerControlMobile = (props) => {
+  const { playFn } = useContext(PlayerContext)
   const customSlider = useRef()
   let location = useLocation()
   const [isMagnified, setMagnified] = useState(true)
@@ -63,7 +65,6 @@ export const PlayerControlMobile = (props) => {
     currentPlayingState,
     userCurrentPlayingTrack,
     progressBarStyles,
-    playFn,
     authToken,
     onChangeRange,
   } = props

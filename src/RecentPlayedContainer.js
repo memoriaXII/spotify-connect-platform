@@ -3,6 +3,7 @@ import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { PlaylistContext } from "./context/playlist"
+import { PlayerContext } from "./context/player"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -13,7 +14,8 @@ function usePrevious(value) {
 }
 
 const RecentPlayedContainer = (props) => {
-  const { playFn, globalState, authToken } = props
+  const { playFn } = useContext(PlayerContext)
+  const { globalState, authToken } = props
   const { userPlayedTracksListData } = useContext(PlaylistContext)
   const container = useRef(null)
   const [state, setstate] = useState({
