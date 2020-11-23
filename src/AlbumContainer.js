@@ -1,9 +1,14 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
+import axios from "axios"
 
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
+
+import { PlaylistContext } from "./context/playlist"
+import { PlayerContext } from "./context/player"
+import { AuthContext } from "./context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -14,8 +19,11 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
+  const { playFn } = useContext(PlayerContext)
+  const { getToken } = useContext(AuthContext)
+
   let history = useHistory()
-  const { newReleaseData, isArtistAlbum } = props
+  const { newReleaseData, isArtistAlbum, globalState } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -45,40 +53,88 @@ const AlbumContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
+  const getSingleAlbumTracks = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/albums/${id}/tracks`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        console.log(response.data.items, "Album content")
+      })
+      .catch((err) => {
+        // Handle Error Here
+        console.error(err)
+      })
+  }
+
   const buildItems = () => {
-    return newReleaseData.map((item, index) => {
-      return (
-        <li
-          class="hs__item"
-          key={index}
-          onClick={() => {
-            // console.log(item.id, "item")
-            history.push(`/album/${item.id}`)
-          }}
-        >
-          <div class="hs__item__image__wrapper">
-            <img
-              class="hs__item__image"
-              src={item && item.images[1].url}
-              alt=""
-            />
-          </div>
-          <div class="hs__item__description">
-            <span class="hs__item__title has-text-black">
-              {item && item.name}
-            </span>
-            <span class="hs__item__subtitle">
-              {item && item.artists[0].name}
-            </span>
-          </div>
-          <div class="hs__item__play__button">
-            <button class="button">
-              <FontAwesomeIcon icon={faPlay} />
-            </button>
-          </div>
-        </li>
-      )
-    })
+    return (
+      newReleaseData &&
+      newReleaseData.map((item, index) => {
+        return (
+          <li class="hs__item" key={index}>
+            <div
+              class="hs__item__image__wrapper"
+              onClick={() => {
+                history.push(`/album/${item.id}`)
+              }}
+            >
+              <img
+                class="hs__item__image"
+                src={item && item.images[1].url}
+                alt=""
+              />
+            </div>
+            <div class="hs__item__description">
+              <span class="hs__item__title has-text-black">
+                {item && item.name}
+              </span>
+              <span class="hs__item__subtitle">
+                {item && item.artists[0].name}
+              </span>
+            </div>
+            <div class="hs__item__play__button">
+              <a
+                href="javascript:void(0)"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    "",
+                    "",
+                    item.uri
+                  )
+                }}
+              >
+                {globalState &&
+                globalState.track &&
+                globalState.track.album &&
+                globalState.track.album.uri.includes(item && item.uri) ? (
+                  <button class="button">
+                    <FontAwesomeIcon icon={faPause} />
+                  </button>
+                ) : (
+                  <button class="button">
+                    <FontAwesomeIcon icon={faPlay} />
+                  </button>
+                )}
+              </a>
+            </div>
+          </li>
+        )
+      })
+    )
   }
 
   const buildControls = () => {
@@ -145,12 +201,7 @@ const AlbumContainer = (props) => {
               <p class="title is-5 mt-4">Albums</p>
             </>
           ) : (
-            <div class="title is-5">
-              <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-                ALBUMS
-              </p>
-              New release
-            </div>
+            <div class="title is-5">New Release</div>
           )}
         </h2>
         {buildControls()}
