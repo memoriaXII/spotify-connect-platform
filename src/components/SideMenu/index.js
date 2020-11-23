@@ -68,14 +68,10 @@ export const SideMenu = (props) => {
                     return (
                       <li class="contents__list">
                         <div class="columns is-mobile is-gapless">
-                          <div class="column is-2">
-                            <img
-                              class="contents__list__playlist-cover "
-                              src={item.images[0].url}
-                              alt=""
-                            />
-                          </div>
-                          <div class="column is-10" style={{ margin: "auto" }}>
+                          <div
+                            class="column is-12 mt-1"
+                            style={{ margin: "auto" }}
+                          >
                             <span>{item.name}</span>
                           </div>
                         </div>
