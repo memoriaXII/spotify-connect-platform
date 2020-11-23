@@ -8,6 +8,8 @@ import React, {
   useLayoutEffect,
 } from "react"
 
+import Slider from "react-slick"
+
 import AlbumContainer from "../../AlbumContainer"
 import PlaylistContainer from "../../PlaylistContainer"
 import ArtistContainer from "../../ArtistContainer"
@@ -18,6 +20,7 @@ import AdvertismentContainer from "../../AdvertismentContainer"
 import ChartsContainer from "../../ChartsContainer"
 
 export default (props) => {
+  const customSlider = useRef()
   const {
     newReleaseData,
     globalState,
@@ -26,71 +29,91 @@ export default (props) => {
     userTopArtistListData,
     userRecommendListData,
   } = props
+
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const settings = {
+    arrows: false,
+    dots: false,
+    speed: 500,
+    infinite: false,
+    autoplay: false,
+    lazyLoad: true,
+    slidesToShow: 3,
+    slidesToScroll: 3,
+    initialSlide: 1,
+    beforeChange: (current, next) => setCurrentIndex(next),
+  }
   return (
     <div>
       <div class="ad__header mt-3">
         <h2 class="ad__headline title is-4 has-text-black">Home</h2>
       </div>
       <hr class="mt-3" />
-      <div class="app-omg mb-5">
-        <ul class="gs">
+      <div class="mb-5">
+        <Slider {...settings}>
           {userRecommendListData.map((item, index) => {
             return (
-              <li class="item">
-                <div class="content">
-                  <p class="subtitle is-7" style={{ color: "#5500ff" }}>
-                    ALBUMS
-                  </p>
+              <div key={index}>
+                <div class="content mb-4">
                   <p
-                    class="title is-7 mt-1  truncate mb-1"
-                    style={{ width: 270 }}
+                    class="title is-6 truncate mb-1"
+                    style={{ width: 270, fontSize: 15 }}
                   >
-                    {item.name}
+                    <span style={{ color: "#0088FF", fontSize: 10 }}>
+                      NEW SINGLE
+                    </span>
+                    <br />
+                    <span class="title is-6">{item.name}</span>
                   </p>
-                  <p class="title is-7 mt-0truncate">
+                  <p class="title is-7 mt-0 truncate">
                     {item.artists.map((i, index) => {
                       return (
-                        <span class="title is-7 has-text-grey ">
-                          by {i.name}
-                        </span>
+                        <span class="title is-6 has-text-grey">{i.name}</span>
                       )
                     })}
                   </p>
                 </div>
 
-                <div class="columns is-variable is-0 m-0">
+                <div class="columns is-variable is-0 m-0 mt-0">
                   <div
-                    class="column is-12 m-0"
+                    class="column is-12 m-0 recommend-section"
                     style={{
                       backgroundImage: `url(${item.album.images[0].url})`,
-                      backgroundPosition: "center center",
+                      backgroundPosition: "center",
                       backgroundSize: "cover",
                       width: `${100}%`,
                       height: 250,
                       backgroundRepeat: "no-repeat",
                       borderRadius: 5,
-                      boxShadow: `${0} ${10}px ${10}px ${0}px rgba(197, 196, 196, 0.3)`,
+                      boxShadow: `${0} ${10}px ${10}px ${0}px rgba(197, 196, 196, 0.1)`,
                       cursor: "pointer",
                     }}
                   ></div>
                 </div>
-              </li>
+              </div>
             )
           })}
-        </ul>
+        </Slider>
       </div>
       <hr />
-      <AlbumContainer newReleaseData={newReleaseData} />
+      <AlbumContainer
+        globalState={globalState}
+        newReleaseData={newReleaseData}
+      />
       <RecentPlayedContainer globalState={globalState} authToken={authToken} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
-      <PlaylistContainer featuredPlaylistsData={featuredPlaylistsData} />
+      <PlaylistContainer
+        globalState={globalState}
+        featuredPlaylistsData={featuredPlaylistsData}
+      />
 
       <div class="is-hidden-touch">
         <ChartsContainer />
       </div>
       <hr class="mt-0" style={{ border: "grey" }} />
-      <TopTracksContainer />
+      <TopTracksContainer globalState={globalState} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
       <ArtistContainer

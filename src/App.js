@@ -30,6 +30,7 @@ import { PlayerControl } from "./components/PlayerControl"
 import { SideMenu } from "./components/SideMenu"
 import { Topbar } from "./components/Topbar"
 
+import { AuthProvider } from "./context/auth"
 import { PlaylistProvider } from "./context/playlist"
 import { PlayerProvider } from "./context/player"
 
@@ -189,7 +190,8 @@ function App() {
       method: "GET",
     }).then((d) => {
       if (d.status === 204) {
-        return null
+        AutoQueue(authToken, globalState.currentDeviceId)
+        return
       } else if (d.status === 401) {
         localStorage.removeItem("spotifyAuthToken")
       }
@@ -220,6 +222,7 @@ function App() {
       }
       if (player.item) {
         track = {
+          album: player.item.album,
           artists: player.item.artists.map((d) => d.name).join(", "),
           durationMs: player.item.duration_ms,
           id: player.item.id,
@@ -229,6 +232,7 @@ function App() {
         }
       }
       updateGlobalState({
+        contextUrl: player.context ? player.context.uri : "",
         error: "",
         errorType: "",
         isActive: true,
@@ -368,7 +372,7 @@ function App() {
   }
 
   const getRecommendList = (validateToken) => {
-    const url = `https://api.spotify.com/v1/recommendations?seed_genres=pop&min_energy=0.8&min_popularity=80&market=TW`
+    const url = `https://api.spotify.com/v1/recommendations?seed_genres=pop&min_energy=0.2&min_popularity=80&market=TW`
     axios
       .get(url, {
         method: "GET",
@@ -407,6 +411,30 @@ function App() {
       })
       .then(function (response) {
         setUserTopArtistListData(response.data.items)
+      })
+      .catch((err) => {
+        // Handle Error Here
+        console.error(err)
+      })
+  }
+
+  const getUserCurrentPlayingInfo = (validateToken) => {
+    const url = `https://api.spotify.com/v1/me/player/currently-playing?market=TW`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        console.log(response, "current playing")
       })
       .catch((err) => {
         // Handle Error Here
@@ -761,6 +789,7 @@ function App() {
 
   useLayoutEffect(() => {
     if (authToken) {
+      getUserCurrentPlayingInfo(authToken)
       initializePlayer(authToken)
       getRecommendList(authToken)
       getUserArtistsTopList(authToken)
@@ -785,170 +814,190 @@ function App() {
 
   return (
     <>
-      <div ng-app="app" ng-cloak>
-        <PlayerProvider>
-          <PlaylistProvider>
-            <div class="wrap">
-              {!authToken ? (
-                <div class="login__section">
-                  <div class="login__section__content">
-                    <h1 class="title is-1 has-text-white">
-                      <div class="columns is-gapless">
-                        <div class="column is-2">
-                          <span class="icon is-large" style={{ width: 120 }}>
-                            <img src={logoIcon} alt="" />
-                          </span>
-                        </div>
-                        <div class="column is-10" style={{ margin: "auto" }}>
-                          Spotify Connect
-                          <p class="title is-5 has-text-white mt-2 ml-1">
-                            Continue to play and hear half of the music
-                            seamlessly.
-                          </p>
-                          <div class="buttons">
-                            <button
-                              class="button is-rounded is-outlined has-text-weight-bold"
-                              onClick={handlelogin}
+      <div>
+        <div className="cursor"></div>
+        <AuthProvider>
+          <PlayerProvider>
+            <PlaylistProvider>
+              <div className="wrap">
+                {!authToken ? (
+                  <div className="login__section">
+                    <div className="login__section__content">
+                      <h1 className="title is-1 has-text-white">
+                        <div className="columns is-gapless">
+                          <div className="column is-2">
+                            <span
+                              className="icon is-large"
+                              style={{ width: 120 }}
                             >
-                              LOGIN
-                            </button>
-                            <button class="button is-black is-rounded has-text-weight-bold">
-                              SIGNUP
-                            </button>
+                              <img src={logoIcon} alt="" />
+                            </span>
+                          </div>
+                          <div
+                            className="column is-10"
+                            style={{ margin: "auto" }}
+                          >
+                            Spotify Connect
+                            <p className="title is-5 has-text-white mt-2 ml-1">
+                              Continue to play and hear half of the music
+                              seamlessly.
+                            </p>
+                            <div className="buttons">
+                              <button
+                                className="button is-rounded is-outlined has-text-weight-bold"
+                                onClick={handlelogin}
+                              >
+                                LOGIN
+                              </button>
+                              <button className="button is-black is-rounded has-text-weight-bold">
+                                SIGNUP
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </h1>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div class="list-area">
-                    <SideMenu />
-                    <div class="main" ref={scrollContainer}>
-                      <div
-                        class="main__wrap top-scroll-bg"
-                        style={{
-                          display: trimHeader ? "block" : "none",
-                          background: trimHeader ? "white" : "white",
-                          zIndex: 3,
-                        }}
-                        // style={{
-                        //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
-                        // }}
-                      ></div>
-                      <div
-                        class="main__wrap summary on ml-0"
-                        style={{
-                          display: trimHeader ? "block" : "none",
-                          borderBottom: `1px solid #eee`,
-                        }}
-                      >
-                        <div class="summary__box ml-0">
-                          <div class="summary__text ml-0">
-                            <ul>
-                              <li>
-                                <strong class="summary__text--title title is-4">
-                                  {location.pathname === "/" ? "Home" : null}
-                                </strong>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      <Topbar userprofile={userprofile} />
-
-                      <section class="section">
-                        <div class="hs__wrapper">
-                          {/* <AdvertismentContainer
-                      userRecommendListData={userRecommendListData}
-                    /> */}
-                          {/* <CategoriesContainer /> */}
-
-                          <Switch>
-                            <Route
-                              exact
-                              path="/"
-                              render={(props) => (
-                                <Home
-                                  {...props}
-                                  userRecommendListData={userRecommendListData}
-                                  newReleaseData={newReleaseData}
-                                  featuredPlaylistsData={featuredPlaylistsData}
-                                  component={Home}
-                                  globalState={globalState}
-                                  authToken={authToken}
-                                  userTopArtistListData={userTopArtistListData}
-                                />
-                              )}
-                            />
-                            <Route
-                              path="/playlist/:id"
-                              render={(props) => (
-                                <PlaylistDetail
-                                  {...props}
-                                  authToken={authToken}
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                />
-                              )}
-                            />
-                            <Route
-                              path="/artist/:id"
-                              render={(props) => (
-                                <ArtistDetail
-                                  {...props}
-                                  setTrimHeader={setTrimHeader}
-                                  authToken={authToken}
-                                  trimHeader={trimHeader}
-                                />
-                              )}
-                            />
-                            <Route
-                              path="/album/:id"
-                              render={(props) => (
-                                <AlbumDetail
-                                  {...props}
-                                  setTrimHeader={setTrimHeader}
-                                  authToken={authToken}
-                                  trimHeader={trimHeader}
-                                />
-                              )}
-                            />
-                          </Switch>
-                        </div>
-                      </section>
+                      </h1>
                     </div>
                   </div>
-                  <PlayerControl
-                    imgRef={imgRef}
-                    playerBackground={playerBackground}
-                    setDeviceVolume={setDeviceVolume}
-                    globalState={globalState}
-                    currentPlayingState={currentPlayingState}
-                    userCurrentPlayingTrack={userCurrentPlayingTrack}
-                    progressBarStyles={progressBarStyles}
-                    authToken={authToken}
-                    onChangeRange={handleChangeRange}
-                  />
-                  <PlayerControlMobile
-                    cachedAlbumsArray={cachedAlbumsArray}
-                    deviceHeight={deviceHeight}
-                    imgRef={imgRef}
-                    playerBackground={playerBackground}
-                    setDeviceVolume={setDeviceVolume}
-                    globalState={globalState}
-                    currentPlayingState={currentPlayingState}
-                    userCurrentPlayingTrack={userCurrentPlayingTrack}
-                    progressBarStyles={progressBarStyles}
-                    authToken={authToken}
-                    onChangeRange={handleChangeRange}
-                  />
-                </>
-              )}
-            </div>
-          </PlaylistProvider>
-        </PlayerProvider>
+                ) : (
+                  <>
+                    <div className="list-area">
+                      <SideMenu />
+                      <div className="main" ref={scrollContainer}>
+                        <div
+                          className="main__wrap top-scroll-bg"
+                          style={{
+                            display: trimHeader ? "block" : "none",
+                            background: trimHeader ? "white" : "white",
+                            zIndex: 3,
+                          }}
+                          // style={{
+                          //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
+                          // }}
+                        ></div>
+                        <div
+                          className="main__wrap summary on ml-0"
+                          style={{
+                            display: trimHeader ? "block" : "none",
+                            borderBottom: `1px solid #eee`,
+                          }}
+                        >
+                          <div className="summary__box ml-0">
+                            <div className="summary__text ml-0">
+                              <ul>
+                                <li>
+                                  <strong className="summary__text--title title is-4">
+                                    {location.pathname === "/" ? "Home" : null}
+                                  </strong>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="is-hidden-touch">
+                          <Topbar userprofile={userprofile} />
+                        </div>
+
+                        <section className="section">
+                          <div className="hs__wrapper">
+                            {/* <AdvertismentContainer
+                      userRecommendListData={userRecommendListData}
+                    /> */}
+                            {/* <CategoriesContainer /> */}
+
+                            <Switch>
+                              <Route
+                                exact
+                                path="/"
+                                render={(props) => (
+                                  <Home
+                                    {...props}
+                                    userRecommendListData={
+                                      userRecommendListData
+                                    }
+                                    newReleaseData={newReleaseData}
+                                    featuredPlaylistsData={
+                                      featuredPlaylistsData
+                                    }
+                                    component={Home}
+                                    globalState={globalState}
+                                    authToken={authToken}
+                                    userTopArtistListData={
+                                      userTopArtistListData
+                                    }
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/playlist/:id"
+                                render={(props) => (
+                                  <PlaylistDetail
+                                    {...props}
+                                    globalState={globalState}
+                                    authToken={authToken}
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/artist/:id"
+                                render={(props) => (
+                                  <ArtistDetail
+                                    {...props}
+                                    globalState={globalState}
+                                    setTrimHeader={setTrimHeader}
+                                    authToken={authToken}
+                                    trimHeader={trimHeader}
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/album/:id"
+                                render={(props) => (
+                                  <AlbumDetail
+                                    {...props}
+                                    globalState={globalState}
+                                    setTrimHeader={setTrimHeader}
+                                    authToken={authToken}
+                                    trimHeader={trimHeader}
+                                  />
+                                )}
+                              />
+                            </Switch>
+                          </div>
+                        </section>
+                      </div>
+                    </div>
+                    <PlayerControl
+                      imgRef={imgRef}
+                      playerBackground={playerBackground}
+                      setDeviceVolume={setDeviceVolume}
+                      globalState={globalState}
+                      currentPlayingState={currentPlayingState}
+                      userCurrentPlayingTrack={userCurrentPlayingTrack}
+                      progressBarStyles={progressBarStyles}
+                      authToken={authToken}
+                      onChangeRange={handleChangeRange}
+                    />
+                    <PlayerControlMobile
+                      cachedAlbumsArray={cachedAlbumsArray}
+                      deviceHeight={deviceHeight}
+                      imgRef={imgRef}
+                      playerBackground={playerBackground}
+                      setDeviceVolume={setDeviceVolume}
+                      globalState={globalState}
+                      currentPlayingState={currentPlayingState}
+                      userCurrentPlayingTrack={userCurrentPlayingTrack}
+                      progressBarStyles={progressBarStyles}
+                      authToken={authToken}
+                      onChangeRange={handleChangeRange}
+                    />
+                  </>
+                )}
+              </div>
+            </PlaylistProvider>
+          </PlayerProvider>
+        </AuthProvider>
       </div>
     </>
   )

@@ -1,9 +1,13 @@
 import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
+
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
 import { PlaylistContext } from "./context/playlist"
+import { PlayerContext } from "./context/player"
+import { AuthContext } from "./context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -14,7 +18,11 @@ function usePrevious(value) {
 }
 
 const TopTracksContainer = (props) => {
+  const { globalState } = props
   const { userTopTracksListData } = useContext(PlaylistContext)
+  const { playFn } = useContext(PlayerContext)
+  const { getToken } = useContext(AuthContext)
+  let history = useHistory()
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -44,13 +52,20 @@ const TopTracksContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
+  console.log(userTopTracksListData, "usertop")
+
   const buildItems = () => {
     return (
       userTopTracksListData &&
       userTopTracksListData.map((item, index) => {
         return (
           <li class="hs__item" key={index}>
-            <div class="hs__item__image__wrapper">
+            <div
+              class="hs__item__image__wrapper"
+              onClick={() => {
+                history.push(`/album/${item.album.id}`)
+              }}
+            >
               <img
                 class="hs__item__image"
                 src={item && item.album.images && item.album.images[0].url}
@@ -63,9 +78,32 @@ const TopTracksContainer = (props) => {
             </div>
 
             <div class="hs__item__play__button">
-              <button class="button">
-                <FontAwesomeIcon icon={faPlay} />
-              </button>
+              <a
+                href="javascript:void(0)"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    item.uri,
+                    "",
+                    ""
+                  )
+                }}
+              >
+                {globalState &&
+                globalState.track &&
+                globalState.track.album &&
+                globalState.track.album.uri.includes(item && item.uri) ? (
+                  <button class="button">
+                    <FontAwesomeIcon icon={faPause} />
+                  </button>
+                ) : (
+                  <button class="button">
+                    <FontAwesomeIcon icon={faPlay} />
+                  </button>
+                )}
+              </a>
             </div>
           </li>
         )
@@ -135,11 +173,13 @@ const TopTracksContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-4 has-text-black">
-          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-            LIBRARY
-          </p>
-          Top tracks
+        <h2 class="hs__headline  has-text-black">
+          <div class="title is-5">
+            <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+              LIBRARY
+            </p>
+            Top tracks
+          </div>
         </h2>
         {buildControls()}
       </div>

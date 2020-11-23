@@ -4,6 +4,9 @@ import Slider from "react-slick"
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
+
 import { PlaylistContext } from "./context/playlist"
 
 const ChartsContainer = (props) => {
@@ -39,11 +42,13 @@ const ChartsContainer = (props) => {
       <Slider {...settings}>
         {top50TracksList.map((item, index) => {
           return (
-            <div class="container">
-              <div key={index} class="columns is-gapless is-mobile mt-2">
+            <div class="chart__item container">
+              <div key={index} class="columns is-variable is-2 is-mobile">
                 <div
                   class="column is-2 has-text-centered"
                   style={{
+                    border: `${1}px solid rgba(213, 213, 213, 0.5)`,
+                    margin: "auto",
                     backgroundSize: "cover",
                     borderRadius: 5,
                     height: 50,
@@ -62,6 +67,13 @@ const ChartsContainer = (props) => {
                       {item.track.artists[0].name}
                     </span>
                   </span>
+                  <div class="chart__item__play__button">
+                    <a href="javascript:void(0)">
+                      <button class="button">
+                        <FontAwesomeIcon icon={faPause} />
+                      </button>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,15 +123,12 @@ const ChartsContainer = (props) => {
   return (
     <div class="mb4">
       <div class="ad__header">
-        <h2 class="ad__headline title is-4 has-text-black">
-          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-            MUSIC
-          </p>
-          Charts
+        <h2 class="ad__headline has-text-black">
+          <div class="title is-5">Charts</div>
         </h2>
       </div>
-
-      <TabsGroup buildItems={buildItems} buildItems2={buildItems2} />
+      <hr class="mb-2 mt-3" />
+      {buildItems()}
     </div>
   )
 }
