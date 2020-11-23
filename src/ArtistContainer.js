@@ -191,7 +191,9 @@ const ArtistContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-black">Popular Artists</h2>
+        <h2 class="hs__headline has-text-black">
+          <div class="title is-5">Popular Artists</div>
+        </h2>
         {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>

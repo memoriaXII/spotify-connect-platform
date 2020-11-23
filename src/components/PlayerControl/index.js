@@ -67,7 +67,7 @@ export const PlayerControl = (props) => {
     loaderColor: "#ccc",
     loaderSize: 32,
     savedColor: "#1cb954",
-    sliderColor: "#601ce9",
+    sliderColor: "#0088FF",
     sliderHandleBorderRadius: "50%",
     sliderHandleColor: "#fff",
     sliderHeight: 0.5,

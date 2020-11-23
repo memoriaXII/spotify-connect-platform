@@ -17,7 +17,7 @@ import { millisToMinutesAndSeconds } from "../../utils/utils"
 import AlbumContainer from "../../AlbumContainer"
 
 export default (props) => {
-  const { trimHeader, authToken, setTrimHeader } = props
+  const { trimHeader, authToken, setTrimHeader, globalState } = props
   const [albumInfo, setAlbumInfo] = useState({})
   const [albumTracks, setAlbumTracks] = useState([])
   const [relatedAlbums, setRelatedAlbums] = useState([])
@@ -87,7 +87,6 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data, "related ablums")
         let cleanArtistAlbumsArray = response.data.items.filter(
           (ele, ind) =>
             ind ===
@@ -296,7 +295,11 @@ export default (props) => {
       </div>
       <hr />
 
-      <AlbumContainer newReleaseData={relatedAlbums} isArtistAlbum={true} />
+      <AlbumContainer
+        globalState={globalState}
+        newReleaseData={relatedAlbums}
+        isArtistAlbum={true}
+      />
     </div>
   )
 }
