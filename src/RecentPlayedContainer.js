@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useContext } from "react"
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
@@ -14,6 +15,7 @@ function usePrevious(value) {
 }
 
 const RecentPlayedContainer = (props) => {
+  let history = useHistory()
   const { playFn } = useContext(PlayerContext)
   const { globalState, authToken } = props
   const { userPlayedTracksListData } = useContext(PlaylistContext)
@@ -50,7 +52,12 @@ const RecentPlayedContainer = (props) => {
     return userPlayedTracksListData.map((item, index) => {
       return (
         <li class="hs__item" key={index}>
-          <div class="hs__item__image__wrapper">
+          <div
+            class="hs__item__image__wrapper"
+            onClick={() => {
+              history.push(`/album/${item.track.album.id}`)
+            }}
+          >
             <img
               class="hs__item__image"
               src={item.track.album.images[0].url}
@@ -154,11 +161,8 @@ const RecentPlayedContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-black">
-          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-            LIBRARY
-          </p>
-          Recent played
+        <h2 class="hs__headline has-text-black">
+          <div class="title is-5">Recent played</div>
         </h2>
 
         {buildControls()}

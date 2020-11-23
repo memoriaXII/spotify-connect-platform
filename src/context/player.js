@@ -6,17 +6,30 @@ import { createContext, useContext } from "react"
 export const PlayerContext = createContext({})
 
 export const PlayerProvider = (props) => {
-  const playFn = async (validateToken, id, uri, contextUri, offset = 0) => {
+  const playFn = async (
+    validateToken,
+    id,
+    uri,
+    artistUris,
+    contextUri,
+    offset = 0
+  ) => {
     const parsedValues = {
-      artistSongs: contextUri && contextUri.map((x) => x.uri),
+      artistSongs: artistUris && artistUris.map((x) => x.uri),
     }
     let body
     const { artistSongs } = parsedValues
-    if (contextUri) {
+    if (artistUris) {
       body = JSON.stringify({ uris: artistSongs, offset: { position: 0 } })
     }
     if (uri) {
       body = JSON.stringify({ uris: [uri], offset: { position: 0 } })
+    }
+    if (contextUri) {
+      body = JSON.stringify({
+        context_uri: contextUri,
+        offset: { position: 0 },
+      })
     }
 
     return await fetch(

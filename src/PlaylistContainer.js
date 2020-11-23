@@ -1,8 +1,12 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
+
+import { PlaylistContext } from "./context/playlist"
+import { PlayerContext } from "./context/player"
+import { AuthContext } from "./context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -21,8 +25,10 @@ const urlDetection = (text) => {
 
 const PlaylistContainer = (props) => {
   let history = useHistory()
+  const { playFn } = useContext(PlayerContext)
+  const { getToken } = useContext(AuthContext)
 
-  const { featuredPlaylistsData } = props
+  const { featuredPlaylistsData, globalState } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -52,6 +58,7 @@ const PlaylistContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
+  console.log(featuredPlaylistsData, "feature")
   const buildItems = () => {
     return featuredPlaylistsData.map((item, index) => {
       return (
@@ -59,7 +66,6 @@ const PlaylistContainer = (props) => {
           class="hs__item"
           key={index}
           onClick={() => {
-            // console.log(item.id, "item")
             history.push(`/playlist/${item.id}`)
           }}
         >
@@ -87,11 +93,26 @@ const PlaylistContainer = (props) => {
               href="javascript:void(0)"
               onClick={(e) => {
                 e.stopPropagation()
+                playFn(
+                  getToken(),
+                  globalState.currentDeviceId,
+                  "",
+                  "",
+                  item.uri
+                )
               }}
             >
-              <button class="button">
-                <FontAwesomeIcon icon={faPlay} />
-              </button>
+              {globalState &&
+              globalState.contextUrl &&
+              globalState.contextUrl.includes(item && item.uri) ? (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPause} />
+                </button>
+              ) : (
+                <button class="button">
+                  <FontAwesomeIcon icon={faPlay} />
+                </button>
+              )}
             </a>
           </div>
         </li>
@@ -157,11 +178,13 @@ const PlaylistContainer = (props) => {
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline title is-5 has-text-black">
-          <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-            LIBRARY
-          </p>
-          Popular playlists
+        <h2 class="hs__headline has-text-black">
+          <div class="title is-5">
+            <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+              LIBRARY
+            </p>
+            Popular playlists
+          </div>
         </h2>
         {buildControls()}
       </div>
