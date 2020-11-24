@@ -568,10 +568,12 @@ export const PlayerProvider = (props) => {
   }
 
   useLayoutEffect(() => {
-    syncTimeout = setInterval(() => {
-      syncDevice(getToken())
-    }, 1000)
-    return () => clearInterval(syncTimeout)
+    if (getToken()) {
+      syncTimeout = setInterval(() => {
+        syncDevice(getToken())
+      }, 1000)
+      return () => clearInterval(syncTimeout)
+    }
   }, [getToken(), globalState])
 
   return (
