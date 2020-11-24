@@ -1,12 +1,11 @@
 import React, { useRef, useState, useEffect, useContext } from "react"
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
-import { Link, BrowserRouter, useHistory } from "react-router-dom"
-
-import { PlaylistContext } from "./context/playlist"
-import { PlayerContext } from "./context/player"
-import { AuthContext } from "./context/auth"
+import { PlaylistContext } from "../../../context/playlist"
+import { PlayerContext } from "../../../context/player"
+import { AuthContext } from "../../../context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -16,19 +15,12 @@ function usePrevious(value) {
   return ref.current
 }
 
-const urlDetection = (text) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  return text.replace(urlRegex, function (url) {
-    return '<a class="omg" href="' + url + '">' + url + "</a>"
-  })
-}
-
-const PlaylistContainer = (props) => {
+const RecentPlayedContainer = (props) => {
   let history = useHistory()
-  const { playFn } = useContext(PlayerContext)
-  const { getToken } = useContext(AuthContext)
+  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
 
-  const { featuredPlaylistsData, globalState } = props
+  const { userPlayedTracksListData } = useContext(PlaylistContext)
+  const { getToken } = useContext(AuthContext)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -58,58 +50,57 @@ const PlaylistContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
-  console.log(featuredPlaylistsData, "feature")
   const buildItems = () => {
-    return featuredPlaylistsData.map((item, index) => {
+    return userPlayedTracksListData.map((item, index) => {
       return (
-        <li
-          class="hs__item"
-          key={index}
-          onClick={() => {
-            history.push(`/playlist/${item.id}`)
-          }}
-        >
-          <div class="hs__item__image__wrapper">
-            <img class="hs__item__image" src={item.images[0].url} alt="" />
-          </div>
-          <div class="hs__item__description">
-            <span class="hs__item__title has-text-black">{item.name}</span>
-            {/* <span class="hs__item__subtitle">{item.description}</span> */}
-            <div
-              className="subtitle is-7 has-text-grey"
-              style={{
-                letterSpacing: 1,
-                lineHeight: 1.2,
-              }}
-              dangerouslySetInnerHTML={{
-                __html: urlDetection(
-                  (item && item.description.replace(/\n/g, "")) || ""
-                ),
-              }}
+        <li class="hs__item" key={index}>
+          <div
+            class="hs__item__image__wrapper"
+            onClick={() => {
+              history.push(`/album/${item.track.album.id}`)
+            }}
+          >
+            <img
+              class="hs__item__image"
+              src={item.track.album.images[0].url}
+              alt=""
             />
           </div>
+          <div class="hs__item__description">
+            <div></div>
+            <span class="hs__item__title has-text-black">
+              {item.track.name}
+            </span>
+            <span class="hs__item__subtitle">{item.track.artists[0].name}</span>
+          </div>
+
           <div class="hs__item__play__button">
-            <a
-              href="javascript:void(0)"
-              onClick={(e) => {
-                e.stopPropagation()
-                playFn(
-                  getToken(),
-                  globalState.currentDeviceId,
-                  "",
-                  "",
-                  item.uri
-                )
-              }}
-            >
+            <a href="javascript:void(0)">
               {globalState &&
-              globalState.contextUrl &&
-              globalState.contextUrl.includes(item && item.uri) ? (
-                <button class="button">
+              globalState.isPlaying &&
+              globalState.track &&
+              globalState.track.id == item.track.id ? (
+                <button
+                  class="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    pauseFn(getToken())
+                  }}
+                >
                   <FontAwesomeIcon icon={faPause} />
                 </button>
               ) : (
-                <button class="button">
+                <button
+                  class="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      item.track.uri
+                    )
+                  }}
+                >
                   <FontAwesomeIcon icon={faPlay} />
                 </button>
               )}
@@ -164,28 +155,24 @@ const PlaylistContainer = (props) => {
       debounceCheckForOverflow.cancel()
     )
   }, [])
-  const prevState = usePrevious(featuredPlaylistsData)
+  const prevState = usePrevious(userPlayedTracksListData)
 
   useEffect(() => {
-    if (undefined !== prevState && featuredPlaylistsData.length) {
-      if (prevState.length !== featuredPlaylistsData.length) {
+    if (undefined !== prevState && userPlayedTracksListData.length) {
+      if (prevState.length !== userPlayedTracksListData.length) {
         checkForOverflow()
         checkForScrollPosition()
       }
     }
-  }, [prevState, featuredPlaylistsData])
+  }, [prevState, userPlayedTracksListData])
 
   return (
     <div>
       <div class="hs__header">
         <h2 class="hs__headline has-text-black">
-          <div class="title is-5">
-            <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-              LIBRARY
-            </p>
-            Popular playlists
-          </div>
+          <div class="title is-5">Recent played</div>
         </h2>
+
         {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>
@@ -195,4 +182,4 @@ const PlaylistContainer = (props) => {
   )
 }
 
-export default PlaylistContainer
+export default RecentPlayedContainer

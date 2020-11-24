@@ -28,22 +28,3 @@ export const pauseFn = async () => {
     return e.response
   }
 }
-
-// async function previousFn(validateToken) {
-//   return fetch(`https://api.spotify.com/v1/me/player/previous`, {
-//     headers: {
-//       Authorization: `Bearer ${validateToken}`,
-//       "Content-Type": "application/json",
-//     },
-//     method: "POST",
-//   })
-// }
-// async function nextFn(validateToken) {
-//   return fetch(`https://api.spotify.com/v1/me/player/next`, {
-//     headers: {
-//       Authorization: `Bearer ${validateToken}`,
-//       "Content-Type": "application/json",
-//     },
-//     method: "POST",
-//   })
-// }

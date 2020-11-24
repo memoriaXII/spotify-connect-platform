@@ -30,27 +30,48 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 
 import volumeIcon from "../.././images/volume.svg"
-
+import ColorThief from "colorthief"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
 import { PlayerContext } from "../../context/player"
+import { AuthContext } from "../../context/auth"
 
 export const PlayerControl = (props) => {
+  const [playerBackground, setPlayBackground] = useState("")
+  const imgRef = useRef(null)
   const [isMagnified, setMagnified] = useState(true)
-  const { playFn } = useContext(PlayerContext)
-  const {
-    imgRef,
-    playerBackground,
-    setDeviceVolume,
-    globalState,
-    currentPlayingState,
-    userCurrentPlayingTrack,
-    progressBarStyles,
-    authToken,
-    onChangeRange,
-  } = props
+  const { playFn, globalState, setDeviceVolume, onChangeRange } = useContext(
+    PlayerContext
+  )
+
+  const { getToken } = useContext(AuthContext)
+  // const {
+  //   playerBackground,
+  //   setDeviceVolume,
+  //   getToken(),
+  //   onChangeRange,
+  // } = props
+  useEffect(() => {
+    if (globalState && globalState.track && globalState.track.image) {
+      const colorThief = new ColorThief()
+      const img = imgRef.current
+      img.onload = () => {
+        const result = colorThief.getColor(img)
+        rgbToHex(result[0], result[1], result[2])
+        setPlayBackground(rgbToHex(result[0], result[1], result[2]))
+      }
+      const rgbToHex = (r, g, b) =>
+        "#" +
+        [r, g, b]
+          .map((x) => {
+            const hex = x.toString(16)
+            return hex.length === 1 ? "0" + hex : hex
+          })
+          .join("")
+    }
+  }, [globalState])
   const { position, volume } = globalState
   const [utilsState, setUtilsState] = useState({
     isOpen: false,
@@ -199,7 +220,7 @@ export const PlayerControl = (props) => {
             <i
               class="play-btns__icon fas fa-step-backward has-text-grey-light"
               onClick={() => {
-                previousFn(authToken)
+                previousFn(getToken())
               }}
             >
               <FontAwesomeIcon icon={faBackward} />
@@ -210,7 +231,7 @@ export const PlayerControl = (props) => {
               <i
                 class="play-btns__icon far fa-play-circle"
                 onClick={() => {
-                  pauseFn(authToken)
+                  pauseFn(getToken())
                 }}
               >
                 <FontAwesomeIcon icon={faPause} />
@@ -219,7 +240,7 @@ export const PlayerControl = (props) => {
               <i
                 class="play-btns__icon far fa-play-circle"
                 onClick={() => {
-                  playFn(authToken, globalState.currentDeviceId)
+                  playFn(getToken(), globalState.currentDeviceId)
                 }}
               >
                 <FontAwesomeIcon icon={faPlayCircle} />
@@ -230,7 +251,7 @@ export const PlayerControl = (props) => {
             <i
               class="play-btns__icon fas fa-step-forward has-text-grey-light"
               onClick={() => {
-                nextFn(authToken)
+                nextFn(getToken())
               }}
             >
               <FontAwesomeIcon icon={faForward} />
@@ -286,16 +307,17 @@ export const PlayerControl = (props) => {
           </li>
           <li>
             <p class="has-text-grey-light">
-              {globalState.isPlaying
-                ? millisToMinutesAndSeconds(
-                    globalState &&
-                      globalState.track &&
-                      globalState.track.durationMs
-                  )
-                : millisToMinutesAndSeconds(
-                    userCurrentPlayingTrack &&
-                      userCurrentPlayingTrack.duration_ms
-                  )}
+              {
+                globalState.isPlaying
+                  ? millisToMinutesAndSeconds(
+                      globalState &&
+                        globalState.track &&
+                        globalState.track.durationMs
+                    )
+                  : millisToMinutesAndSeconds()
+                // userCurrentPlayingTrack &&
+                //   userCurrentPlayingTrack.duration_ms
+              }
             </p>
           </li>
         </ul>

@@ -8,12 +8,16 @@ import React, {
   useMemo,
 } from "react"
 import {
+  getUserRecommendListFn,
+  getArtistsTopList,
   getTracksTopList,
   getAllPlayLists,
   getCategories,
   getPlayingHistory,
   getTop50TracksList,
   getViral50TracksList,
+  getNewReleasesFn,
+  getFeaturedPlaylistsFn,
 } from "../apis/playlist"
 import axios from "axios"
 
@@ -27,6 +31,41 @@ export const PlaylistProvider = (props) => {
   const [userTopArtistListData, setUserTopArtistListData] = useState([])
   const [userTopTracksListData, setUserTopTracksListData] = useState([])
   const [sidePlayListData, setSidePlayListData] = useState([])
+  const [newReleaseData, setNewReleaseData] = useState([])
+  const [featuredPlaylistsData, setFeaturedPlaylistsData] = useState([])
+  const [userRecommendListData, setUserRecommendListData] = useState([])
+
+  const getUserRecommendList = async () => {
+    try {
+      const { data } = await getUserRecommendListFn()
+      setUserRecommendListData(data.tracks)
+      return data.tracks
+    } catch (e) {
+      return e.response
+    }
+  }
+
+  const getNewReleases = async () => {
+    try {
+      const { data } = await getNewReleasesFn()
+
+      setNewReleaseData(data.albums.items)
+
+      return data.items
+    } catch (e) {
+      return e.response
+    }
+  }
+
+  const getFeaturedPlaylists = async () => {
+    try {
+      const { data } = await getFeaturedPlaylistsFn()
+      setFeaturedPlaylistsData(data.playlists.items)
+      return data.items
+    } catch (e) {
+      return e.response
+    }
+  }
 
   const getUserAllPlayLists = async () => {
     try {
@@ -42,6 +81,16 @@ export const PlaylistProvider = (props) => {
     try {
       const { data } = await getTracksTopList()
       setUserTopTracksListData(data.items)
+      return data.items
+    } catch (e) {
+      return e.response
+    }
+  }
+
+  const getUserArtistsTopList = async () => {
+    try {
+      const { data } = await getArtistsTopList()
+      setUserTopArtistListData(data.items)
       return data.items
     } catch (e) {
       return e.response
@@ -121,23 +170,32 @@ export const PlaylistProvider = (props) => {
 
   useEffect(() => {
     if (getToken()) {
+      getUserRecommendList()
+      getUserArtistsTopList()
       getUserTracksTopList()
       getInitViral50TracksList()
       getInitTop50TracksList()
       getUserCategories()
       getUserPlayingHistory()
       getUserAllPlayLists()
+      getNewReleases()
+      getFeaturedPlaylists()
     }
   }, [getToken()])
   return (
     <PlaylistContext.Provider
       value={{
+        featuredPlaylistsData,
+        userRecommendListData,
         sidePlayListData,
         userPlayedTracksListData,
         categoriesData,
         top50TracksList,
         viral50TracksList,
         userTopTracksListData,
+        userTopArtistListData,
+        newReleaseData,
+        featuredPlaylistsData,
       }}
     >
       <>{props.children}</>

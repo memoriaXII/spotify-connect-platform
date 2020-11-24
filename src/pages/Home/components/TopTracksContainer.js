@@ -2,13 +2,12 @@ import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
-import axios from "axios"
 
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
-import { PlaylistContext } from "./context/playlist"
-import { PlayerContext } from "./context/player"
-import { AuthContext } from "./context/auth"
+import { PlaylistContext } from "../../../context/playlist"
+import { PlayerContext } from "../../../context/player"
+import { AuthContext } from "../../../context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -18,12 +17,11 @@ function usePrevious(value) {
   return ref.current
 }
 
-const AlbumContainer = (props) => {
-  const { playFn, globalState } = useContext(PlayerContext)
+const TopTracksContainer = (props) => {
+  const { userTopTracksListData } = useContext(PlaylistContext)
+  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
   const { getToken } = useContext(AuthContext)
-
   let history = useHistory()
-  const { newReleaseData, isArtistAlbum } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -53,77 +51,63 @@ const AlbumContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
-  const getSingleAlbumTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/albums/${id}/tracks`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {})
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
-  }
-
   const buildItems = () => {
     return (
-      newReleaseData &&
-      newReleaseData.map((item, index) => {
+      userTopTracksListData &&
+      userTopTracksListData.map((item, index) => {
         return (
           <li class="hs__item" key={index}>
             <div
               class="hs__item__image__wrapper"
               onClick={() => {
-                history.push(`/album/${item.id}`)
+                history.push(`/album/${item.album.id}`)
               }}
             >
               <img
                 class="hs__item__image"
-                src={item && item.images[1].url}
+                src={item && item.album.images && item.album.images[0].url}
                 alt=""
               />
             </div>
             <div class="hs__item__description">
-              <span class="hs__item__title has-text-black">
-                {item && item.name}
-              </span>
-              <span class="hs__item__subtitle">
-                {item && item.artists[0].name}
-              </span>
+              <span class="hs__item__title has-text-black">{item.name}</span>
+              <span class="hs__item__subtitle">{item.artists[0].name}</span>
             </div>
+
             <div class="hs__item__play__button">
               <a
                 href="javascript:void(0)"
                 onClick={(e) => {
                   e.stopPropagation()
-                  playFn(
-                    getToken(),
-                    globalState.currentDeviceId,
-                    "",
-                    "",
-                    item.uri
-                  )
                 }}
               >
                 {globalState &&
+                globalState.isPlaying &&
                 globalState.track &&
                 globalState.track.album &&
                 globalState.track.album.uri.includes(item && item.uri) ? (
-                  <button class="button">
+                  <button
+                    class="button"
+                    onClick={() => {
+                      pauseFn(getToken())
+                    }}
+                  >
                     <FontAwesomeIcon icon={faPause} />
                   </button>
                 ) : (
-                  <button class="button">
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        item.uri,
+                        "",
+                        ""
+                      )
+                    }}
+                  >
                     <FontAwesomeIcon icon={faPlay} />
                   </button>
                 )}
@@ -179,28 +163,31 @@ const AlbumContainer = (props) => {
       debounceCheckForOverflow.cancel()
     )
   }, [])
-  const prevState = usePrevious(newReleaseData)
+  const prevState = usePrevious(userTopTracksListData)
 
   useEffect(() => {
-    if (undefined !== prevState && newReleaseData.length) {
-      if (prevState.length !== newReleaseData.length) {
+    if (
+      userTopTracksListData &&
+      undefined !== prevState &&
+      userTopTracksListData.length
+    ) {
+      if (prevState.length !== userTopTracksListData.length) {
         checkForOverflow()
         checkForScrollPosition()
       }
     }
-  }, [prevState, newReleaseData])
+  }, [prevState, userTopTracksListData])
 
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline has-text-black">
-          {isArtistAlbum ? (
-            <>
-              <p class="title is-5 mt-4">Albums</p>
-            </>
-          ) : (
-            <div class="title is-5">New Release</div>
-          )}
+        <h2 class="hs__headline  has-text-black">
+          <div class="title is-5">
+            <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
+              LIBRARY
+            </p>
+            Top tracks
+          </div>
         </h2>
         {buildControls()}
       </div>
@@ -211,4 +198,4 @@ const AlbumContainer = (props) => {
   )
 }
 
-export default AlbumContainer
+export default TopTracksContainer
