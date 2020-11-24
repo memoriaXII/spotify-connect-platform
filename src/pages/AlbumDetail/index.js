@@ -15,9 +15,11 @@ import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import AlbumContainer from "../../AlbumContainer"
+import { AuthContext } from "../../context/auth"
 
 export default (props) => {
-  const { trimHeader, authToken, setTrimHeader, globalState } = props
+  const { getToken } = useContext(AuthContext)
+  const { trimHeader, setTrimHeader, globalState } = props
   const [albumInfo, setAlbumInfo] = useState({})
   const [albumTracks, setAlbumTracks] = useState([])
   const [relatedAlbums, setRelatedAlbums] = useState([])
@@ -61,9 +63,8 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data.items, "Album content")
         setAlbumTracks(response.data.items)
-        getRelatedAlbums(authToken, response.data.items[0].artists[0].id)
+        getRelatedAlbums(getToken(), response.data.items[0].artists[0].id)
       })
       .catch((err) => {
         // Handle Error Here
@@ -102,12 +103,11 @@ export default (props) => {
 
   useLayoutEffect(() => {
     setTrimHeader(false)
-    if (authToken) {
-      //  getRelatedTracks(authToken, props.match.params.id)
-      getSingleAlbumDes(authToken, props.match.params.id)
-      getSingleAlbumTracks(authToken, props.match.params.id)
+    if (getToken()) {
+      getSingleAlbumDes(getToken(), props.match.params.id)
+      getSingleAlbumTracks(getToken(), props.match.params.id)
     }
-  }, [authToken, props.match.params.id])
+  }, [getToken(), props.match.params.id])
   return (
     <div>
       <div class="main__wrap summary">
