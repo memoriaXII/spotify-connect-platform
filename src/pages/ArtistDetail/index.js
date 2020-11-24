@@ -16,8 +16,11 @@ import { millisToMinutesAndSeconds } from "../../utils/utils"
 import AlbumContainer from "../../AlbumContainer"
 import ColorThief from "colorthief"
 
+import { AuthContext } from "../../context/auth"
+
 export default (props) => {
-  const { trimHeader, authToken, setTrimHeader } = props
+  const { getToken } = useContext(AuthContext)
+  const { trimHeader, setTrimHeader, globalState } = props
 
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
@@ -93,7 +96,6 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data.items, "artist")
         let cleanArtistAlbumsArray = response.data.items.filter(
           (ele, ind) =>
             ind ===
@@ -117,13 +119,13 @@ export default (props) => {
 
   useLayoutEffect(() => {
     setTrimHeader(false)
-    if (authToken) {
-      getArtistAlbums(authToken, props.match.params.id)
-      getArtistTopTracks(authToken, props.match.params.id)
-      getArtistInfo(authToken, props.match.params.id)
+    if (getToken()) {
+      getArtistAlbums(getToken(), props.match.params.id)
+      getArtistTopTracks(getToken(), props.match.params.id)
+      getArtistInfo(getToken(), props.match.params.id)
       setArtistAlbumStatus(true)
     }
-  }, [authToken, props.match.params.id])
+  }, [getToken(), props.match.params.id])
 
   useEffect(() => {
     const rgbToHex = (r, g, b) =>
@@ -411,6 +413,7 @@ export default (props) => {
       <hr />
 
       <AlbumContainer
+        globalState={globalState}
         newReleaseData={artistAlbums}
         isArtistAlbum={isArtistAlbum}
       />

@@ -7,7 +7,7 @@ import "slick-carousel/slick/slick-theme.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 
-import { PlaylistContext } from "./context/playlist"
+import { PlaylistContext } from "../../../context/playlist"
 
 const ChartsContainer = (props) => {
   const { top50TracksList, viral50TracksList } = useContext(PlaylistContext)

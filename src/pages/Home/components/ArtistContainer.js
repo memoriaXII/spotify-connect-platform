@@ -3,7 +3,9 @@ import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
-import { PlayerContext } from "./context/player"
+import { PlayerContext } from "../../../context/player"
+import { PlaylistContext } from "../../../context/playlist"
+import { AuthContext } from "../../../context/auth"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -15,8 +17,10 @@ function usePrevious(value) {
 
 const ArtistContainer = (props) => {
   let history = useHistory()
-  const { playFn } = useContext(PlayerContext)
-  const { userTopArtistListData, authToken, globalState } = props
+  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
+  const { userTopArtistListData } = useContext(PlaylistContext)
+  const { getToken } = useContext(AuthContext)
+
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -52,16 +56,6 @@ const ArtistContainer = (props) => {
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
-  async function pauseFn(validateToken) {
-    return fetch(`https://api.spotify.com/v1/me/player/pause`, {
-      headers: {
-        Authorization: `Bearer ${validateToken}`,
-        "Content-Type": "application/json",
-      },
-      method: "PUT",
-    })
-  }
-
   const debounceCheckForOverflow = debounce(checkForOverflow, 1000)
   const debounceCheckForScrollPosition = debounce(checkForScrollPosition, 200)
 
@@ -70,67 +64,82 @@ const ArtistContainer = (props) => {
   }
 
   const buildItems = () => {
-    return userTopArtistListData.map((item, index) => {
-      return (
-        <li
-          class="hs__item"
-          key={index}
-          onClick={() => {
-            // console.log(item.id, "item")
-            history.push(`/artist/${item.id}`)
-          }}
-        >
-          <div
-            class="hs__item__image__wrapper"
-            style={{ borderRadius: `${50}%` }}
+    return (
+      userTopArtistListData &&
+      userTopArtistListData.map((item, index) => {
+        return (
+          <li
+            class="hs__item"
+            key={index}
+            onClick={() => {
+              history.push(`/artist/${item.id}`)
+            }}
           >
-            <img
-              class="hs__item__image"
-              src={item.images[0].url}
+            <div
+              class="hs__item__image__wrapper"
               style={{ borderRadius: `${50}%` }}
-              alt=""
-            />
-          </div>
-          <div class="hs__item__description" style={{ margin: "auto" }}>
-            <div style={{ marginTop: 20 }}></div>
-            <span
-              class="hs__item__title has-text-black has-text-weight-bold"
-              style={{ fontSize: 15 }}
             >
-              {item.name}
-            </span>
-            {/* <span class="hs__item__subtitle">{item.user.name}</span> */}
-          </div>
-          <div class="hs__item__play__artist__button">
-            <a
-              href="javascript:void(0)"
-              onClick={async (e) => {
-                e.stopPropagation()
-                const { tracks } = await getArtistSongs(authToken, item.id)
-                playFn(authToken, globalState.currentDeviceId, "", tracks)
-              }}
-            >
-              <button class="button">
-                {globalState &&
-                globalState.track &&
-                globalState.track.artists &&
-                globalState.track.artists.includes(item && item.name) ? (
-                  <FontAwesomeIcon
-                    icon={faPause}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      pauseFn(authToken)
-                    }}
-                  />
-                ) : (
-                  <FontAwesomeIcon icon={faPlay} />
-                )}
-              </button>
-            </a>
-          </div>
-        </li>
-      )
-    })
+              <img
+                class="hs__item__image"
+                src={item.images[0].url}
+                style={{ borderRadius: `${50}%` }}
+                alt=""
+              />
+            </div>
+            <div class="hs__item__description" style={{ margin: "auto" }}>
+              <div style={{ marginTop: 20 }}></div>
+              <span
+                class="hs__item__title has-text-black has-text-weight-bold"
+                style={{ fontSize: 15 }}
+              >
+                {item.name}
+              </span>
+            </div>
+            <div class="hs__item__play__artist__button">
+              <a href="javascript:void(0)">
+                <button
+                  class="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                >
+                  {globalState &&
+                  globalState.isPlaying &&
+                  globalState.track &&
+                  globalState.track.artists &&
+                  globalState.track.artists.includes(item && item.name) ? (
+                    <FontAwesomeIcon
+                      icon={faPause}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        pauseFn(getToken())
+                      }}
+                    />
+                  ) : (
+                    <FontAwesomeIcon
+                      icon={faPlay}
+                      onClick={async (e) => {
+                        e.stopPropagation()
+                        const { tracks } = await getArtistSongs(
+                          getToken(),
+                          item.id
+                        )
+                        playFn(
+                          getToken(),
+                          globalState.currentDeviceId,
+                          "",
+                          tracks
+                        )
+                      }}
+                    />
+                  )}
+                </button>
+              </a>
+            </div>
+          </li>
+        )
+      })
+    )
   }
 
   const buildControls = () => {
@@ -180,7 +189,11 @@ const ArtistContainer = (props) => {
   const prevState = usePrevious(userTopArtistListData)
 
   useEffect(() => {
-    if (undefined !== prevState && userTopArtistListData.length) {
+    if (
+      undefined !== prevState &&
+      userTopArtistListData &&
+      userTopArtistListData.length
+    ) {
       if (prevState.length !== userTopArtistListData.length) {
         checkForOverflow()
         checkForScrollPosition()

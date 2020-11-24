@@ -13,10 +13,11 @@ import axios from "axios"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
+import { AuthContext } from "../../context/auth"
 
 export default (props) => {
-  const { trimHeader, authToken, setTrimHeader } = props
-
+  const { trimHeader, setTrimHeader } = props
+  const { getToken } = useContext(AuthContext)
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
 
@@ -59,7 +60,6 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data.items, "playlist content")
         setPlaylistTracks(response.data.items)
       })
       .catch((err) => {
@@ -70,11 +70,11 @@ export default (props) => {
 
   useLayoutEffect(() => {
     setTrimHeader(false)
-    if (authToken) {
-      getSinglePlaylistDes(authToken, props.match.params.id)
-      getSinglePlaylistTracks(authToken, props.match.params.id)
+    if (getToken()) {
+      getSinglePlaylistDes(getToken(), props.match.params.id)
+      getSinglePlaylistTracks(getToken(), props.match.params.id)
     }
-  }, [authToken, props.match.params.id])
+  }, [getToken(), props.match.params.id])
 
   return (
     <div>
