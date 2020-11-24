@@ -19,11 +19,11 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
-  const { playFn } = useContext(PlayerContext)
+  const { playFn, globalState } = useContext(PlayerContext)
   const { getToken } = useContext(AuthContext)
 
   let history = useHistory()
-  const { newReleaseData, isArtistAlbum, globalState } = props
+  const { newReleaseData, isArtistAlbum } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -68,9 +68,7 @@ const AlbumContainer = (props) => {
         redirect: "follow",
         referrerPolicy: "no-referrer",
       })
-      .then(function (response) {
-        console.log(response.data.items, "Album content")
-      })
+      .then(function (response) {})
       .catch((err) => {
         // Handle Error Here
         console.error(err)
