@@ -10,25 +10,19 @@ import React, {
 
 import Slider from "react-slick"
 
-import AlbumContainer from "../../AlbumContainer"
-import PlaylistContainer from "../../PlaylistContainer"
-import ArtistContainer from "../../ArtistContainer"
-import CategoriesContainer from "../../CategoriesContainer"
-import TopTracksContainer from "../../TopTracksContainer"
-import RecentPlayedContainer from "../../RecentPlayedContainer"
-import AdvertismentContainer from "../../AdvertismentContainer"
-import ChartsContainer from "../../ChartsContainer"
+import AlbumContainer from "./components/AlbumContainer"
+import PlaylistContainer from "./components/PlaylistContainer"
+import TopTracksContainer from "./components/TopTracksContainer"
+import RecentPlayedContainer from "./components/RecentPlayedContainer"
+import ChartsContainer from "./components/ChartsContainer"
+import ArtistContainer from "./components/ArtistContainer"
+
+import { PlaylistContext } from "../../context/playlist"
 
 export default (props) => {
+  const { userRecommendListData } = useContext(PlaylistContext)
   const customSlider = useRef()
-  const {
-    newReleaseData,
-    globalState,
-    authToken,
-    featuredPlaylistsData,
-    userTopArtistListData,
-    userRecommendListData,
-  } = props
+  const { newReleaseData, globalState, featuredPlaylistsData } = props
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -52,48 +46,49 @@ export default (props) => {
       <hr class="mt-3" />
       <div class="mb-5">
         <Slider {...settings}>
-          {userRecommendListData.map((item, index) => {
-            return (
-              <div key={index}>
-                <div class="content mb-4">
-                  <p
-                    class="title is-6 truncate mb-1"
-                    style={{ width: 270, fontSize: 15 }}
-                  >
-                    <span style={{ color: "#0088FF", fontSize: 10 }}>
-                      NEW SINGLE
-                    </span>
-                    <br />
-                    <span class="title is-6">{item.name}</span>
-                  </p>
-                  <p class="title is-7 mt-0 truncate">
-                    {item.artists.map((i, index) => {
-                      return (
-                        <span class="title is-6 has-text-grey">{i.name}</span>
-                      )
-                    })}
-                  </p>
-                </div>
+          {userRecommendListData &&
+            userRecommendListData.map((item, index) => {
+              return (
+                <div key={index}>
+                  <div class="content mb-4">
+                    <p
+                      class="title is-6 truncate mb-1"
+                      style={{ width: 270, fontSize: 15 }}
+                    >
+                      <span style={{ color: "#0088FF", fontSize: 10 }}>
+                        NEW SINGLE
+                      </span>
+                      <br />
+                      <span class="title is-6">{item.name}</span>
+                    </p>
+                    <p class="title is-7 mt-0 truncate">
+                      {item.artists.map((i, index) => {
+                        return (
+                          <span class="title is-6 has-text-grey">{i.name}</span>
+                        )
+                      })}
+                    </p>
+                  </div>
 
-                <div class="columns is-variable is-0 m-0 mt-0">
-                  <div
-                    class="column is-12 m-0 recommend-section"
-                    style={{
-                      backgroundImage: `url(${item.album.images[0].url})`,
-                      backgroundPosition: "center",
-                      backgroundSize: "cover",
-                      width: `${100}%`,
-                      height: 250,
-                      backgroundRepeat: "no-repeat",
-                      borderRadius: 5,
-                      boxShadow: `${0} ${10}px ${10}px ${0}px rgba(197, 196, 196, 0.1)`,
-                      cursor: "pointer",
-                    }}
-                  ></div>
+                  <div class="columns is-variable is-0 m-0 mt-0">
+                    <div
+                      class="column is-12 m-0 recommend-section"
+                      style={{
+                        backgroundImage: `url(${item.album.images[0].url})`,
+                        backgroundPosition: "center",
+                        backgroundSize: "cover",
+                        width: `${100}%`,
+                        height: 250,
+                        backgroundRepeat: "no-repeat",
+                        borderRadius: 5,
+                        boxShadow: `${0} ${10}px ${10}px ${0}px rgba(197, 196, 196, 0.1)`,
+                        cursor: "pointer",
+                      }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
         </Slider>
       </div>
       <hr />
@@ -101,7 +96,7 @@ export default (props) => {
         globalState={globalState}
         newReleaseData={newReleaseData}
       />
-      <RecentPlayedContainer globalState={globalState} authToken={authToken} />
+      <RecentPlayedContainer globalState={globalState} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
       <PlaylistContainer
@@ -116,11 +111,7 @@ export default (props) => {
       <TopTracksContainer globalState={globalState} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
-      <ArtistContainer
-        globalState={globalState}
-        authToken={authToken}
-        userTopArtistListData={userTopArtistListData}
-      />
+      <ArtistContainer globalState={globalState} />
     </div>
   )
 }

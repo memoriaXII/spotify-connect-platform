@@ -1,5 +1,17 @@
-export const Topbar = (props) => {
-  const { userprofile } = props
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+  useLayoutEffect,
+} from "react"
+import { ProfileContext } from "../../context/profile"
+
+export const Topbar = () => {
+  const { userprofile } = useContext(ProfileContext)
+
   const handlelogin = () => {
     window.location = window.location.href.includes("localhost")
       ? "http://localhost:8888/login"
