@@ -29,6 +29,8 @@ import {
   faHeart,
 } from "@fortawesome/free-solid-svg-icons"
 
+import debounce from "lodash/debounce"
+
 import volumeIcon from "../.././images/volume.svg"
 import ColorThief from "colorthief"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
@@ -39,20 +41,28 @@ import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
 
 export const PlayerControl = (props) => {
+  const {
+    volumeBar,
+    progressBar,
+    setIsSeeking,
+    syncTimeout,
+    updateGlobalState,
+    playFn,
+    globalState,
+    setDeviceVolume,
+    handleChangeRange,
+  } = useContext(PlayerContext)
+  const { getToken } = useContext(AuthContext)
   const [playerBackground, setPlayBackground] = useState("")
   const imgRef = useRef(null)
   const [isMagnified, setMagnified] = useState(true)
-  const { playFn, globalState, setDeviceVolume, onChangeRange } = useContext(
-    PlayerContext
-  )
+  const { volume } = volumeBar
+  const { position } = progressBar
+  const [utilsState, setUtilsState] = useState({
+    isOpen: false,
+    volume: volume,
+  })
 
-  const { getToken } = useContext(AuthContext)
-  // const {
-  //   playerBackground,
-  //   setDeviceVolume,
-  //   getToken(),
-  //   onChangeRange,
-  // } = props
   useEffect(() => {
     if (globalState && globalState.track && globalState.track.image) {
       const colorThief = new ColorThief()
@@ -72,13 +82,7 @@ export const PlayerControl = (props) => {
           .join("")
     }
   }, [globalState])
-  const { position, volume } = globalState
-  const [utilsState, setUtilsState] = useState({
-    isOpen: false,
-    volume: volume,
-  })
 
-  var timeout
   const getMergedStyles = {
     altColor: "#ccc",
     bgColor: "#fff",
@@ -135,22 +139,9 @@ export const PlayerControl = (props) => {
     })
   }
 
-  const handleChangeRange = async ({ x }) => {
-    onChangeRange(x)
-  }
-  const handleChangeSlider = ({ x }) => {
-    const volume = Math.round(x) / 100
-    // timeout = setInterval(() => {
-    //   setDeviceVolume(volume)
-    // }, 1000)
-    // clearTimeout(timeout)
-    // timeout = window.setTimeout(() => {
-    //   setDeviceVolume(volume)
-    // }, 250)
-    setDeviceVolume(volume, globalState.currentDeviceId)
-    setUtilsState({ volume: volume })
-    // return () => clearInterval(timeout)
-  }
+  const handleChangeRangeFn = debounce(({ x }) => {
+    handleChangeRange(x)
+  }, 500)
 
   const Wrapper = ({ styles }) => {
     return (
@@ -172,6 +163,18 @@ export const PlayerControl = (props) => {
   const mouseLeave = () => {
     setMagnified(false)
   }
+  const handleChangeVolume = ({ x }) => {
+    const volume = Math.round(x) / 100
+    setDeviceVolume(volume, globalState.currentDeviceId)
+  }
+  const handleVolumeDragEnd = debounce((position) => {
+    const volume = Math.round(position.x) / 100
+    setDeviceVolume(volume, globalState.currentDeviceId)
+  }, 500)
+
+  const handleTrackDragEnd = debounce((position) => {
+    handleChangeRange(position.x)
+  }, 500)
 
   return (
     <div class="playbar is-hidden-mobile">
@@ -193,14 +196,6 @@ export const PlayerControl = (props) => {
             >
               {globalState && globalState.track && globalState.track.name}
             </p>
-            <div class="album-cover__icon-box">
-              {/* <i class="album-cover__icon far fa-heart">
-                        <FontAwesomeIcon icon={faHeart} />
-                      </i>
-                      <i class="album-cover__icon fas fa-ban has-text-grey-light">
-                        <FontAwesomeIcon icon={faBan} />
-                      </i> */}
-            </div>
           </div>
           <div>
             <p class="album-cover__artist">
@@ -213,7 +208,10 @@ export const PlayerControl = (props) => {
         <ul class="play-btns__wrap play-btns__icon-box">
           <li class="play-btns__list">
             <i class="play-btns__icon fas fa-random has-text-grey-light">
-              <FontAwesomeIcon icon={faRandom} />
+              <FontAwesomeIcon
+                icon={faRandom}
+                style={{ color: globalState.isShuffled ? "#0088ff" : "" }}
+              />
             </i>
           </li>
           <li class="play-btns__list">
@@ -259,7 +257,10 @@ export const PlayerControl = (props) => {
           </li>
           <li class="play-btns__list">
             <i class="play-btns__icon fas fa-sync has-text-grey-light">
-              <FontAwesomeIcon icon={faSync} />
+              <FontAwesomeIcon
+                icon={faSync}
+                style={{ color: globalState.isRepeated ? "#0088ff" : "" }}
+              />
             </i>
           </li>
         </ul>
@@ -267,12 +268,11 @@ export const PlayerControl = (props) => {
           <li>
             <p class="has-text-grey-light">
               {globalState.isPlaying
-                ? millisToMinutesAndSeconds(globalState.progressMs)
-                : millisToMinutesAndSeconds(globalState.progressMs)}
+                ? millisToMinutesAndSeconds(progressBar.progressMs)
+                : millisToMinutesAndSeconds(progressBar.progressMs)}
             </p>
           </li>
           <li class="play-btns__bar">
-            {/* <input type="range" value="60" min="0" max="100" /> */}
             <div
               onMouseEnter={mouseEnter}
               onMouseLeave={mouseLeave}
@@ -281,7 +281,8 @@ export const PlayerControl = (props) => {
               <RangeSlider
                 style={{ cursor: "pointer" }}
                 axis="x"
-                onChange={handleChangeRange}
+                onDragEnd={handleTrackDragEnd}
+                onChange={(x) => handleChangeRangeFn(x)}
                 styles={{
                   options: {
                     handleBorder: 0,
@@ -301,7 +302,7 @@ export const PlayerControl = (props) => {
                 x={position}
                 xMin={0}
                 xMax={100}
-                xStep={0.1}
+                xStep={0.9}
               />
             </div>
           </li>
@@ -329,20 +330,15 @@ export const PlayerControl = (props) => {
               <FontAwesomeIcon icon={faList} />
             </i>
           </li>
-          <li class="ect-btns__list">
-            <i class="ect-btns__icon fas fa-mobile-alt has-text-grey-light">
-              <FontAwesomeIcon icon={faMobile} />
-            </i>
-          </li>
           <li class="ect-btns__list ect-btns__list--volume">
             <i class="ect-btns__icon fas fa-volume-up has-text-grey-light">
               <FontAwesomeIcon icon={faVolumeUp} />
             </i>
             <div class="ect-btns__bar" style={{ margin: "auto" }}>
-              {/* <input type="range" value="100" min="0" max="100" /> */}
               <RangeSlider
                 style={{ cursor: "pointer" }}
                 axis="x"
+                onDragEnd={handleVolumeDragEnd}
                 styles={{
                   options: {
                     handleBorderRadius: 12,
@@ -354,8 +350,7 @@ export const PlayerControl = (props) => {
                     height: 5,
                   },
                 }}
-                onChange={handleChangeSlider}
-                // onDragEnd={handleDragEndSlider}
+                onChange={handleChangeVolume}
                 x={volume * 100}
                 xMin={0}
                 xMax={100}

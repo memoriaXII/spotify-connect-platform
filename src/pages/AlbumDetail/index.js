@@ -11,15 +11,22 @@ import React, {
 import axios from "axios"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faEllipsisH, faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
 import AlbumContainer from "../../AlbumContainer"
+
+import { SoundEqualizer } from "../../components/SoundEqualizer"
+
 import { AuthContext } from "../../context/auth"
+import { PlayerContext } from "../../context/player"
+
+import soundChartIcon from "../../images/soundChart.svg"
 
 export default (props) => {
   const { getToken } = useContext(AuthContext)
-  const { trimHeader, setTrimHeader, globalState } = props
+  const { trimHeader, setTrimHeader } = props
+  const { globalState, playFn, pauseFn } = useContext(PlayerContext)
   const [albumInfo, setAlbumInfo] = useState({})
   const [albumTracks, setAlbumTracks] = useState([])
   const [relatedAlbums, setRelatedAlbums] = useState([])
@@ -108,6 +115,15 @@ export default (props) => {
       getSingleAlbumTracks(getToken(), props.match.params.id)
     }
   }, [getToken(), props.match.params.id])
+
+  console.log(
+    globalState &&
+      globalState.track &&
+      globalState.track.album &&
+      globalState.track.album.uri ==
+        (albumInfo && albumInfo.uri && albumInfo.uri),
+    "albuminfo"
+  )
   return (
     <div>
       <div class="main__wrap summary">
@@ -144,17 +160,47 @@ export default (props) => {
               </li>
             </ul>
           </div>
-          <button
-            class="button has-text-black has-text-centered has-text-weight-bold is-small"
-            style={{ borderRadius: 5 }}
-          >
-            <FontAwesomeIcon
-              icon={faPlay}
-              class="icon  ml-1 mr-2"
-              style={{ fontSize: 10 }}
-            />
-            Play
-          </button>
+          {globalState &&
+          globalState.track &&
+          globalState.isPlaying &&
+          globalState.track.album &&
+          globalState.track.album.uri ==
+            (albumInfo && albumInfo.uri && albumInfo.uri) ? (
+            <>
+              <button
+                class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await pauseFn(getToken())
+                }}
+              >
+                <FontAwesomeIcon icon={faPause} />
+                <span class="ml-2">Pause</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    "",
+                    albumTracks
+                  )
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faPlay}
+                  class="icon  ml-1 mr-2"
+                  style={{ fontSize: 8 }}
+                />
+                Play
+              </button>
+            </>
+          )}
           <div class="summary__button">
             {/* <ul class="button">
               <li class="button__list button__play-btn">
@@ -196,18 +242,47 @@ export default (props) => {
             </ul>
           </div>
           <div class="summary__button">
-            <ul class="button" style={{ border: 0 }}>
-              <li class="button__list button__play-btn has-text-black has-text-centered has-text-weight-bold is-small">
-                <p class="button__text">PLAY</p>
-                {/* <button class="button is-dark ">Play</button> */}
-              </li>
-              {/* <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li> */}
-            </ul>
+            <div class="buttons mt-5">
+              {globalState &&
+              globalState.track &&
+              globalState.isPlaying &&
+              globalState.track.album &&
+              globalState.track.album.uri ==
+                (albumInfo && albumInfo.uri && albumInfo.uri) ? (
+                <>
+                  <button
+                    class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                    onClick={async (e) => {
+                      await pauseFn(getToken())
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPause} />
+                    <span class="ml-2">Pause</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                    onClick={async (e) => {
+                      await playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        "",
+                        albumTracks
+                      )
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      icon={faPlay}
+                      class="icon  ml-1 mr-2"
+                      style={{ fontSize: 8 }}
+                    />
+                    Play
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -225,9 +300,8 @@ export default (props) => {
           </colgroup>
           <tr class="playlist__tr">
             <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th">TITLE</th>
-            <th class="playlist__th">ALBUM</th>
+            <th class="playlist__th">Title</th>
+            <th class="playlist__th">Artist</th>
             <th class="playlist__th">LENGTH</th>
             <th class="playlist__th">
               <i class="far fa-calendar-alt"></i>
@@ -238,30 +312,36 @@ export default (props) => {
 
           {albumTracks.map((item, index) => {
             return (
-              <tr class="playlist__tr" key={index}>
+              <tr
+                class={
+                  globalState.isPlaying &&
+                  globalState.track &&
+                  globalState.track.id == item.id
+                    ? "playlist__tr nowplay"
+                    : "playlist__tr "
+                }
+                key={index}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    item.uri
+                  )
+                }}
+              >
                 <td
                   class="playlist__td playlist__td--play"
                   style={{ verticalAlign: "middle" }}
                 >
-                  <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
+                  {globalState.track && globalState.track.id == item.id ? (
+                    <SoundEqualizer />
+                  ) : (
+                    <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
+                  )}
                 </td>
-                <td style={{ verticalAlign: "middle" }}>
-                  {/* <img
-                    style={{ borderRadius: 5 }}
-                    src={item.track.album.images[0].url}
-                    alt=""
-                  /> */}
-                </td>
-                <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
-                  {item.name}
-
-                  <p class="mt-2 has-text-grey">
-                    {item.artists.map((d) => d.name).join(", ")}
-                  </p>
-                </td>
-
                 <td
-                  class="playlist__td playlist__td--artist has-text-grey"
+                  class="playlist__td playlist__td--title title is-7 has-text-weight-normal"
                   style={{
                     fontSize: 12,
                     margin: "auto",
@@ -269,6 +349,17 @@ export default (props) => {
                   }}
                 >
                   {item.name}
+                </td>
+
+                <td
+                  class="playlist__td playlist__td--artist"
+                  style={{
+                    fontSize: 12,
+                    margin: "auto",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  <p>{item.artists.map((d) => d.name).join(", ")}</p>
                 </td>
                 <td
                   class="playlist__td playlist__td--hour title is-7"
