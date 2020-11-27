@@ -7,8 +7,10 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react"
+import { useHistory, useLocation } from "react-router-dom"
 import axios from "axios"
 import logoIcon from "../../images/logo.svg"
+import queryString from "query-string"
 
 export default (props) => {
   const handlelogin = () => {
@@ -16,6 +18,7 @@ export default (props) => {
       ? "http://localhost:8888/login"
       : "https://spotify-auth-proxy-server.herokuapp.com/login"
   }
+
   return (
     <div>
       <div className="login__section">
@@ -38,9 +41,6 @@ export default (props) => {
                     onClick={handlelogin}
                   >
                     LOGIN
-                  </button>
-                  <button className="button is-black is-rounded has-text-weight-bold">
-                    SIGNUP
                   </button>
                 </div>
               </div>
