@@ -27,7 +27,9 @@ import queryString from "query-string"
 import { PlayerControlMobile } from "./components/PlayerControlMobile"
 import { PlayerControl } from "./components/PlayerControl"
 import { SideMenu } from "./components/SideMenu"
+import { SideChildMenu } from "./components/SideChildMenu"
 import { Topbar } from "./components/Topbar"
+import PrivateRoute from "./routes/PrivateRoute"
 
 import { AuthProvider } from "./context/auth"
 import { PlaylistProvider } from "./context/playlist"
@@ -35,23 +37,17 @@ import { PlayerProvider } from "./context/player"
 import { ProfileProvider } from "./context/profile"
 
 import Home from "./pages/Home"
+import Login from "./pages/Login"
 
 import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
-
-import logoIcon from "./images/logo.svg"
 
 function App() {
   const location = useLocation()
   const scrollContainer = useRef(null)
   const [gradientNum, setGradientNum] = useState(null)
   const [trimHeader, setTrimHeader] = useState(false)
-  const handlelogin = () => {
-    window.location = window.location.href.includes("localhost")
-      ? "http://localhost:8888/login"
-      : "https://spotify-auth-proxy-server.herokuapp.com/login"
-  }
 
   const handleScroll = () => {
     if (
@@ -87,6 +83,8 @@ function App() {
       window.removeEventListener("scroll", handleScroll), setGradientNum(null)
     )
   }, [scrollContainer])
+
+  const routeDetection = location.pathname == `/login`
   return (
     <>
       <div>
@@ -95,49 +93,23 @@ function App() {
             <PlayerProvider>
               <PlaylistProvider>
                 <div className="wrap">
-                  {"" ? (
-                    <div className="login__section">
-                      {/* <div className="login__section__content">
-                        <h1 className="title is-1 has-text-white">
-                          <div className="columns is-gapless">
-                            <div className="column is-2">
-                              <span
-                                className="icon is-large"
-                                style={{ width: 120 }}
-                              >
-                                <img src={logoIcon} alt="" />
-                              </span>
-                            </div>
-                            <div
-                              className="column is-10"
-                              style={{ margin: "auto" }}
-                            >
-                              Spotify Connect
-                              <p className="title is-5 has-text-white mt-2 ml-1">
-                                Continue to play and hear half of the music
-                                seamlessly.
-                              </p>
-                              <div className="buttons">
-                                <button
-                                  className="button is-rounded is-outlined has-text-weight-bold"
-                                  onClick={handlelogin}
-                                >
-                                  LOGIN
-                                </button>
-                                <button className="button is-black is-rounded has-text-weight-bold">
-                                  SIGNUP
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </h1>
-                      </div> */}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="list-area">
+                  <div
+                    className="list-area"
+                    style={{
+                      height: !routeDetection
+                        ? `calc(${100}vh - ${86}px)`
+                        : `${100}vh`,
+                    }}
+                  >
+                    {routeDetection ? null : (
+                      <>
                         <SideMenu />
-                        <div className="main" ref={scrollContainer}>
+                      </>
+                    )}
+
+                    <div className="main" ref={scrollContainer}>
+                      {routeDetection ? null : (
+                        <>
                           <div
                             className="main__wrap top-scroll-bg"
                             style={{
@@ -145,9 +117,6 @@ function App() {
                               background: trimHeader ? "white" : "white",
                               zIndex: 3,
                             }}
-                            // style={{
-                            //   background: `linear-gradient(to bottom,  rgba(0,0,0,0) 0%, rgb(255, 255, 255) ${gradientNum}%)`,
-                            // }}
                           ></div>
                           <div
                             className="main__wrap summary on ml-0"
@@ -173,52 +142,59 @@ function App() {
                           <div class="is-hidden-touch">
                             <Topbar />
                           </div>
+                        </>
+                      )}
 
-                          <section className="section">
-                            <div className="hs__wrapper">
-                              <Switch>
-                                <Route
-                                  exact
-                                  path="/"
-                                  render={(props) => (
-                                    <Home {...props} component={Home} />
-                                  )}
+                      <section className={routeDetection ? "" : "section"}>
+                        <div className="hs__wrapper">
+                          <Switch>
+                            <Route path="/login" component={Login} />
+
+                            <Route
+                              exact
+                              path="/"
+                              render={(props) => (
+                                <Home {...props} component={Home} />
+                              )}
+                            />
+                            <Route
+                              path="/playlist/:id"
+                              render={(props) => (
+                                <PlaylistDetail
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
                                 />
-                                <Route
-                                  path="/playlist/:id"
-                                  render={(props) => (
-                                    <PlaylistDetail
-                                      trimHeader={trimHeader}
-                                      setTrimHeader={setTrimHeader}
-                                      {...props}
-                                    />
-                                  )}
+                              )}
+                            />
+                            <Route
+                              path="/artist/:id"
+                              render={(props) => (
+                                <ArtistDetail
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
                                 />
-                                <Route
-                                  path="/artist/:id"
-                                  render={(props) => (
-                                    <ArtistDetail
-                                      trimHeader={trimHeader}
-                                      setTrimHeader={setTrimHeader}
-                                      {...props}
-                                    />
-                                  )}
+                              )}
+                            />
+                            <Route
+                              path="/album/:id"
+                              render={(props) => (
+                                <AlbumDetail
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
                                 />
-                                <Route
-                                  path="/album/:id"
-                                  render={(props) => (
-                                    <AlbumDetail
-                                      trimHeader={trimHeader}
-                                      setTrimHeader={setTrimHeader}
-                                      {...props}
-                                    />
-                                  )}
-                                />
-                              </Switch>
-                            </div>
-                          </section>
+                              )}
+                            />
+                          </Switch>
                         </div>
-                      </div>
+                      </section>
+                    </div>
+                    <SideChildMenu />
+                  </div>
+                  {routeDetection ? null : (
+                    <>
                       <PlayerControl />
                     </>
                   )}
