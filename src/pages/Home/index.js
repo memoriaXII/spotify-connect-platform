@@ -42,7 +42,7 @@ export default (props) => {
   return (
     <div>
       <div class="ad__header mt-3">
-        <h2 class="ad__headline title is-4 has-text-black">Home</h2>
+        <h2 class="ad__headline title is-4 has-text-black">Browse</h2>
       </div>
       <hr class="mt-3" />
       <div class="mb-5">
