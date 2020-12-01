@@ -10,16 +10,25 @@ import React, {
 
 import axios from "axios"
 
+import ColorThief from "colorthief"
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faEllipsisH, faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 import { AuthContext } from "../../context/auth"
+import { PlayerContext } from "../../context/player"
+
+import { SoundEqualizer } from "../../components/SoundEqualizer"
 
 export default (props) => {
+  const playlistRef = useRef(null)
   const { trimHeader, setTrimHeader } = props
   const { getToken } = useContext(AuthContext)
+  const { globalState, playFn, pauseFn } = useContext(PlayerContext)
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
+  const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
+  const [playlistBackground, setPlaylistBackground] = useState("")
 
   const getSinglePlaylistDes = (validateToken, id) => {
     const url = `https://api.spotify.com/v1/playlists/${id}`
@@ -76,9 +85,60 @@ export default (props) => {
     }
   }, [getToken(), props.match.params.id])
 
+  useEffect(() => {
+    if (globalState && globalState.track) {
+      const hasMatch = playlistTracks.filter(function (value) {
+        return value.track.id == globalState.track.id
+      })
+
+      if (hasMatch.length == 1 && globalState.isPlaying) {
+        setPlayingPlaylistStatus(true)
+      } else {
+        setPlayingPlaylistStatus(false)
+      }
+    }
+  }, [globalState])
+
+  useEffect(() => {
+    const rgbToHex = (r, g, b) =>
+      "#" +
+      [r, g, b]
+        .map((x) => {
+          const hex = x.toString(16)
+          return hex.length === 1 ? "0" + hex : hex
+        })
+        .join("")
+    if (playlistInfo && playlistInfo.images) {
+      const colorThief = new ColorThief()
+      const img = playlistRef.current
+      img.onload = () => {
+        // image  has been loaded
+        const result = colorThief.getColor(img)
+        rgbToHex(result[0], result[1], result[2])
+        console.log(rgbToHex(result[0], result[1], result[2]), "test")
+        setPlaylistBackground(rgbToHex(result[0], result[1], result[2]))
+      }
+      const rgbToHex = (r, g, b) =>
+        "#" +
+        [r, g, b]
+          .map((x) => {
+            const hex = x.toString(16)
+            return hex.length === 1 ? "0" + hex : hex
+          })
+          .join("")
+    }
+  }, [playlistInfo])
+
   return (
     <div>
       <div class="main__wrap summary">
+        <div
+          class="summary__bg"
+          style={{
+            // background: `linear-gradient( to right bottom ,rgba(0,0,0,0.0),${playlistBackground} 95%,${playlistBackground})`,
+            height: 290,
+          }}
+        ></div>
         <div
           class="summary__img"
           style={{
@@ -98,16 +158,16 @@ export default (props) => {
                 </span>
               </li>
               <li>
-                <strong class="summary__text--title">
+                <strong class="summary__text--title has-text-black">
                   {playlistInfo.name}
                 </strong>
               </li>
               <li>
-                <p class="will-hidden has-text-grey">
+                <p class="will-hidden has-text-grey-light">
                   {playlistInfo.description}
                 </p>
               </li>
-              <li class="summary__text--by-spotify has-text-grey">
+              <li class="summary__text--by-spotify has-text-grey-light">
                 <p>
                   Created by
                   <span class="summary__text--black">
@@ -118,30 +178,43 @@ export default (props) => {
               </li>
             </ul>
           </div>
-          <button
-            class="button has-text-black has-text-centered has-text-weight-bold is-small"
-            style={{ borderRadius: 5 }}
-          >
-            <FontAwesomeIcon
-              icon={faPlay}
-              class="icon  ml-1 mr-2"
-              style={{ fontSize: 10 }}
-            />
-            Play
-          </button>
-          <div class="summary__button">
-            {/* <ul class="button">
-              <li class="button__list button__play-btn">
-                <p class="button__text">PLAY</p>
-              </li>
-              <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li>
-            </ul> */}
+          <div class="buttons mt-5">
+            {isPlayingPlaylist ? (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={(e) => {
+                    pauseFn(getToken())
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPause} />
+                  <span class="ml-2">Pause</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={async (e) => {
+                    await playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      "",
+                      playlistTracks
+                    )
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faPlay}
+                    class="icon  ml-1 mr-2"
+                    style={{ fontSize: 8 }}
+                  />
+                  Play
+                </button>
+              </>
+            )}
           </div>
+          <div class="summary__button"></div>
         </div>
       </div>
       <div
@@ -151,14 +224,15 @@ export default (props) => {
           borderBottom: `1px solid #eee`,
         }}
       >
-        <div
+        <img
           class="summary__img"
-          style={{
-            backgroundImage: `url(${
-              playlistInfo && playlistInfo.images && playlistInfo.images[0].url
-            })`,
-          }}
-        ></div>
+          crossOrigin={"anonymous"}
+          ref={playlistRef}
+          alt={""}
+          src={
+            playlistInfo && playlistInfo.images && playlistInfo.images[0].url
+          }
+        />
         <div class="summary__box">
           <div class="summary__text">
             <ul>
@@ -170,22 +244,15 @@ export default (props) => {
             </ul>
           </div>
           <div class="summary__button">
-            <ul class="button" style={{ border: 0 }}>
+            <ul class="button" style={{ border: 0, background: "transparent" }}>
               <li class="button__list button__play-btn has-text-black has-text-centered has-text-weight-bold is-small">
                 <p class="button__text">PLAY</p>
-                {/* <button class="button is-dark ">Play</button> */}
               </li>
-              {/* <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li> */}
             </ul>
           </div>
         </div>
       </div>
-      <div class="main__wrap">
+      <div class="main__wrap mt-3">
         <table class="playlist">
           <colgroup>
             <col width="3%" />
@@ -212,12 +279,32 @@ export default (props) => {
 
           {playlistTracks.map((item, index) => {
             return (
-              <tr class="playlist__tr" key={index}>
+              <tr
+                class={
+                  globalState.track && globalState.track.id == item.track.id
+                    ? "playlist__tr nowplay"
+                    : "playlist__tr "
+                }
+                key={index}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    item.track.uri
+                  )
+                }}
+              >
                 <td
                   class="playlist__td playlist__td--play"
                   style={{ verticalAlign: "middle" }}
                 >
-                  <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
+                  {globalState.track &&
+                  globalState.track.id == item.track.id ? (
+                    <SoundEqualizer />
+                  ) : (
+                    <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
+                  )}
                 </td>
                 <td style={{ verticalAlign: "middle" }}>
                   <img
@@ -229,13 +316,13 @@ export default (props) => {
                 <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
                   {item.track.name}
 
-                  <p class="mt-2 has-text-grey">
+                  <p class="mt-2 ">
                     {item.track.artists.map((d) => d.name).join(", ")}
                   </p>
                 </td>
 
                 <td
-                  class="playlist__td playlist__td--artist has-text-grey"
+                  class="playlist__td playlist__td--artist "
                   style={{
                     fontSize: 12,
                     margin: "auto",
@@ -257,10 +344,7 @@ export default (props) => {
                   class="playlist__td playlist__td--more"
                   style={{ verticalAlign: "middle" }}
                 >
-                  <FontAwesomeIcon
-                    icon={faEllipsisH}
-                    style={{ color: "grey" }}
-                  />
+                  <FontAwesomeIcon icon={faEllipsisH} />
                 </td>
               </tr>
             )
