@@ -42,6 +42,9 @@ import Login from "./pages/Login"
 import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
+import UserSaveTracks from "./pages/Collection/Tracks"
+import UserSaveAlbums from "./pages/Collection/Alubms"
+import UserSaveArtists from "./pages/Collection/Artists"
 
 function App() {
   const location = useLocation()
@@ -125,13 +128,13 @@ function App() {
                               borderBottom: `1px solid #eee`,
                             }}
                           >
-                            <div className="summary__box ml-0">
-                              <div className="summary__text ml-0">
+                            <div className="summary__box ml-3">
+                              <div className="summary__text">
                                 <ul>
                                   <li>
                                     <strong className="summary__text--title title is-4">
                                       {location.pathname === "/"
-                                        ? "Home"
+                                        ? "Browse"
                                         : null}
                                     </strong>
                                   </li>
@@ -187,11 +190,48 @@ function App() {
                                 />
                               )}
                             />
+
+                            <Route
+                              path="/collection/tracks"
+                              render={(props) => (
+                                <UserSaveTracks
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
+                                />
+                              )}
+                            />
+
+                            <Route
+                              path="/collection/albums"
+                              render={(props) => (
+                                <UserSaveAlbums
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
+                                />
+                              )}
+                            />
+
+                            <Route
+                              path="/collection/artists"
+                              render={(props) => (
+                                <UserSaveArtists
+                                  trimHeader={trimHeader}
+                                  setTrimHeader={setTrimHeader}
+                                  {...props}
+                                />
+                              )}
+                            />
                           </Switch>
                         </div>
                       </section>
                     </div>
-                    <SideChildMenu />
+                    {routeDetection ? null : (
+                      <>
+                        <SideChildMenu />
+                      </>
+                    )}
                   </div>
                   {routeDetection ? null : (
                     <>
