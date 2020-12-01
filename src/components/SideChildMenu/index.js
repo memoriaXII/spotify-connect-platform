@@ -39,8 +39,6 @@ export const SideChildMenu = (props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
 
-  console.log(sidePlayListData, "sideplay")
-
   return (
     <div>
       <div class="side is-hidden-touch">

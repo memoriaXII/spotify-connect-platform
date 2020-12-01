@@ -10,13 +10,7 @@ import React, {
 
 import listIcon from "../../images/list.svg"
 import searchIcon from "../../images/search.svg"
-import albumIcon from "../../images/album.svg"
-import trackIcon from "../../images/musical-note.svg"
-import micIcon from "../../images/mic.svg"
-import clockIcon from "../../images/clock.svg"
-import playOutlineIcon from "../../images/play-outline.svg"
-import browseIcon from "../../images/browse.svg"
-import brodcastIcon from "../../images/radio-waves.svg"
+
 import playlistIcon from "../../images/playlist.svg"
 import plusIcon from "../../images/ios-plus-outline.svg"
 import downloadIcon from "../../images/download.svg"
@@ -39,156 +33,18 @@ export const SideMenu = (props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
 
-  console.log(sidePlayListData, "sideplay")
-
   return (
     <div>
       <div class="side is-hidden-touch">
         <div class="side__wrap side__nav">
-          <ul class="nav">
-            <Link to="/">
-              <li class="nav__list">
-                <div class="columns">
-                  <div class="column is-2">
-                    <i class="nav__icon">
-                      <img src={playOutlineIcon} alt="" />
-                      {/* <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="feather feather-home"
-                      >
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                      </svg> */}
-                    </i>
-                  </div>
-                  <div class="column" style={{ margin: "auto" }}>
-                    <p class="nav__text title">Listen now</p>
-                  </div>
-                </div>
-              </li>
-            </Link>
-
-            <Link to="/browse">
-              <li class="nav__list">
-                <div class="columns">
-                  <div class="column is-2">
-                    <i class="nav__icon">
-                      <img src={browseIcon} alt="" />
-                    </i>
-                  </div>
-                  <div class="column" style={{ margin: "auto" }}>
-                    <p class="nav__text title">Browse</p>
-                  </div>
-                </div>
-              </li>
-            </Link>
-
-            <li class="nav__list">
-              <div class="columns">
-                <div class="column is-2">
-                  <i class="nav__icon">
-                    <img src={brodcastIcon} alt="" />
-                    {/* <svg
-                      width="18"
-                      height="18"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      x="0px"
-                      y="0px"
-                      viewBox="0 0 1000 1000"
-                    >
-                      <g>
-                        <g transform="translate(0.000000,119.000000) scale(0.100000,-0.100000)">
-                          <path d="M2133.7,171.3c-204.8-147.5-557-467-778.2-720.9c-1687.5-1843.2-1671.1-4718.5,32.8-6561.7c245.8-262.1,606.2-589.8,802.8-720.9l352.2-245.8l163.8,270.3l172,270.4l-229.4,163.8C1789.6-6759,1093.3-5751.5,864-4784.8c-385,1654.7,294.9,3489.8,1646.6,4423.6C2871-115.5,2871-115.5,2748.1,122.1c-65.5,131.1-147.4,254-188.4,278.5C2526.9,417,2330.3,318.7,2133.7,171.3z" />
-                          <path d="M7294.6,187.6L7122.6-82.7L7352-246.5c483.3-344.1,1138.6-1081.3,1392.6-1564.7c1015.7-1916.9,466.9-4161.5-1351.7-5521.3l-262.2-204.8l163.8-270.4l163.8-270.3l352.2,245.8C8335-7480,9014.9-6701.7,9326.2-6128.3c974.9,1835,688.1,4104.1-712.7,5619.6c-245.8,262.2-606.2,589.8-802.8,720.9L7458.5,458L7294.6,187.6z" />
-                          <path d="M2797.3-1401.6c-286.7-254-516.1-573.4-720.9-999.4c-294.9-589.8-311.3-663.6-311.3-1409s16.4-819.2,311.3-1409.1c294.9-597.9,991.2-1376.1,1237-1376.1c49.2,0,155.6,114.6,237.6,262.1c139.3,245.8,139.3,262.1,0,335.8c-270.3,147.5-729.1,688.2-925.7,1089.6c-286.7,573.4-286.7,1622,0,2195.4c196.6,401.4,655.4,942.1,925.7,1089.5c139.3,73.7,139.3,90.1,0,335.8c-81.9,147.5-188.4,262.2-237.6,262.2C3256-1024.8,3026.6-1196.8,2797.3-1401.6z" />
-                          <path d="M6442.6-1278.7c-147.4-254-147.4-262.1,0-344c278.6-147.5,737.3-680,942.1-1089.5c155.7-327.7,196.6-524.3,196.6-1097.7c-8.2-630.8-32.8-745.5-278.6-1212.4c-253.9-475.1-548.9-802.8-884.7-983c-114.7-65.5-114.7-98.2,24.6-335.8c81.9-139.3,196.6-253.9,245.8-253.9c245.8,0,942.1,770,1237,1376.1c294.9,589.9,311.3,663.6,311.3,1409.1s-16.4,819.2-311.3,1409c-295,606.2-991.3,1376.2-1237,1376.2C6639.3-1024.8,6524.6-1139.4,6442.6-1278.7z" />
-                          <path d="M4443.8-2261.7c-393.2-114.7-892.9-655.3-1007.6-1073.1c-188.4-729.1,98.3-1490.9,720.9-1875.9c466.9-295,1261.5-278.5,1720.3,24.6c507.8,335.8,720.9,737.3,720.9,1376.3c0,630.8-213,1040.4-696.3,1359.9C5549.8-2212.6,4878-2130.7,4443.8-2261.7z M5689-3146.4c213-221.2,254-319.5,254-663.6c0-352.3-41-442.3-270.3-671.8c-229.4-229.3-319.5-270.2-671.8-270.2c-352.2,0-442.4,41-671.8,270.2c-229.4,229.4-270.3,319.5-270.3,663.6c0,426,204.8,753.7,573.4,917.5C4935.4-2769.6,5418.7-2876.1,5689-3146.4z" />
-                        </g>
-                      </g>
-                    </svg> */}
-                  </i>
-                </div>
-                <div class="column" style={{ margin: "auto" }}>
-                  <p class="nav__text title">Broadcast</p>
-                </div>
-              </div>
-            </li>
-          </ul>
+          <MainNavLink />
         </div>
         <div class="side__wrap side__contents mt-4">
           <ul class="contents">
             <li class="contents__title mb-2 has-text-black">LIBRARY</li>
             <li>
-              <ul class="contents__box">
-                <li class="contents__list on">
-                  <div class="columns mt-2">
-                    <div class="column is-2">
-                      <i class="contents__list__icon">
-                        <img src={clockIcon} alt="" />
-                      </i>
-                    </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">Recently Added </p>
-                    </div>
-                  </div>
-                </li>
-                <li class="contents__list on mt-1">
-                  <div class="columns">
-                    <div class="column is-2">
-                      <i class="contents__list__icon">
-                        <img src={micIcon} alt="" />
-                      </i>
-                    </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">Artist </p>
-                    </div>
-                  </div>
-                </li>
-                <li class="contents__list on mt-1">
-                  <div class="columns">
-                    <div class="column is-2">
-                      <i class="contents__list__icon">
-                        <img src={albumIcon} alt="" />
-                      </i>
-                    </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">Albums</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="contents__list on mt-1">
-                  <div class="columns">
-                    <div class="column is-2">
-                      <i class="contents__list__icon">
-                        <img src={trackIcon} alt="" />
-                      </i>
-                    </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">Tracks</p>
-                    </div>
-                  </div>
-                </li>
-                <li class="contents__list on mt-1">
-                  <div class="columns">
-                    <div class="column is-2">
-                      <i class="contents__list__icon">
-                        <img src={downloadIcon} alt="" />
-                      </i>
-                    </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">Downloaded</p>
-                    </div>
-                  </div>
-                </li>
+              <ul class="contents__box mt-4">
+                <UserNavLink />
               </ul>
             </li>
           </ul>
@@ -209,10 +65,17 @@ export const SideMenu = (props) => {
                     </div>
                   </div>
                 </li>
+
                 {sidePlayListData &&
                   sidePlayListData.map((item, index) => {
                     return (
-                      <li class="contents__list">
+                      <li
+                        class="contents__list"
+                        key={index}
+                        onClick={() => {
+                          history.push(`/playlist/${item.id}`)
+                        }}
+                      >
                         <div class="columns is-mobile is-gapless">
                           <div class="column is-2">
                             <i
@@ -235,7 +98,12 @@ export const SideMenu = (props) => {
                             class="column is-10 mt-1 has-text-black"
                             style={{ margin: "auto", fontWeight: 300 }}
                           >
-                            <span>{item.name}</span>
+                            <p
+                              class="album-cover__title truncate"
+                              style={{ fontSize: 12, width: 150 }}
+                            >
+                              {item.name}
+                            </p>
                           </div>
                         </div>
                       </li>
@@ -262,5 +130,329 @@ export const SideMenu = (props) => {
         </div>
       </div>
     </div>
+  )
+}
+
+const UserNavLink = () => {
+  const [menuState, setMenuState] = useState({
+    activeLink: null,
+  })
+
+  const navLinks = [
+    {
+      id: 1,
+      icon: clockIcon(),
+      name: "Recently Added",
+      to: "/",
+      className: "contents__list",
+    },
+    {
+      id: 2,
+      icon: micIcon(),
+      name: "Artist",
+      to: "/collection/artists",
+      className: "contents__list ",
+    },
+    {
+      id: 3,
+      icon: albumIcon(),
+      name: "Albums",
+      to: "/collection/albums",
+      className: "contents__list",
+    },
+    {
+      id: 4,
+      icon: trackIcon(),
+      name: "Tracks",
+      to: "/collection/tracks",
+      className: "contents__list",
+    },
+  ]
+
+  const handleClick = (id) => {
+    setMenuState({
+      activeLink: id,
+    })
+  }
+  const { activeLink } = menuState
+
+  return (
+    <div>
+      {navLinks &&
+        navLinks.map((link) => {
+          return (
+            <>
+              <Link to={link.to}>
+                <li
+                  className={
+                    link.className + (link.id === activeLink ? " on " : "")
+                  }
+                  key={link.id}
+                  onClick={async () => {
+                    await handleClick(link.id)
+                  }}
+                >
+                  <div class="columns">
+                    <div class="column is-2">
+                      <i class="contents__list__icon">{link.icon}</i>
+                    </div>
+                    <div class="column" style={{ margin: "auto" }}>
+                      <p class="contents__list__text title">{link.name}</p>
+                    </div>
+                  </div>
+                </li>
+              </Link>
+            </>
+          )
+        })}
+    </div>
+  )
+}
+
+const MainNavLink = () => {
+  const [state, setstate] = useState({
+    activeLink: 2,
+  })
+
+  const navLinks = [
+    {
+      id: 1,
+      icon: playOutlineIcon(),
+      name: "Listen now",
+      to: "/listen-now",
+      className: "nav__list",
+    },
+    {
+      id: 2,
+      icon: browseIcon(),
+      name: "Browse",
+      to: "/",
+      className: "nav__list",
+    },
+    {
+      id: 3,
+      icon: brodcastIcon(),
+      name: "Brodcast",
+      to: "/brodcast",
+      className: "nav__list",
+    },
+  ]
+
+  const handleClick = (id) => {
+    setstate({
+      activeLink: id,
+    })
+  }
+  const { activeLink } = state
+
+  return (
+    <div>
+      <ul class="nav">
+        {navLinks &&
+          navLinks.map((link) => {
+            return (
+              <>
+                <Link to={link.to}>
+                  <li
+                    className={
+                      link.className +
+                      (link.id === activeLink ? " active " : "")
+                    }
+                    key={link.id}
+                    onClick={async () => {
+                      await handleClick(link.id)
+                    }}
+                  >
+                    <div class="columns">
+                      <div class="column is-2">
+                        <i class="nav__icon">{link.icon}</i>
+                      </div>
+                      <div class="column" style={{ margin: "auto" }}>
+                        <p class="nav__text title">{link.name}</p>
+                      </div>
+                    </div>
+                  </li>
+                </Link>
+              </>
+            )
+          })}
+      </ul>
+    </div>
+  )
+}
+
+const playOutlineIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <g>
+        <path d="M144,124.9L353.8,256L144,387.1V124.9 M128,96v320l256-160L128,96L128,96z" />
+      </g>
+    </svg>
+  )
+}
+const browseIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <g>
+        <path d="M64,144v304h303.9V144H64z M351.9,432H80V160h271.9V432z" />
+        <g>
+          <polygon points="448,64 144,64 144,128 160,128 160,80 432,80 432,352 384,352 384,368 448,368 		" />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
+const brodcastIcon = () => {
+  return (
+    <svg
+      fill="currentColor"
+      stroke="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+      enable-background="new 0 0 512 512"
+    >
+      <g>
+        <circle cx="256" cy="256" r="64" />
+        <g>
+          <path
+            d="M144,256c0-36.9,18.553-69.208,46.314-87.034l-23.141-24.512c-6.26,4.608-12.18,9.833-17.684,15.663
+			C125.314,185.729,112,219.781,112,256c0,36.219,13.314,70.271,37.49,95.883c5.504,5.829,11.424,11.055,17.684,15.662
+			l23.141-24.511C162.553,325.208,144,292.9,144,256z"
+          />
+          <path
+            d="M368,256c0,36.9-18.553,69.208-46.314,87.034l23.141,24.511c6.26-4.607,12.18-9.833,17.684-15.662
+			C386.686,326.271,400,292.219,400,256c0-36.219-13.314-70.271-37.49-95.882c-5.504-5.83-11.424-11.055-17.684-15.663
+			l-23.141,24.512C349.447,186.792,368,219.1,368,256z"
+          />
+          <path
+            d="M64,256c0-55.578,25.251-104.907,64.263-135.817L105.433,96c-5.999,5-11.739,10.396-17.197,16.178
+			c-17.622,18.669-31.462,40.417-41.134,64.641C37.081,201.917,32,228.556,32,256c0,27.443,5.081,54.084,15.102,79.181
+			c9.672,24.226,23.512,45.973,41.134,64.642c5.458,5.781,11.198,11.177,17.197,16.178l22.829-24.183
+			C89.251,360.907,64,311.578,64,256z"
+          />
+          <path
+            d="M448,256c0,55.578-25.251,104.907-64.262,135.817l22.828,23.848c6-5.001,11.74-10.062,17.198-15.843
+			c17.622-18.669,31.462-40.416,41.134-64.642C474.918,310.084,480,283.443,480,256c0-27.444-5.082-54.083-15.102-79.181
+			c-9.672-24.225-23.512-45.972-41.134-64.641C418.307,106.396,412.566,101,406.566,96l-22.829,24.183
+			C422.749,151.093,448,200.422,448,256z"
+          />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
+const clockIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <g>
+        <path
+          d="M256,48C141.1,48,48,141.1,48,256s93.1,208,208,208c114.9,0,208-93.1,208-208S370.9,48,256,48z M256,446.7
+		c-105.1,0-190.7-85.5-190.7-190.7c0-105.1,85.5-190.7,190.7-190.7c105.1,0,190.7,85.5,190.7,190.7
+		C446.7,361.1,361.1,446.7,256,446.7z"
+        />
+        <polygon points="256,256 160,256 160,273.3 273.3,273.3 273.3,128 256,128 	" />
+      </g>
+    </svg>
+  )
+}
+
+const micIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <g>
+        <path
+          d="M256,32c-43.7,0-79,37.5-79,83.5V270c0,46,35.3,83.5,79,83.5c43.7,0,79-37.5,79-83.5V115.5C335,69.5,299.7,32,256,32z
+		 M319,270c0,37.2-28.3,67.5-63,67.5c-34.7,0-63-30.3-63-67.5V115.5c0-37.2,28.3-67.5,63-67.5c34.7,0,63,30.3,63,67.5V270z"
+        />
+        <path
+          d="M367,192v79.7c0,60.2-49.8,109.2-110,109.2c-60.2,0-110-49-110-109.2V192h-19v79.7c0,67.2,53,122.6,120,127.5V462h-73v18
+		h161v-18h-69v-62.8c66-4.9,117-60.3,117-127.5V192H367z"
+        />
+      </g>
+    </svg>
+  )
+}
+
+const albumIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <g>
+        <path d="M464,144v288H48V144H464 M480,128H32v320h448V128L480,128z" />
+        <rect x="72" y="96" width="368" height="16" />
+        <rect x="104" y="64" width="304" height="16" />
+      </g>
+    </svg>
+  )
+}
+
+const trackIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      fill="currentColor"
+      stroke="currentColor"
+      width="18"
+      height="18"
+      viewBox="0 0 512 512"
+    >
+      <path
+        d="M352.1,102.3c0-0.1,0-0.2,0-0.2c-0.1-0.3-0.1-0.5-0.2-0.8c0,0,0-0.1,0-0.1c-0.6-1.5-1.8-3-3.5-3.4l-2-0.4L256,78v272.6
+	c-8,0-22.4,0.4-44.5,1.3c-41.8,1.6-51.4,21.6-51.4,40.9c0,24.6,13.2,43.1,61.5,41c51.8-2.3,51.4-48.5,51.4-81.7V159.6l73.6,13.5l0,0
+	c3,0.6,5.4-2.3,5.4-5.3v-64.4C352,103,352.1,102.6,352.1,102.3z"
+      />
+    </svg>
   )
 }
