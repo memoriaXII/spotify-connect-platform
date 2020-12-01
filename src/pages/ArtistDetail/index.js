@@ -11,16 +11,23 @@ import React, {
 import axios from "axios"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEllipsisH, faPlay } from "@fortawesome/free-solid-svg-icons"
+import { faEllipsisH, faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 import AlbumContainer from "../../AlbumContainer"
 import ColorThief from "colorthief"
 
+import soundChartIcon from "../../images/soundChart.svg"
+
+import { SoundEqualizer } from "../../components/SoundEqualizer"
+
 import { AuthContext } from "../../context/auth"
+import { PlayerContext } from "../../context/player"
 
 export default (props) => {
   const { getToken } = useContext(AuthContext)
-  const { trimHeader, setTrimHeader, globalState } = props
+  const { globalState, playFn, pauseFn } = useContext(PlayerContext)
+
+  const { trimHeader, setTrimHeader } = props
 
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
@@ -160,37 +167,23 @@ export default (props) => {
   return (
     <div>
       <div class="summary">
-        <div
-          class="summary__banner"
-          // style={{
-          //   backgroundImage: `url(${
-          //     artistInfo && artistInfo.images && artistInfo.images[0].url
-          //   })`,
-          // }}
-        ></div>
+        <div class="summary__banner"></div>
         <div
           class="summary__bg"
           style={{
-            background: artistBackground,
-            // background: `linear-gradient(to top,  #e66465 10%, ${artistBackground} 20%`,
-          }}
-        ></div>
-        <div
-          class="summary__img"
-          style={{
-            backgroundImage: `url(${
+            background: `linear-gradient( to left bottom ,rgba(0,0,0,0.3),${artistBackground} 90%,${artistBackground}),
+            url(${
               artistInfo && artistInfo.images && artistInfo.images[0].url
             })`,
           }}
         ></div>
-        <div class="summary__box">
+
+        <div class="summary__box mt-8" style={{ marginTop: 50 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <span class="summary__text--black summary__text--for-me">
-                  {/* {playlistInfo &&
-                    playlistInfo.type &&
-                    playlistInfo.type.toUpperCase()} */}
+                <span class="summary__text--white summary__text--for-me">
+                  Artist
                 </span>
               </li>
               <li>
@@ -203,53 +196,69 @@ export default (props) => {
                   {/* {playlistInfo.description} */}
                 </p>
               </li>
-              {/* <li class="summary__text--by-spotify has-text-grey">
+              {/* <li class="summary__text--by-spotify has-text-white has-text-weight-light title is-6">
                 <p>
-                  Created by
-                  <span class="summary__text--black">
-                    {playlistInfo.owner && playlistInfo.owner.display_name}
+                  <span class="summary__text">
+                    {artistInfo.followers && artistInfo.followers.total}
+                    Followers
                   </span>
-                  &bull; 30 songs, 1 hr 49 min
                 </p>
               </li> */}
             </ul>
           </div>
-          <div class="buttons">
+          <div class="buttons mt-5">
+            {globalState &&
+            globalState.isPlaying &&
+            globalState.track &&
+            globalState.track.artists &&
+            globalState.track.artists.includes(
+              artistInfo && artistInfo.name
+            ) ? (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    pauseFn(getToken())
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPause} />
+                  <span class="ml-2">Pause</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={async (e) => {
+                    e.stopPropagation()
+                    await playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      "",
+                      artistTopTracks
+                    )
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faPlay}
+                    class="icon  ml-1 mr-2"
+                    style={{ fontSize: 8 }}
+                  />
+                  Play
+                </button>
+              </>
+            )}
+
             <button
-              class="button has-text-black has-text-centered has-text-weight-bold is-small"
-              style={{ borderRadius: 5 }}
-            >
-              <FontAwesomeIcon
-                icon={faPlay}
-                class="icon  ml-1 mr-2"
-                style={{ fontSize: 10 }}
-              />
-              Play
-            </button>
-            <button
-              class="button  has-text-centered has-text-weight-bold is-small"
+              class="button  has-text-centered has-text-weight-bold is-small is-rounded is-rounded has-text-white"
               style={{
-                borderRadius: 5,
-                border: `${1}px solid #601ce9`,
-                color: "#601ce9",
+                border: 0,
+                background: " #0088ff",
               }}
             >
               Follow
             </button>
-          </div>
-
-          <div class="summary__button">
-            {/* <ul class="button">
-              <li class="button__list button__play-btn">
-                <p class="button__text">PLAY</p>
-              </li>
-              <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li>
-            </ul> */}
           </div>
         </div>
       </div>
@@ -267,15 +276,7 @@ export default (props) => {
           alt={""}
           src={artistInfo && artistInfo.images && artistInfo.images[1].url}
         />
-        {/* <div
-              ref={artistRef}
-              class="summary__img"
-              style={{
-                backgroundImage: `url(${
-                  artistInfo && artistInfo.images && artistInfo.images[1].url
-                })`,
-              }}
-            ></div> */}
+
         <div class="summary__box">
           <div class="summary__text">
             <ul>
@@ -286,20 +287,24 @@ export default (props) => {
               </li>
             </ul>
           </div>
-          <div class="summary__button">
+          {/* <div class="summary__button">
             <ul class="button" style={{ border: 0 }}>
-              <li class="button__list button__play-btn has-text-black has-text-centered has-text-weight-bold is-small">
+              <li
+                class="button__list button__play-btn has-text-black has-text-centered has-text-weight-bold is-small"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    "",
+                    artistTopTracks
+                  )
+                }}
+              >
                 <p class="button__text">PLAY</p>
-                {/* <button class="button is-dark ">Play</button> */}
               </li>
-              {/* <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li> */}
             </ul>
-          </div>
+          </div> */}
         </div>
       </div>
       <div class="columns mt-5">
@@ -327,39 +332,43 @@ export default (props) => {
             <table class="playlist">
               <colgroup>
                 <col width="3%" />
-                <col width="3%" />
+                <col width="5%" />
                 <col width="35%" />
                 <col width="23%" />
-                <col width="7%" />
-                <col width="7%" />
-                <col width="3%" />
-                <col width="3%" />
               </colgroup>
-              {/* <tr class="playlist__tr">
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th">TITLE</th>
-            <th class="playlist__th">ALBUM</th>
-            <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th">
-              <i class="far fa-calendar-alt"></i>
-            </th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-          </tr> */}
 
               {artistTopTracks.map((item, index) => {
                 return (
-                  <tr class="playlist__tr" key={index}>
+                  <tr
+                    class={
+                      globalState.track && globalState.track.id == item.id
+                        ? "playlist__tr nowplay"
+                        : "playlist__tr "
+                    }
+                    key={index}
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        item.uri
+                      )
+                    }}
+                  >
                     <td
                       class="playlist__td playlist__td--play"
                       style={{ verticalAlign: "middle" }}
                     >
-                      <FontAwesomeIcon
-                        icon={faPlay}
-                        style={{ color: "grey" }}
-                      />
+                      {globalState.track && globalState.track.id == item.id ? (
+                        <SoundEqualizer />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faPlay}
+                          style={{ color: "grey" }}
+                        />
+                      )}
                     </td>
+
                     <td style={{ verticalAlign: "middle" }}>
                       <img
                         style={{ borderRadius: 5 }}
@@ -370,13 +379,13 @@ export default (props) => {
                     <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
                       {item.name}
 
-                      <p class="mt-2 has-text-grey">
+                      <p class="mt-2">
                         {item.artists.map((d) => d.name).join(", ")}
                       </p>
                     </td>
 
                     <td
-                      class="playlist__td playlist__td--artist has-text-grey"
+                      class="playlist__td playlist__td--artist"
                       style={{
                         fontSize: 12,
                         margin: "auto",

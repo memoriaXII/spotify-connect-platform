@@ -10,9 +10,9 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react"
+import { useHistory, useLocation } from "react-router-dom"
 import queryString from "query-string"
 import { usePrevious } from "../utils/customHook"
-import { useLocation } from "react-router-dom"
 
 import ColorThief from "colorthief"
 import { useWindowDimensions } from "../utils/customHook"
@@ -24,11 +24,6 @@ export const PlayerProvider = (props) => {
   const { deviceWidth, deviceHeight } = useWindowDimensions()
   const imgRef = useRef(null)
   const height = 380
-  var playerSyncInterval = 5
-  var playerProgressInterval = 5
-  var seekUpdateInterval = 100
-  var intervalId2
-  var intervalId
   let player = null
   let emptyTrack = {
     artists: "",
@@ -38,9 +33,9 @@ export const PlayerProvider = (props) => {
     name: "",
     uri: "",
   }
-
   const location = useLocation()
-
+  const history = useHistory()
+  const [isSeeking, setIsSeeking] = useState(false)
   const [leftScrollStatus, setLeftScrollStatus] = useState(false)
   const [rightScrollStatus, setRightScrollStatus] = useState(false)
   const [chartPlayListData, setChartPlayListData] = useState([])
@@ -53,6 +48,7 @@ export const PlayerProvider = (props) => {
   const [userCurrentPlayingTrack, setUserCurrentPlayingTrack] = useState({})
   const [userRecommendListData, setUserRecommendListData] = useState([])
   const [currentPlayingState, setCurrentPlayingState] = useState({})
+
   const ref = useRef(null)
   const scrollContainer = useRef(null)
   const [userCustomState, setUserCustomState] = useState({
@@ -72,7 +68,9 @@ export const PlayerProvider = (props) => {
     isInitializing: false,
     isMagnified: false,
     isPlaying: false,
+    isRepeated: false,
     isSaved: false,
+    isShuffled: false,
     isUnsupported: false,
     needsUpdate: false,
     nextTracks: [],
@@ -80,12 +78,20 @@ export const PlayerProvider = (props) => {
     previousTracks: [],
     status: false,
     track: {},
-    volume: 1,
     contextUrl: "",
   })
+
+  const [progressBar, setProgressBar] = useState({
+    position: 0,
+    progressMs: 0,
+  })
+
+  const [volumeBar, setVolumeBar] = useState({
+    volume: 0,
+  })
+
   const prevState = usePrevious(globalState)
   const prevCustomState = usePrevious(userCustomState)
-
   const progressBarStyles = {
     width:
       globalState && globalState.track
@@ -111,6 +117,7 @@ export const PlayerProvider = (props) => {
         return
       } else if (d.status === 401) {
         localStorage.removeItem("spotifyAuthToken")
+        history.push("/login")
       }
 
       return d.json()
@@ -140,6 +147,7 @@ export const PlayerProvider = (props) => {
       if (player.item) {
         track = {
           album: player.item.album,
+          artistsArray: player.item.artists,
           artists: player.item.artists.map((d) => d.name).join(", "),
           durationMs: player.item.duration_ms,
           id: player.item.id,
@@ -153,17 +161,23 @@ export const PlayerProvider = (props) => {
         error: "",
         errorType: "",
         isActive: true,
+        isRepeated: player.repeat_state == "track" ? true : false,
+        isShuffled: player.shuffle_state,
         isPlaying: player.is_playing,
         nextTracks: [],
         previousTracks: [],
-        progressMs: player.item ? player.progress_ms : 0,
         status: true,
         track: track,
-        volume: player.device.volume_percent / 100,
         currentDeviceId: player.device.id,
+      })
+      setVolumeBar({
+        volume: player.device.volume_percent / 100,
+      })
+      setProgressBar({
         position: Number(
           ((player.progress_ms / track.durationMs) * 100).toFixed(1)
         ),
+        progressMs: player.item ? player.progress_ms : 0,
       })
     } catch (error) {}
   }
@@ -213,23 +227,11 @@ export const PlayerProvider = (props) => {
     try {
       /* istanbul ignore else */
       if (state) {
-        // let {
-        //   current_track,
-        //   next_tracks: [next_track],
-        // } = state.track_window
-
-        console.log("Currently Playing", state.track_window)
-        // console.log([
-        //   ...state.track_window.previous_tracks,
-        //   ...state.track_window.next_tracks,
-        // ])
-
         setCachedAlbumsArray([
           ...state.track_window.previous_tracks,
           state.track_window.current_track,
           ...state.track_window.next_tracks,
         ])
-
         const isPlaying = !state.paused
         const {
           album,
@@ -239,7 +241,6 @@ export const PlayerProvider = (props) => {
           name,
           uri,
         } = state.track_window.current_track
-        // const volume = await player.getVolume()
 
         const track = {
           artists: artists.map((d) => d.name).join(", "),
@@ -256,8 +257,11 @@ export const PlayerProvider = (props) => {
           nextTracks: state.track_window.next_tracks,
           previousTracks: state.track_window.previous_tracks,
           track: track,
-          contextUrl: state.context.uri,
+          // contextUrl: state.context.uri,
+        })
+        setProgressBar({
           position: state.position,
+          // ...progressBar,
         })
       }
     } catch (error) {
@@ -310,40 +314,24 @@ export const PlayerProvider = (props) => {
       player.addListener("ready", handlePlayerStatus)
       player.addListener("not_ready", handlePlayerStatus)
       player.addListener("player_state_changed", handlePlayerStateChanges)
-      player.addListener(
-        "initialization_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("initialization_error", error.message)
-      )
-      player.addListener(
-        "authentication_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("authentication_error", error.message)
-      )
-      player.addListener(
-        "account_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("account_error", error.message)
-      )
-      player.addListener(
-        "playback_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("playback_error", error.message)
-      )
+      player.addListener("initialization_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("authentication_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("account_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("playback_error", (error) => {
+        console.log(error, "error")
+      })
       player.connect()
     })()
   }
 
   async function seek(validateToken, position) {
-    return fetch(
+    return await fetch(
       `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`,
       {
         headers: {
@@ -355,36 +343,33 @@ export const PlayerProvider = (props) => {
     )
   }
 
-  const handleChangeRange = async (position) => {
-    const { track } = globalState
-    try {
-      const percentage = position / 100
-
-      if (isExternalPlayer) {
-        await seek(authToken, Math.round(track.durationMs * percentage))
-        updateGlobalState({
-          position,
-          progressMs: Math.round(track.durationMs * percentage),
-          ...globalState,
-        })
-      } else if (player) {
-        const state = await player.getCurrentState()
-
-        if (state) {
-          await player.seek(
-            Math.round(
-              state.track_window.current_track.duration_ms * percentage
+  const handleChangeRange = useCallback(
+    async (position) => {
+      const { track } = globalState
+      try {
+        const percentage = position / 100
+        if (percentage) {
+          await setProgressBar({
+            position: position,
+            progressMs: Math.round(track.durationMs * percentage),
+          })
+          await seek(authToken, Math.round(track.durationMs * percentage))
+        } else if (player) {
+          const state = await player.getCurrentState()
+          if (state) {
+            await player.seek(
+              Math.round(
+                state.track_window.current_track.duration_ms * percentage
+              )
             )
-          )
-        } else {
-          updateGlobalState({ position: 0, ...globalState })
+          }
         }
+      } catch (error) {
+        console.error(error)
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error)
-    }
-  }
+    },
+    [globalState, progressBar]
+  )
 
   const setDeviceVolume = async (volume, deviceId) => {
     if (isExternalPlayer) {
@@ -392,72 +377,10 @@ export const PlayerProvider = (props) => {
     } else if (player) {
       await player.setVolume(volume)
     }
-    updateGlobalState({
+
+    setVolumeBar({
       volume: volume,
-      ...globalState,
     })
-  }
-
-  const toggleSyncInterval = async (shouldSync) => {
-    try {
-      if (isExternalPlayer && shouldSync && playerSyncInterval == undefined) {
-      }
-      if ((!shouldSync || !isExternalPlayer) && playerSyncInterval) {
-        clearInterval(playerSyncInterval)
-        playerSyncInterval = undefined
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const toggleProgressBar = () => {
-    const { isPlaying } = globalState
-
-    if (isPlaying) {
-      /* istanbul ignore else */
-      if (!playerProgressInterval) {
-        playerProgressInterval = window.setInterval(
-          updateSeekBar,
-          seekUpdateInterval
-        )
-      }
-    } else if (playerProgressInterval) {
-      clearInterval(playerProgressInterval)
-      playerProgressInterval = undefined
-    }
-  }
-
-  const updateSeekBar = async () => {
-    const { progressMs, track } = globalState
-    // alert(isExternalPlayer)
-    try {
-      /* istanbul ignore else */
-      if (isExternalPlayer) {
-        let position = progressMs / track.durationMs
-        position = Number.isFinite(position) ? position : 0
-        updateGlobalState({
-          position: Number((position * 100).toFixed(1)),
-          progressMs: progressMs + seekUpdateInterval,
-          ...globalState,
-        })
-      } else if (player) {
-        const state = await player.getCurrentState()
-
-        /* istanbul ignore else */
-        if (state) {
-          const position =
-            state.position / state.track_window.current_track.duration_ms
-          updateGlobalState({
-            position: Number((position * 100).toFixed(1)),
-            ...globalState,
-          })
-        }
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error)
-    }
   }
 
   async function AutoQueue(validateToken, id) {
@@ -487,6 +410,7 @@ export const PlayerProvider = (props) => {
     if (token) {
       setAuthToken(token)
       localStorage.setItem("spotifyAuthToken", token)
+      history.push(`/`)
     } else if (getToken()) {
       setAuthToken(getToken())
     }
@@ -496,22 +420,11 @@ export const PlayerProvider = (props) => {
     if (authToken) {
       initializePlayer(authToken)
     }
-    return () => (
-      player ? player.disconnect() : "",
-      clearInterval(playerSyncInterval),
-      clearInterval(playerProgressInterval)
-      // clearInterval(syncTimeout)
-    )
+    return () => (player ? player.disconnect() : "")
   }, [authToken])
 
-  const handlelogin = () => {
-    window.location = window.location.href.includes("localhost")
-      ? "http://localhost:8888/login"
-      : "https://spotify-auth-proxy-server.herokuapp.com/login"
-  }
   const getToken = () => {
     const windowSetting = typeof window !== "undefined" && window
-
     return (
       windowSetting &&
       windowSetting.localStorage &&
@@ -527,7 +440,8 @@ export const PlayerProvider = (props) => {
     offset = 0
   ) => {
     const parsedValues = {
-      artistSongs: artistUris && artistUris.map((x) => x.uri),
+      artistSongs:
+        artistUris && artistUris.map((x) => (x.track ? x.track.uri : x.uri)),
     }
     let body
     const { artistSongs } = parsedValues
@@ -568,19 +482,27 @@ export const PlayerProvider = (props) => {
   }
 
   useLayoutEffect(() => {
-    syncTimeout = setInterval(() => {
-      syncDevice(getToken())
-    }, 1000)
-    return () => clearInterval(syncTimeout)
+    if (getToken() && prevState !== globalState) {
+      syncTimeout = setInterval(() => {
+        syncDevice(getToken())
+      }, 800)
+      return () => clearInterval(syncTimeout)
+    }
   }, [getToken(), globalState])
 
   return (
     <PlayerContext.Provider
       value={{
+        volumeBar,
+        setIsSeeking,
+        syncTimeout,
+        updateGlobalState,
         setDeviceVolume,
         globalState,
+        progressBar,
         playFn,
         pauseFn,
+        handleChangeRange,
       }}
     >
       <>{props.children}</>
