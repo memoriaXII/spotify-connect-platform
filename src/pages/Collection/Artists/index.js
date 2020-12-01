@@ -84,11 +84,13 @@ export default (props) => {
           <div class="column is-3 album__item" key={index}>
             <div
               class="album__item__image__wrapper"
+              style={{ borderRadius: `${50}%` }}
               onClick={() => {
                 history.push(`/artist/${item.id}`)
               }}
             >
               <img
+                style={{ borderRadius: `${50}%` }}
                 class="album__item__image"
                 src={item && item.images[0].url}
                 alt=""
@@ -135,8 +137,8 @@ export default (props) => {
                 </a>
               </div>
             </div>
-            <div class="album__item__description">
-              <span class="album__item__title has-text-black">
+            <div class="album__item__description has-text-centered">
+              <span class="album__item__title title is-6 has-text-black has-text-centered">
                 {item && item.name}
               </span>
               {/* <span class="album__item__subtitle">
