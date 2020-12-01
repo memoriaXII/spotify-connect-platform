@@ -21,15 +21,21 @@ import { SoundEqualizer } from "../../components/SoundEqualizer"
 import { AuthContext } from "../../context/auth"
 import { PlayerContext } from "../../context/player"
 
+import ColorThief from "colorthief"
+
 import soundChartIcon from "../../images/soundChart.svg"
+import { useHistory } from "react-router-dom"
 
 export default (props) => {
+  const history = useHistory()
   const { getToken } = useContext(AuthContext)
   const { trimHeader, setTrimHeader } = props
   const { globalState, playFn, pauseFn } = useContext(PlayerContext)
   const [albumInfo, setAlbumInfo] = useState({})
   const [albumTracks, setAlbumTracks] = useState([])
   const [relatedAlbums, setRelatedAlbums] = useState([])
+  const [albumBackground, setAlbumBackground] = useState("")
+  const albumRef = useRef(null)
 
   const getSingleAlbumDes = (validateToken, id) => {
     const url = `https://api.spotify.com/v1/albums/${id}`
@@ -116,17 +122,77 @@ export default (props) => {
     }
   }, [getToken(), props.match.params.id])
 
-  console.log(
-    globalState &&
-      globalState.track &&
-      globalState.track.album &&
-      globalState.track.album.uri ==
-        (albumInfo && albumInfo.uri && albumInfo.uri),
-    "albuminfo"
-  )
+  useEffect(() => {
+    const rgbToHex = (r, g, b) =>
+      "#" +
+      [r, g, b]
+        .map((x) => {
+          const hex = x.toString(16)
+          return hex.length === 1 ? "0" + hex : hex
+        })
+        .join("")
+    if (albumInfo && albumInfo.images) {
+      const colorThief = new ColorThief()
+      const img = albumRef.current
+      img.onload = () => {
+        // image  has been loaded
+        const result = colorThief.getColor(img)
+        rgbToHex(result[0], result[1], result[2])
+        console.log(rgbToHex(result[0], result[1], result[2]), "test")
+        setAlbumBackground(rgbToHex(result[0], result[1], result[2]))
+      }
+      const rgbToHex = (r, g, b) =>
+        "#" +
+        [r, g, b]
+          .map((x) => {
+            const hex = x.toString(16)
+            return hex.length === 1 ? "0" + hex : hex
+          })
+          .join("")
+    }
+  }, [albumInfo])
+
+  console.log(albumInfo, "albumInfo")
+
+  const HoursCounter = () => {
+    let totalDuration = albumTracks.reduce((sum, eachSong) => {
+      return sum + eachSong.duration_ms
+    }, 0)
+    return (
+      <span class="has-text-grey-light">
+        {millisToMinutesAndSeconds2(totalDuration)}
+      </span>
+    )
+  }
+
+  const millisToMinutesAndSeconds2 = (millis) => {
+    var minutes = Math.floor((millis / (1000 * 60)) % 60)
+    var seconds = Math.floor((millis % 60000) / 1000).toFixed(0)
+    var hours = Math.floor((millis / (1000 * 60 * 60)) % 24)
+
+    var hours2 = hours < 10 ? "" + hours : hours
+    var minutes2 = minutes < 10 ? "" + minutes : minutes
+    var seconds2 = seconds < 10 ? "" + seconds : seconds
+
+    return (
+      (hours2 > 1 ? hours2 + " hr " : "") +
+      (minutes2 > 1 ? minutes2 + " min " : "") +
+      (seconds2 > 1 && minutes2 < 10 ? seconds2 + " sec" : "")
+    )
+  }
+
   return (
     <div>
       <div class="main__wrap summary">
+        <div class="summary__banner"></div>
+        <div
+          class="summary__bg"
+          style={{
+            background: `linear-gradient( to left bottom ,rgba(0,0,0,0.5),${albumBackground} 95%,${albumBackground}),
+            url(${albumInfo && albumInfo.images && albumInfo.images[0].url})`,
+            height: 290,
+          }}
+        ></div>
         <div
           class="summary__img"
           style={{
@@ -135,27 +201,46 @@ export default (props) => {
             })`,
           }}
         ></div>
+
         <div class="summary__box">
           <div class="summary__text">
             <ul>
               <li>
-                <span class="summary__text--black summary__text--for-me">
+                <span class="summary__text--black summary__text--for-me has-text-grey-light">
                   {albumInfo && albumInfo.type && albumInfo.type.toUpperCase()}
                 </span>
               </li>
               <li>
-                <strong class="summary__text--title">{albumInfo.name}</strong>
+                <strong class="summary__text--title has-text-white">
+                  {albumInfo.name}
+                </strong>
               </li>
               <li>
-                <p class="will-hidden has-text-grey">{albumInfo.description}</p>
+                <p class="will-hidden has-text-grey-light">
+                  {albumInfo.description}
+                </p>
               </li>
               <li class="summary__text--by-spotify has-text-grey">
-                <p>
-                  Created by
-                  <span class="summary__text--black">
-                    {albumInfo.owner && albumInfo.owner.display_name}
+                <p class="has-text-grey-light">
+                  By
+                  <span class="summary__text--white ml-1 mr-1">
+                    {albumInfo &&
+                      albumInfo.artists &&
+                      albumInfo.artists.map((item, index) => {
+                        return (
+                          <span
+                            class="ml-1"
+                            onClick={() => {
+                              history.push(`/artist/${item.id}`)
+                            }}
+                            key={index}
+                          >
+                            {item.name}
+                          </span>
+                        )
+                      })}
                   </span>
-                  &bull; 30 songs, 1 hr 49 min
+                  &bull; 30 songs, <HoursCounter />
                 </p>
               </li>
             </ul>
@@ -201,19 +286,6 @@ export default (props) => {
               </button>
             </>
           )}
-          <div class="summary__button">
-            {/* <ul class="button">
-              <li class="button__list button__play-btn">
-                <p class="button__text">PLAY</p>
-              </li>
-              <li class="button__list">
-                <i class="button__icon far fa-heart"></i>
-              </li>
-              <li class="button__list">
-                <i class="button__icon fas fa-ellipsis-h"></i>
-              </li>
-            </ul> */}
-          </div>
         </div>
       </div>
       <div
@@ -223,14 +295,14 @@ export default (props) => {
           borderBottom: `1px solid #eee`,
         }}
       >
-        <div
+        <img
           class="summary__img"
-          style={{
-            backgroundImage: `url(${
-              albumInfo && albumInfo.images && albumInfo.images[0].url
-            })`,
-          }}
-        ></div>
+          crossOrigin={"anonymous"}
+          ref={albumRef}
+          alt={""}
+          src={albumInfo && albumInfo.images && albumInfo.images[0].url}
+        />
+
         <div class="summary__box">
           <div class="summary__text">
             <ul>
@@ -241,48 +313,47 @@ export default (props) => {
               </li>
             </ul>
           </div>
-          <div class="summary__button">
-            <div class="buttons mt-5">
-              {globalState &&
-              globalState.track &&
-              globalState.isPlaying &&
-              globalState.track.album &&
-              globalState.track.album.uri ==
-                (albumInfo && albumInfo.uri && albumInfo.uri) ? (
-                <>
-                  <button
-                    class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
-                    onClick={async (e) => {
-                      await pauseFn(getToken())
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPause} />
-                    <span class="ml-2">Pause</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
-                    onClick={async (e) => {
-                      await playFn(
-                        getToken(),
-                        globalState.currentDeviceId,
-                        "",
-                        albumTracks
-                      )
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={faPlay}
-                      class="icon  ml-1 mr-2"
-                      style={{ fontSize: 8 }}
-                    />
-                    Play
-                  </button>
-                </>
-              )}
-            </div>
+
+          <div class="buttons mt-5">
+            {globalState &&
+            globalState.track &&
+            globalState.isPlaying &&
+            globalState.track.album &&
+            globalState.track.album.uri ==
+              (albumInfo && albumInfo.uri && albumInfo.uri) ? (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={async (e) => {
+                    await pauseFn(getToken())
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPause} />
+                  <span class="ml-2">Pause</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                  onClick={async (e) => {
+                    await playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      "",
+                      albumTracks
+                    )
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faPlay}
+                    class="icon  ml-1 mr-2"
+                    style={{ fontSize: 8 }}
+                  />
+                  Play
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -337,7 +408,10 @@ export default (props) => {
                   {globalState.track && globalState.track.id == item.id ? (
                     <SoundEqualizer />
                   ) : (
-                    <FontAwesomeIcon icon={faPlay} style={{ color: "grey" }} />
+                    <FontAwesomeIcon
+                      icon={faPlay}
+                      class="has-text-grey-light"
+                    />
                   )}
                 </td>
                 <td
@@ -369,7 +443,7 @@ export default (props) => {
                 >
                   {millisToMinutesAndSeconds(item.duration_ms)}
                 </td>
-                <td class="playlist__td playlist__td--dislike"></td>
+
                 <td
                   class="playlist__td playlist__td--more"
                   style={{ verticalAlign: "middle" }}
