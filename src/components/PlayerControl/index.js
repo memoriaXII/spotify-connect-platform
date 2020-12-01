@@ -39,8 +39,10 @@ import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
 import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
+import { useHistory } from "react-router-dom"
 
 export const PlayerControl = (props) => {
+  let history = useHistory()
   const {
     volumeBar,
     progressBar,
@@ -193,14 +195,29 @@ export const PlayerControl = (props) => {
             <p
               class="album-cover__title truncate"
               style={{ fontSize: 12, width: 200 }}
+              onClick={() => {
+                history.push(`/album/${globalState.track.album.id}`)
+              }}
             >
               {globalState && globalState.track && globalState.track.name}
             </p>
           </div>
-          <div>
-            <p class="album-cover__artist">
-              {globalState && globalState.track && globalState.track.artists}
-            </p>
+          <div class="album-cover">
+            {globalState &&
+              globalState.track &&
+              globalState.track.artistsArray &&
+              globalState.track.artistsArray.map((d) => {
+                return (
+                  <span
+                    class="album-cover__artist"
+                    onClick={() => {
+                      history.push(`/artist/${d.id}`)
+                    }}
+                  >
+                    {d.name}
+                  </span>
+                )
+              })}
           </div>
         </div>
       </div>
@@ -308,17 +325,13 @@ export const PlayerControl = (props) => {
           </li>
           <li>
             <p class="has-text-grey-light">
-              {
-                globalState.isPlaying
-                  ? millisToMinutesAndSeconds(
-                      globalState &&
-                        globalState.track &&
-                        globalState.track.durationMs
-                    )
-                  : millisToMinutesAndSeconds()
-                // userCurrentPlayingTrack &&
-                //   userCurrentPlayingTrack.duration_ms
-              }
+              {globalState.isPlaying
+                ? millisToMinutesAndSeconds(
+                    globalState &&
+                      globalState.track &&
+                      globalState.track.durationMs
+                  )
+                : millisToMinutesAndSeconds()}
             </p>
           </li>
         </ul>

@@ -147,6 +147,7 @@ export const PlayerProvider = (props) => {
       if (player.item) {
         track = {
           album: player.item.album,
+          artistsArray: player.item.artists,
           artists: player.item.artists.map((d) => d.name).join(", "),
           durationMs: player.item.duration_ms,
           id: player.item.id,
@@ -155,7 +156,6 @@ export const PlayerProvider = (props) => {
           uri: player.item.uri,
         }
       }
-
       updateGlobalState({
         contextUrl: player.context ? player.context.uri : "",
         error: "",
@@ -250,18 +250,18 @@ export const PlayerProvider = (props) => {
           name,
           uri,
         }
+
         updateGlobalState({
           isActive: true,
           isPlaying: isPlaying,
           nextTracks: state.track_window.next_tracks,
           previousTracks: state.track_window.previous_tracks,
           track: track,
-          contextUrl: state.context.uri,
+          // contextUrl: state.context.uri,
         })
-
         setProgressBar({
           position: state.position,
-          ...progressBar,
+          // ...progressBar,
         })
       }
     } catch (error) {
@@ -314,34 +314,18 @@ export const PlayerProvider = (props) => {
       player.addListener("ready", handlePlayerStatus)
       player.addListener("not_ready", handlePlayerStatus)
       player.addListener("player_state_changed", handlePlayerStateChanges)
-      player.addListener(
-        "initialization_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("initialization_error", error.message)
-      )
-      player.addListener(
-        "authentication_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("authentication_error", error.message)
-      )
-      player.addListener(
-        "account_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("account_error", error.message)
-      )
-      player.addListener(
-        "playback_error",
-        (error) => {
-          console.log(error, "error")
-        }
-        // handlePlayerErrors("playback_error", error.message)
-      )
+      player.addListener("initialization_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("authentication_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("account_error", (error) => {
+        console.log(error, "error")
+      })
+      player.addListener("playback_error", (error) => {
+        console.log(error, "error")
+      })
       player.connect()
     })()
   }
@@ -456,7 +440,8 @@ export const PlayerProvider = (props) => {
     offset = 0
   ) => {
     const parsedValues = {
-      artistSongs: artistUris && artistUris.map((x) => x.uri),
+      artistSongs:
+        artistUris && artistUris.map((x) => (x.track ? x.track.uri : x.uri)),
     }
     let body
     const { artistSongs } = parsedValues
