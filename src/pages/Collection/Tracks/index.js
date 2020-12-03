@@ -29,9 +29,20 @@ export default (props) => {
   const [savedTracks, setSavedTracks] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
+  const [current, setCurrent] = useState(1)
+  const handleNext = () => {
+    setCurrent(current + 1)
+  }
+  useEffect(() => {
+    setTrimHeader(false)
+    getSavedTracks(getToken(), current)
+  }, [current, getToken(), props.match.params.id])
 
-  const getSavedTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/me/tracks?market=TW&limit=50&offset=0`
+  const getSavedTracks = (validateToken, currentValue) => {
+    let previousArray = []
+    const url = `https://api.spotify.com/v1/me/tracks?market=TW&limit=50&offset=${
+      (currentValue - 1) * 10
+    }`
     axios
       .get(url, {
         method: "GET",
@@ -46,20 +57,14 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        setSavedTracks(response.data.items)
+        previousArray.push(...savedTracks, ...response.data.items)
+        setSavedTracks(previousArray)
       })
       .catch((err) => {
         // Handle Error Here
         console.error(err)
       })
   }
-
-  useLayoutEffect(() => {
-    setTrimHeader(false)
-    if (getToken()) {
-      getSavedTracks(getToken(), props.match.params.id)
-    }
-  }, [getToken(), props.match.params.id])
 
   useEffect(() => {
     if (globalState && globalState.track) {
@@ -263,6 +268,16 @@ export default (props) => {
             )
           })}
         </table>
+        <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
+          <button
+            class="button is-light is-outlined has-text-grey"
+            onClick={() => {
+              handleNext()
+            }}
+          >
+            Load More
+          </button>
+        </p>
       </div>
     </div>
   )
