@@ -62,75 +62,78 @@ const PlaylistContainer = (props) => {
   }
 
   const buildItems = () => {
-    return featuredPlaylistsData.map((item, index) => {
-      return (
-        <li
-          class="hs__item"
-          key={index}
-          onClick={() => {
-            history.push(`/playlist/${item.id}`)
-          }}
-        >
-          <div class="hs__item__image__wrapper">
-            <img class="hs__item__image" src={item.images[0].url} alt="" />
-          </div>
-          <div class="hs__item__description">
-            <span class="hs__item__title has-text-black">{item.name}</span>
-            <div
-              className="subtitle is-7 has-text-grey"
-              style={{
-                letterSpacing: 1,
-                lineHeight: 1.2,
-              }}
-              dangerouslySetInnerHTML={{
-                __html: urlDetection(
-                  (item && item.description.replace(/\n/g, "")) || ""
-                ),
-              }}
-            />
-          </div>
-          <div class="hs__item__play__button">
-            <a
-              href="javascript:void(0)"
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-            >
-              {globalState &&
-              globalState.isPlaying &&
-              globalState.contextUrl &&
-              globalState.contextUrl.includes(item && item.uri) ? (
-                <button
-                  class="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    pauseFn(getToken())
-                  }}
-                >
-                  <FontAwesomeIcon icon={faPause} />
-                </button>
-              ) : (
-                <button
-                  class="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    playFn(
-                      getToken(),
-                      globalState.currentDeviceId,
-                      "",
-                      "",
-                      item.uri
-                    )
-                  }}
-                >
-                  <FontAwesomeIcon icon={faPlay} />
-                </button>
-              )}
-            </a>
-          </div>
-        </li>
-      )
-    })
+    return (
+      featuredPlaylistsData &&
+      featuredPlaylistsData.map((item, index) => {
+        return (
+          <li
+            class="hs__item"
+            key={index}
+            onClick={() => {
+              history.push(`/playlist/${item.id}`)
+            }}
+          >
+            <div class="hs__item__image__wrapper">
+              <img class="hs__item__image" src={item.images[0].url} alt="" />
+            </div>
+            <div class="hs__item__description">
+              <span class="hs__item__title has-text-black">{item.name}</span>
+              <div
+                className="subtitle is-7 has-text-grey"
+                style={{
+                  letterSpacing: 1,
+                  lineHeight: 1.2,
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: urlDetection(
+                    (item && item.description.replace(/\n/g, "")) || ""
+                  ),
+                }}
+              />
+            </div>
+            <div class="hs__item__play__button">
+              <a
+                href="javascript:void(0)"
+                onClick={(e) => {
+                  e.stopPropagation()
+                }}
+              >
+                {globalState &&
+                globalState.isPlaying &&
+                globalState.contextUrl &&
+                globalState.contextUrl.includes(item && item.uri) ? (
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      pauseFn(getToken())
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPause} />
+                  </button>
+                ) : (
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        "",
+                        "",
+                        item.uri
+                      )
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlay} />
+                  </button>
+                )}
+              </a>
+            </div>
+          </li>
+        )
+      })
+    )
   }
 
   const buildControls = () => {
