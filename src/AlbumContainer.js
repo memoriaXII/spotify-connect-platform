@@ -32,12 +32,16 @@ const AlbumContainer = (props) => {
   })
 
   const checkForScrollPosition = () => {
-    const { scrollLeft, scrollWidth, clientWidth } = container.current
+    if (container && container.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = container.current
 
-    setstate({
-      canScrollLeft: scrollLeft > 0,
-      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-    })
+      setstate({
+        canScrollLeft: scrollLeft > 0,
+        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+      })
+    } else {
+      return
+    }
   }
 
   const checkForOverflow = () => {
