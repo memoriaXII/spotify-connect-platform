@@ -15,6 +15,8 @@
 @import "../node_modules/bulma/sass/components/tabs.sass";
 @import "../node_modules/bulma/sass/components/menu.sass";
 
+@import url(//db.onlinewebfonts.com/c/860c3ec7bbc5da3e97233ccecafe512e?family=Circular+Std+Book);
+
 $main-color-darker: #1dba54;
 $main-color: #1ed761;
 
@@ -29,44 +31,22 @@ $main-color: #1ed761;
 }
 
 @font-face {
-  font-family: spotify-circular;
-  src: url("https://open.scdn.co/fonts/CircularSpUIv3T-Light.woff2")
+  font-family: "Circular Std Book";
+  src: url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.eot");
+  src: url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.eot?#iefix")
+      format("embedded-opentype"),
+    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.woff2")
       format("woff2"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Light.woff") format("woff"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Light.ttf") format("ttf");
-  font-weight: 200;
-  font-style: normal;
-}
-@font-face {
-  font-family: spotify-circular;
-  src: url("https://open.scdn.co/fonts/CircularSpUIv3T-Book.woff2")
-      format("woff2"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Book.woff") format("woff"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Book.ttf") format("ttf");
-  font-weight: 400;
-  font-style: normal;
-}
-@font-face {
-  font-family: spotify-circular;
-  src: url("https://open.scdn.co/fonts/CircularSpUIv3T-Bold.woff2")
-      format("woff2"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Bold.woff") format("woff"),
-    url("https://open.scdn.co/fonts/CircularSpUIv3T-Bold.ttf") format("ttf");
-  font-weight: 600;
-  font-style: normal;
-}
-@font-face {
-  font-family: glue1-spoticon;
-  src: url("https://open.scdn.co/fonts/spoticon_regular_2.woff2")
-      format("woff2"),
-    url("https://open.scdn.co/fonts/spoticon_regular_2.woff") format("woff"),
-    url("https://open.scdn.co/fonts/spoticon_regular_2.ttf") format("ttf");
-  font-weight: 400;
-  font-style: normal;
+    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.woff")
+      format("woff"),
+    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.ttf")
+      format("truetype"),
+    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.svg#Circular Std Book")
+      format("svg");
 }
 
 * {
-  font-family: "spotify-circular" !important;
+  font-family: "Circular Std Book" !important;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -80,7 +60,7 @@ body {
   padding: 0;
   overflow-x: hidden;
   color: white;
-  font-family: "spotify-circular" !important;
+  font-family: "Circular Std Book" !important;
   // background: $bg;
   line-height: 1.5;
   letter-spacing: 0.15px;
@@ -464,6 +444,7 @@ $outline-color: #16262e;
   }
   &__title {
     color: rgb(0, 0, 0);
+
     &:hover {
       text-decoration: underline;
     }
@@ -780,7 +761,7 @@ $colsSmallDesktop: 4;
     }
 
     &__title {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600 !important;
       opacity: 0.9;
       color: rgba(33, 33, 33, 0.9) !important;
@@ -790,7 +771,6 @@ $colsSmallDesktop: 4;
       font-size: 13px;
       color: rgba(60, 67, 67, 0.6);
       display: block;
-      margin-bottom: 10px;
     }
     &__image__wrapper {
       cursor: pointer;
