@@ -14,9 +14,8 @@ import AlbumContainer from "./components/AlbumContainer"
 import PlaylistContainer from "./components/PlaylistContainer"
 import TopTracksContainer from "./components/TopTracksContainer"
 import RecentPlayedContainer from "./components/RecentPlayedContainer"
-import ChartsContainer from "./components/ChartsContainer"
 import ArtistContainer from "./components/ArtistContainer"
-import CarouselContainer from "./components/CarouselContainer"
+import Playlist2020 from "./components/Playlist2020"
 
 import { PlaylistContext } from "../../context/playlist"
 
@@ -41,18 +40,16 @@ export default (props) => {
   }
   return (
     <div>
-      <div class="ad__header mt-3">
-        <h2 class="ad__headline title is-4 has-text-black">Browse</h2>
+      <div class="ad__header mt-6">
+        <h2 class="ad__headline title is-3 has-text-black">Browse</h2>
       </div>
-      {/* <hr class="mt-3" />
-      <div class="mb-5">
-        <CarouselContainer />
-      </div> */}
       <hr />
       <AlbumContainer
         globalState={globalState}
         newReleaseData={newReleaseData}
       />
+      <Playlist2020 globalState={globalState} />
+      <hr />
       <RecentPlayedContainer globalState={globalState} />
 
       <hr class="mt-0" style={{ border: "grey" }} />
@@ -60,10 +57,6 @@ export default (props) => {
         globalState={globalState}
         featuredPlaylistsData={featuredPlaylistsData}
       />
-
-      <div class="is-hidden-touch">
-        <ChartsContainer />
-      </div>
       <hr class="mt-0" style={{ border: "grey" }} />
       <TopTracksContainer globalState={globalState} />
 
