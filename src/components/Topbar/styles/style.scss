@@ -1,0 +1,67 @@
+@mixin position($position, $top, $left) {
+  position: $position;
+  top: $top;
+  left: $left;
+}
+@mixin flex-justify-btw {
+  display: flex;
+  justify-content: space-between;
+}
+
+.top-bar {
+  // background: white;
+  position: fixed;
+  width: calc(100% - (550px));
+  height: 60px;
+  margin: auto;
+  padding: 10px 20px;
+  @include flex-justify-btw;
+  color: #ddd;
+  line-height: 24px;
+  z-index: 10;
+
+  &__wrap {
+    @include flex-justify-btw;
+  }
+  &__icon {
+    font-size: 18px;
+  }
+  &__left {
+    width: 240px;
+  }
+  &__search {
+    position: relative;
+    &--icon {
+      @include position(absolute, 5px, 8px);
+      color: #292929;
+      font-size: 16px;
+    }
+    &--input {
+      width: 176px;
+      height: 24px;
+      line-height: 24px;
+      text-indent: 30px;
+      border-radius: 13px;
+      outline: none;
+      border: none;
+    }
+  }
+  &__right {
+    width: 30px;
+
+    &--user-icon {
+      position: relative;
+      left: 12px;
+      font-size: 24px;
+    }
+  }
+  &__user-tab {
+    padding-left: 0.2em;
+    padding-right: 0.9em;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    border: 0px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+}

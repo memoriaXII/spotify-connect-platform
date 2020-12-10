@@ -1,0 +1,119 @@
+.side-chart {
+  position: relative;
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  background-color: #ffffff;
+  border-left: 2px solid #eee;
+  z-index: 3;
+
+  &__item {
+    opacity: 0;
+    cursor: pointer;
+    &__play__button {
+      cursor: pointer;
+      display: none;
+    }
+    &__play__duration {
+      cursor: pointer;
+      display: block;
+    }
+    &:hover {
+      background: rgba(213, 213, 213, 0.1);
+    }
+    &:hover &__play__button {
+      cursor: pointer;
+      display: block;
+      border: 0px;
+      background: rgba(201, 201, 201, 0);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: rgb(121, 121, 121);
+    }
+    &:hover &__play__duration {
+      cursor: pointer;
+      display: none;
+    }
+  }
+
+  &__wrap {
+    box-sizing: border-box;
+    padding: 0 20px;
+  }
+  &__nav {
+    // height: 200px;
+    .nav {
+      padding-top: 54px;
+      .active {
+        background: #3d83ff !important;
+        border-radius: 5px;
+        &:hover {
+          .nav__icon,
+          .nav__text {
+            color: rgb(255, 255, 255);
+          }
+        }
+        .nav__text {
+          color: white;
+        }
+        svg {
+          color: #ffffff;
+        }
+      }
+      &__list {
+        padding: 2px 0;
+        margin: auto;
+        padding-left: 10px;
+
+        &:hover {
+          background: rgba(205, 203, 203, 0.2);
+          .nav__icon,
+          .nav__text {
+            color: rgb(62, 62, 62);
+          }
+        }
+      }
+      &__icon {
+        margin-top: 4px;
+        width: 18px;
+        text-align: center;
+        font-size: 15px;
+        float: left;
+        color: #3d83ff;
+        font-size: #3d83ff;
+
+        svg {
+          color: #3d83ff;
+        }
+      }
+      &__text {
+        // color: rgb(40, 40, 40);
+        display: inline-block;
+        padding-left: 5px;
+        line-height: 15px;
+        font-size: 14px;
+        font-weight: 400;
+      }
+    }
+  }
+  //sidemenu - list: Middle box
+  &__contents {
+    height: calc(100% - 126px);
+    overflow-y: scroll;
+
+    .contents {
+      margin-bottom: 26px;
+
+      &__title {
+        font-size: 11px;
+        color: #898989;
+        padding: 0;
+        letter-spacing: 1.6px;
+      }
+      &__box {
+        margin-top: -10px;
+      }
+    }
+  }
+}
