@@ -6,8 +6,9 @@ import React, {
   useContext,
   useMemo,
   useLayoutEffect,
+  Component,
 } from "react"
-
+import { Flipper, Flipped, spring } from "react-flip-toolkit"
 import axios from "axios"
 
 import ColorThief from "colorthief"
@@ -37,14 +38,31 @@ export default (props) => {
     setCurrent(current + 1)
   }
 
+  const [state, setstate] = useState({ focused: null })
+  const onClick = (index) => {
+    console.log(index, "index")
+    setstate({
+      focused: state.focused === index ? null : index,
+    })
+  }
+
   useEffect(() => {
     getSaveAlbums(getToken(), current)
   }, [current])
 
+  useEffect(() => {
+    if (trimHeader) {
+      console.log(trimHeader, "trimheader")
+      onClick(0)
+    } else {
+      onClick(1)
+    }
+  }, [trimHeader])
+
   const getSaveAlbums = (validateToken, currentValue) => {
     let prevAlbumsArray = []
     const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=8&offset=${
-      (currentValue - 1) * 10
+      (currentValue - 1) * 8
     }`
     axios
       .get(url, {
@@ -88,6 +106,30 @@ export default (props) => {
   useLayoutEffect(() => {
     setTrimHeader(false)
   }, [getToken(), props.match.params.id])
+
+  // useEffect(() => {
+  //   if (testRef && testRef.current && saveAlbums) {
+  //     let someCollection = document.getElementsByClassName("album__item")
+  //     const arr = [...someCollection]
+  //     arr.forEach((el, i) => {
+  //       spring({
+  //         config: "wobbly",
+  //         values: {
+  //           translateY: [-40, 0],
+  //           opacity: [0.6, 1],
+  //         },
+  //         onUpdate: ({ translateY, opacity }) => {
+  //           el.style.opacity = opacity
+  //           el.style.transform = `translateY(${translateY}px)`
+  //         },
+  //         delay: i * 25,
+  //         onComplete: () => {
+  //           // add callback logic here if necessary
+  //         },
+  //       })
+  //     })
+  //   }
+  // }, [testRef, saveAlbums, current])
 
   const buildItems = () => {
     return (
@@ -154,24 +196,16 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top,#f3f2f7, #cbcad7, #a2a4b8, #78819a, #4e5f7d)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 90 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
+                <strong class="summary__text--title has-text-black">
                   Albums
                 </strong>
               </li>
             </ul>
           </div>
-          <div class="summary__button"></div>
         </div>
       </div>
       <div
@@ -191,21 +225,102 @@ export default (props) => {
           </div>
         </div>
       </div>
-      <div class="main__wrap" ref={testRef}>
-        <div class="columns is-multiline">
+
+      <div class="main__wrap">
+        <div className="columns is-multiline" ref={testRef}>
           {buildItems()}
-          <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
-            <button
-              class="button is-light is-outlined has-text-grey"
-              onClick={() => {
-                handleNext()
-              }}
-            >
-              Load More
-            </button>
-          </p>
         </div>
+        <p className="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
+          <button
+            className="button is-light is-outlined has-text-grey"
+            onClick={() => {
+              handleNext()
+            }}
+          >
+            Load More
+          </button>
+        </p>
       </div>
     </div>
   )
 }
+
+const listData = [...Array(1).keys()]
+const createCardFlipId = (index) => `listItem-${index}`
+
+const shouldFlip = (index) => (prev, current) =>
+  index === prev || index === current
+
+const ListItem = ({ index, onClick }) => {
+  return (
+    <Flipped flipId={createCardFlipId(index)} shouldInvert={shouldFlip(index)}>
+      <div className="listItem" onClick={() => onClick(index)}>
+        <Flipped inverseFlipId={createCardFlipId(index)}>
+          <div className="listItemContent">
+            <Flipped
+              flipId={`avatar-${index}`}
+              stagger="card-content"
+              shouldFlip={shouldFlip(index)}
+              delayUntil={createCardFlipId(index)}
+            >
+              <div
+                className="avatar"
+                style={{
+                  backgroundImage: `url(https://images.unsplash.com/photo-1591367841100-d760a1393d71?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwc3Vuc2V0fGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60)`,
+                }}
+              />
+            </Flipped>
+          </div>
+        </Flipped>
+      </div>
+    </Flipped>
+  )
+}
+
+const ExpandedListItem = ({ index, onClick }) => {
+  return (
+    <Flipped flipId={createCardFlipId(index)}>
+      <div className="expandedListItem" onClick={() => onClick(index)}>
+        <Flipped inverseFlipId={createCardFlipId(index)}>
+          <div className="expandedListItemContent">
+            <Flipped
+              flipId={`avatar-${index}`}
+              delayUntil={createCardFlipId(index)}
+            >
+              <div
+                className="avatar avatarExpanded"
+                style={{
+                  backgroundImage: `url(https://images.unsplash.com/photo-1591367841100-d760a1393d71?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwc3Vuc2V0fGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60)`,
+                }}
+              />
+            </Flipped>
+          </div>
+        </Flipped>
+      </div>
+    </Flipped>
+  )
+}
+
+// ;<Flipper
+//   flipKey={state.focused}
+//   className="staggered-list-content"
+//   spring="gentle"
+//   staggerConfig={{
+//     card: {
+//       reverse: state.focused !== null,
+//     },
+//   }}
+//   decisionData={state.focused}
+// >
+//   {listData.map((index) => {
+//     return (
+//       <li key={index}>
+//         {index === state.focused ? (
+//           <ExpandedListItem index={state.focused} onClick={onClick} />
+//         ) : (
+//           <ListItem index={index} key={index} onClick={onClick} />
+//         )}
+//       </li>
+//     )
+//   })}
+// </Flipper>

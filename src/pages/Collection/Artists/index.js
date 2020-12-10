@@ -32,7 +32,7 @@ export default (props) => {
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
   const [current, setCurrent] = useState("")
-  const [afterRowsID, setAfterRowsID] = useState("3434")
+  const [afterRowsID, setAfterRowsID] = useState("")
 
   const handleNext = (value) => {
     setCurrent(value)
@@ -170,24 +170,16 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top, #f3f2f7, #cec5cb, #aa9a9b, #83736a, #565040)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 90 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
+                <strong class="summary__text--title has-text-black">
                   Artists
                 </strong>
               </li>
             </ul>
           </div>
-          <div class="summary__button"></div>
         </div>
       </div>
       <div

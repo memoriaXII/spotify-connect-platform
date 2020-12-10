@@ -83,18 +83,11 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top, #f3f2f7, #eae7f6, #e0dbf5, #d7d0f3, #cec5f2)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 120 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
+                <strong class="summary__text--title has-text-black">
                   Liked Songs
                 </strong>
               </li>
@@ -165,7 +158,7 @@ export default (props) => {
           </div>
         </div>
       </div>
-      <div class="main__wrap">
+      <div class="main__wrap mt-5">
         <table class="playlist">
           <colgroup>
             <col width="3%" />

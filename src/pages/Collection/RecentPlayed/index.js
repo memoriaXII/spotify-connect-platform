@@ -30,12 +30,25 @@ export default (props) => {
   const { globalState, playFn, pauseFn } = useContext(PlayerContext)
   const { userPlayedTracksListData } = useContext(PlaylistContext)
   const [playlistInfo, setPlaylistInfo] = useState({})
-  const [saveAlbums, setSaveAlbums] = useState([])
+  const [recentPlayed, setRecentPlayed] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
+  const [current, setCurrent] = useState("")
+  const [afterRowsID, setBeforeRowsID] = useState("")
 
-  const getSaveAlbums = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=50&offset=0`
+  const handleNext = (value) => {
+    setCurrent(value)
+  }
+
+  useEffect(() => {
+    setTrimHeader(false)
+    getRecentPlayed(getToken(), current)
+  }, [current, getToken(), props.match.params.id])
+
+  const getRecentPlayed = (validateToken, currentValue) => {
+    const afterCondition = currentValue == "" ? `` : `&before=${currentValue}`
+    let prevRecentPlayedArray = []
+    const url = `https://api.spotify.com/v1/me/player/recently-played?limit=20${afterCondition}`
     axios
       .get(url, {
         method: "GET",
@@ -50,7 +63,16 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        setSaveAlbums(response.data.items)
+        let cleanArtistAlbumsArray = response.data.items.filter(
+          (ele, ind) =>
+            ind ===
+            response.data.items.findIndex(
+              (elem) => elem.track.name === ele.track.name
+            )
+        )
+        prevRecentPlayedArray.push(...recentPlayed, ...cleanArtistAlbumsArray)
+        setBeforeRowsID(response.data.cursors && response.data.cursors.before)
+        setRecentPlayed(prevRecentPlayedArray)
       })
       .catch((err) => {
         // Handle Error Here
@@ -58,17 +80,10 @@ export default (props) => {
       })
   }
 
-  useLayoutEffect(() => {
-    setTrimHeader(false)
-    if (getToken()) {
-      getSaveAlbums(getToken(), props.match.params.id)
-    }
-  }, [getToken(), props.match.params.id])
-
   const buildItems = () => {
     return (
-      userPlayedTracksListData &&
-      userPlayedTracksListData.map((item, index) => {
+      recentPlayed &&
+      recentPlayed.map((item, index) => {
         return (
           <div class="column is-3 album__item" key={index}>
             <div
@@ -177,7 +192,21 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap">
-        <div class="columns is-multiline">{buildItems()}</div>
+        <div class="columns is-multiline">
+          {buildItems()}
+          {afterRowsID ? (
+            <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
+              <button
+                class="button is-light is-outlined has-text-grey"
+                onClick={() => {
+                  handleNext(afterRowsID)
+                }}
+              >
+                Load More
+              </button>
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   )
