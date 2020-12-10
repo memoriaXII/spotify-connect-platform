@@ -87,7 +87,7 @@ export const getNewReleasesFn = async () => {
 
 export const getFeaturedPlaylistsFn = async () => {
   try {
-    const response = await SpotifyAPI().get(`/browse/featured-playlists`)
+    const response = await SpotifyAPI().get(`/users/spotify/playlists`)
     return response
   } catch (e) {
     return e.response
