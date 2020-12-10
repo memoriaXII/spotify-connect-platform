@@ -180,17 +180,23 @@ const AlbumContainer = (props) => {
   }
 
   useEffect(() => {
-    checkForOverflow()
-    checkForScrollPosition()
-    container.current.addEventListener("scroll", debounceCheckForScrollPosition)
-    return (
-      () =>
-        container.current.removeEventListener(
-          "scroll",
-          debounceCheckForScrollPosition
-        ),
-      debounceCheckForOverflow.cancel()
-    )
+    if (container && container.curren) {
+      checkForOverflow()
+      checkForScrollPosition()
+
+      container.current.addEventListener(
+        "scroll",
+        debounceCheckForScrollPosition
+      )
+      return (
+        () =>
+          container.current.removeEventListener(
+            "scroll",
+            debounceCheckForScrollPosition
+          ),
+        debounceCheckForOverflow.cancel()
+      )
+    }
   }, [])
   const prevState = usePrevious(newReleaseData)
 

@@ -36,12 +36,16 @@ const PlaylistContainer = (props) => {
   })
 
   const checkForScrollPosition = () => {
-    const { scrollLeft, scrollWidth, clientWidth } = container.current
+    if (container && container.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        container && container.current
 
-    setstate({
-      canScrollLeft: scrollLeft > 0,
-      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-    })
+      setstate({
+        canScrollLeft: scrollLeft > 0,
+        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+      })
+    }
+    return null
   }
 
   const checkForOverflow = () => {
@@ -188,12 +192,7 @@ const PlaylistContainer = (props) => {
     <div>
       <div class="hs__header">
         <h2 class="hs__headline has-text-black">
-          <div class="title is-5">
-            <p class="title is-7 mt-2 mb-2" style={{ color: "#5500ff" }}>
-              LIBRARY
-            </p>
-            Popular playlists
-          </div>
+          <div class="title is-5">Popular playlists</div>
         </h2>
         {buildControls()}
       </div>
