@@ -135,7 +135,7 @@ const Playlist2020 = (props) => {
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">{item.name}</span>
               <div
-                className="subtitle is-7 has-text-grey"
+                className="subtitle is-7 has-text-grey mt-1"
                 style={{
                   letterSpacing: 1,
                   lineHeight: 1.2,
@@ -242,7 +242,7 @@ const Playlist2020 = (props) => {
   const prevState = usePrevious(featuredPlaylistsData)
 
   useEffect(() => {
-    if (undefined !== prevState && featuredPlaylistsData.length) {
+    if (undefined !== prevState && featuredPlaylistsData) {
       if (prevState.length !== featuredPlaylistsData.length) {
         checkForOverflow()
         checkForScrollPosition()
