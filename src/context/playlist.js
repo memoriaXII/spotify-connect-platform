@@ -19,6 +19,9 @@ import {
   getNewReleasesFn,
   getFeaturedPlaylistsFn,
 } from "../apis/playlist"
+
+import { getUserCurrentPodCastPlaylist } from "../apis/podcast"
+
 import axios from "axios"
 
 export const PlaylistContext = createContext({})
@@ -34,6 +37,7 @@ export const PlaylistProvider = (props) => {
   const [newReleaseData, setNewReleaseData] = useState([])
   const [featuredPlaylistsData, setFeaturedPlaylistsData] = useState([])
   const [userRecommendListData, setUserRecommendListData] = useState([])
+  const [userPodCastData, setUserPodCastData] = useState([])
 
   const getUserRecommendList = async () => {
     try {
@@ -45,12 +49,21 @@ export const PlaylistProvider = (props) => {
     }
   }
 
+  const getCurrentPodCastPlaylist = async () => {
+    try {
+      const { data } = await getUserCurrentPodCastPlaylist()
+      console.log(data, "data")
+      setUserPodCastData(data.items)
+      return data.tracks
+    } catch (e) {
+      return e.response
+    }
+  }
+
   const getNewReleases = async () => {
     try {
       const { data } = await getNewReleasesFn()
-
       setNewReleaseData(data.albums.items)
-
       return data.items
     } catch (e) {
       return e.response
@@ -60,7 +73,7 @@ export const PlaylistProvider = (props) => {
   const getFeaturedPlaylists = async () => {
     try {
       const { data } = await getFeaturedPlaylistsFn()
-      setFeaturedPlaylistsData(data.playlists.items)
+      setFeaturedPlaylistsData(data.items)
       return data.items
     } catch (e) {
       return e.response
@@ -180,11 +193,13 @@ export const PlaylistProvider = (props) => {
       getUserAllPlayLists()
       getNewReleases()
       getFeaturedPlaylists()
+      getCurrentPodCastPlaylist()
     }
   }, [getToken()])
   return (
     <PlaylistContext.Provider
       value={{
+        userPodCastData,
         featuredPlaylistsData,
         userRecommendListData,
         sidePlayListData,

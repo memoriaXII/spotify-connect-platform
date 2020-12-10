@@ -36,16 +36,12 @@ const PlaylistContainer = (props) => {
   })
 
   const checkForScrollPosition = () => {
-    if (container && container.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        container && container.current
+    const { scrollLeft, scrollWidth, clientWidth } = container.current
 
-      setstate({
-        canScrollLeft: scrollLeft > 0,
-        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-      })
-    }
-    return null
+    setstate({
+      canScrollLeft: scrollLeft > 0,
+      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+    })
   }
 
   const checkForOverflow = () => {

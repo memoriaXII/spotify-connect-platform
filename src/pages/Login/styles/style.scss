@@ -1,0 +1,54 @@
+.login__section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: 150%;
+  background-repeat: no-repeat;
+  background-position: left;
+  animation: slide 40s ease;
+  transform: translate3d(0, 0, 0);
+  height: 100vh;
+  position: relative;
+  // background: #3D83FF;
+  background-image: linear-gradient(
+      to bottom,
+      rgba(243, 121, 221, 0),
+      rgba(28, 29, 29, 0.9)
+    ),
+    url("https://www.apple.com/v/airpods-max/a/images/overview/design_comfort__f5gwnm9e6ci2_xlarge_2x.jpg");
+  width: 100%;
+  background-size: cover;
+  color: white;
+  padding: 20px;
+  &__content {
+    box-sizing: border-box;
+
+    button {
+      box-shadow: 0 20px 20px 3px rgba(50, 49, 49, 0.2);
+      box-shadow: 0 20px 20px 3px rgba(50, 49, 49, 0.2);
+      border: 1px solid #ffffff;
+      background: transparent;
+      font-size: 15px;
+      color: white;
+      &:hover {
+        color: rgb(230, 230, 230);
+      }
+    }
+  }
+}
+
+.login__section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  // background: linear-gradient(
+  //   0deg,
+  //   #000 0%,
+  //   rgba(0, 0, 0, 0.5) 12%,
+  //   rgba(0, 0, 0, 0.1) 30%,
+  //   rgba(0, 0, 0, 0) 40%
+  // );
+}

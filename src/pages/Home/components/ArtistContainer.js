@@ -42,13 +42,16 @@ const ArtistContainer = (props) => {
   }
 
   const checkForScrollPosition = () => {
-    const { scrollLeft, scrollWidth, clientWidth } =
-      container && container.current
+    if (container && container.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        container && container.current
 
-    setstate({
-      canScrollLeft: scrollLeft > 0,
-      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-    })
+      setstate({
+        canScrollLeft: scrollLeft > 0,
+        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+      })
+    }
+    return null
   }
 
   const checkForOverflow = () => {

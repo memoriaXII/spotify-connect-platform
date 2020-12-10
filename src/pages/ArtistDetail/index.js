@@ -27,7 +27,7 @@ export default (props) => {
   const { getToken } = useContext(AuthContext)
   const { globalState, playFn, pauseFn } = useContext(PlayerContext)
 
-  const { trimHeader, setTrimHeader } = props
+  const { trimHeader, setTrimHeader, setGradientNum } = props
 
   const [playlistInfo, setPlaylistInfo] = useState({})
   const [playlistTracks, setPlaylistTracks] = useState([])
@@ -124,8 +124,9 @@ export default (props) => {
       })
   }
 
-  useLayoutEffect(() => {
-    setTrimHeader(false)
+  useEffect(() => {
+    // setTrimHeader(false)
+    // setGradientNum(1000)
     if (getToken()) {
       getArtistAlbums(getToken(), props.match.params.id)
       getArtistTopTracks(getToken(), props.match.params.id)
@@ -254,7 +255,7 @@ export default (props) => {
               class="button  has-text-centered has-text-weight-bold is-small is-rounded is-rounded has-text-white"
               style={{
                 border: 0,
-                background: " #0088ff",
+                background: "#3D83FF",
               }}
             >
               Follow

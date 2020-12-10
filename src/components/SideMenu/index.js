@@ -15,7 +15,13 @@ import playlistIcon from "../../images/playlist.svg"
 import plusIcon from "../../images/ios-plus-outline.svg"
 import downloadIcon from "../../images/download.svg"
 
-import { Link, BrowserRouter, useHistory, useParams } from "react-router-dom"
+import {
+  Link,
+  BrowserRouter,
+  useHistory,
+  useParams,
+  useLocation,
+} from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
   faCompass,
@@ -29,9 +35,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { PlaylistContext } from "../../context/playlist"
 
+import "./styles/style.scss"
+
 export const SideMenu = (props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
+  let location = useLocation()
 
   return (
     <div>
@@ -96,11 +105,16 @@ export const SideMenu = (props) => {
                           </div>
                           <div
                             class="column is-10 mt-1 has-text-black"
-                            style={{ margin: "auto", fontWeight: 300 }}
+                            style={{ margin: "auto" }}
                           >
                             <p
                               class="album-cover__title truncate"
-                              style={{ fontSize: 12, width: 150 }}
+                              style={{
+                                fontSize: 12,
+                                width: 150,
+                                fontWeight: 300,
+                                opacity: 0.7,
+                              }}
                             >
                               {item.name}
                             </p>
@@ -134,6 +148,7 @@ export const SideMenu = (props) => {
 }
 
 const UserNavLink = () => {
+  let location = useLocation()
   const [menuState, setMenuState] = useState({
     activeLink: null,
   })
@@ -142,8 +157,8 @@ const UserNavLink = () => {
     {
       id: 1,
       icon: clockIcon(),
-      name: "Recently Added",
-      to: "/",
+      name: "Recently Played",
+      to: "/collection/recent-played",
       className: "contents__list",
     },
     {
@@ -185,7 +200,10 @@ const UserNavLink = () => {
               <Link to={link.to}>
                 <li
                   className={
-                    link.className + (link.id === activeLink ? " on " : "")
+                    link.className +
+                    (link.id === activeLink && location.pathname == link.to
+                      ? " on "
+                      : "")
                   }
                   key={link.id}
                   onClick={async () => {
@@ -210,30 +228,31 @@ const UserNavLink = () => {
 }
 
 const MainNavLink = () => {
+  let location = useLocation()
   const [state, setstate] = useState({
-    activeLink: 2,
+    activeLink: 1,
   })
 
   const navLinks = [
+    // {
+    //   id: 1,
+    //   icon: playOutlineIcon(),
+    //   name: "Listen now",
+    //   to: "/listen-now",
+    //   className: "nav__list",
+    // },
     {
       id: 1,
-      icon: playOutlineIcon(),
-      name: "Listen now",
-      to: "/listen-now",
-      className: "nav__list",
-    },
-    {
-      id: 2,
       icon: browseIcon(),
       name: "Browse",
       to: "/",
       className: "nav__list",
     },
     {
-      id: 3,
+      id: 2,
       icon: brodcastIcon(),
       name: "Brodcast",
-      to: "/brodcast",
+      to: "/broadcast",
       className: "nav__list",
     },
   ]
@@ -256,7 +275,9 @@ const MainNavLink = () => {
                   <li
                     className={
                       link.className +
-                      (link.id === activeLink ? " active " : "")
+                      (link.id === activeLink && location.pathname == link.to
+                        ? " active "
+                        : "")
                     }
                     key={link.id}
                     onClick={async () => {

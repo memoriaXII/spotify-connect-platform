@@ -31,9 +31,20 @@ export default (props) => {
   const [savedArtists, setSavedArtists] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
+  const [current, setCurrent] = useState("")
+  const [afterRowsID, setAfterRowsID] = useState("")
 
-  const getSavedArtists = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/me/following?type=artist&limit=50`
+  const handleNext = (value) => {
+    setCurrent(value)
+  }
+  useEffect(() => {
+    getSavedArtists(getToken(), current)
+  }, [current])
+
+  const getSavedArtists = (validateToken, currentValue) => {
+    const afterCondition = currentValue == "" ? `` : `&after=${currentValue}`
+    const url = `https://api.spotify.com/v1/me/following?type=artist&limit=8${afterCondition}`
+    let previousArtistArray = []
     axios
       .get(url, {
         method: "GET",
@@ -48,8 +59,13 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response, "savetracks")
-        setSavedArtists(response.data.artists.items)
+        previousArtistArray.push(
+          ...savedArtists,
+          ...response.data.artists.items
+        )
+        console.log(response.data.artists, "response.data.artists")
+        setAfterRowsID(response.data.artists.cursors.after)
+        setSavedArtists(previousArtistArray)
       })
       .catch((err) => {
         console.error(err)
@@ -71,9 +87,9 @@ export default (props) => {
 
   useLayoutEffect(() => {
     setTrimHeader(false)
-    if (getToken()) {
-      getSavedArtists(getToken(), props.match.params.id)
-    }
+    // if (getToken()) {
+    //   getSavedArtists(getToken(), props.match.params.id)
+    // }
   }, [getToken(), props.match.params.id])
 
   const buildItems = () => {
@@ -154,24 +170,16 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top, #f3f2f7, #cec5cb, #aa9a9b, #83736a, #565040)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 90 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
+                <strong class="summary__text--title has-text-black">
                   Artists
                 </strong>
               </li>
             </ul>
           </div>
-          <div class="summary__button"></div>
         </div>
       </div>
       <div
@@ -192,7 +200,22 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap">
-        <div class="columns is-multiline">{buildItems()}</div>
+        <div class="columns is-multiline">
+          {buildItems()}
+          {afterRowsID ? (
+            <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
+              <button
+                class="button is-light is-outlined has-text-grey"
+                onClick={() => {
+                  console.log(afterRowsID)
+                  handleNext(afterRowsID)
+                }}
+              >
+                Load More
+              </button>
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   )

@@ -81,6 +81,8 @@ export const PlayerProvider = (props) => {
     contextUrl: "",
   })
 
+  const [testText, setTestText] = useState("")
+
   const [progressBar, setProgressBar] = useState({
     position: 0,
     progressMs: 0,
@@ -105,17 +107,20 @@ export const PlayerProvider = (props) => {
   }
 
   async function getPlaybackState(token) {
-    return fetch(`https://api.spotify.com/v1/me/player`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      method: "GET",
-    }).then((d) => {
-      if (d.status === 204) {
+    return fetch(
+      `https://api.spotify.com/v1/me/player?market=TW&additional_types=episode`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
+      }
+    ).then((d) => {
+      if (d.status == 204) {
         AutoQueue(authToken, globalState.currentDeviceId)
         return
-      } else if (d.status === 401) {
+      } else if (d.status == 401) {
         localStorage.removeItem("spotifyAuthToken")
         history.push("/login")
       }
@@ -144,41 +149,71 @@ export const PlayerProvider = (props) => {
       if (!player) {
         throw new Error("No player")
       }
-      if (player.item) {
-        track = {
-          album: player.item.album,
-          artistsArray: player.item.artists,
-          artists: player.item.artists.map((d) => d.name).join(", "),
-          durationMs: player.item.duration_ms,
-          id: player.item.id,
-          image: player.item.album.images[0].url,
-          name: player.item.name,
-          uri: player.item.uri,
+
+      if (player.currently_playing_type == "track") {
+        if (player.item) {
+          track = {
+            album: player.item.album,
+            artistsArray: player.item.artists,
+            artists: player.item.artists.map((d) => d.name).join(", "),
+            durationMs: player.item.duration_ms,
+            id: player.item.id,
+            image: player.item.album.images[0].url,
+            name: player.item.name,
+            uri: player.item.uri,
+          }
         }
+        updateGlobalState({
+          contextUrl: player.context ? player.context.uri : "",
+          error: "",
+          errorType: "",
+          isActive: true,
+          isRepeated: player.repeat_state == "track" ? true : false,
+          isShuffled: player.shuffle_state,
+          isPlaying: player.is_playing,
+          nextTracks: [],
+          previousTracks: [],
+          status: true,
+          track: track,
+          currentDeviceId: player.device.id,
+        })
+        setVolumeBar({
+          volume: player.device.volume_percent / 100,
+        })
+        setProgressBar({
+          position: Number(
+            ((player.progress_ms / track.durationMs) * 100).toFixed(1)
+          ),
+          progressMs: player.item ? player.progress_ms : 0,
+        })
+        return
+      } else if (player.currently_playing_type == "episode") {
+        updateGlobalState({
+          track: {
+            name: player.item.name,
+            artistsArray: [
+              { name: player.item.show.name, id: player.item.show.id },
+            ],
+            id: player.item.id,
+            image: player.item.images[0].url,
+            uri: player.item.uri,
+            durationMs: player.item.duration_ms,
+          },
+          isShuffled: player.shuffle_state,
+          isPlaying: player.is_playing,
+          currentDeviceId: player.device.id,
+        })
+        setVolumeBar({
+          volume: player.device.volume_percent / 100,
+        })
+        setProgressBar({
+          position: Number(
+            ((player.progress_ms / player.item.duration_ms) * 100).toFixed(1)
+          ),
+          progressMs: player ? player.progress_ms : 0,
+        })
       }
-      updateGlobalState({
-        contextUrl: player.context ? player.context.uri : "",
-        error: "",
-        errorType: "",
-        isActive: true,
-        isRepeated: player.repeat_state == "track" ? true : false,
-        isShuffled: player.shuffle_state,
-        isPlaying: player.is_playing,
-        nextTracks: [],
-        previousTracks: [],
-        status: true,
-        track: track,
-        currentDeviceId: player.device.id,
-      })
-      setVolumeBar({
-        volume: player.device.volume_percent / 100,
-      })
-      setProgressBar({
-        position: Number(
-          ((player.progress_ms / track.durationMs) * 100).toFixed(1)
-        ),
-        progressMs: player.item ? player.progress_ms : 0,
-      })
+      return
     } catch (error) {}
   }
 
@@ -250,7 +285,6 @@ export const PlayerProvider = (props) => {
           name,
           uri,
         }
-
         updateGlobalState({
           isActive: true,
           isPlaying: isPlaying,
@@ -493,6 +527,7 @@ export const PlayerProvider = (props) => {
   return (
     <PlayerContext.Provider
       value={{
+        testText,
         volumeBar,
         setIsSeeking,
         syncTimeout,

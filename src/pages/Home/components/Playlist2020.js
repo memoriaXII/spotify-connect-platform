@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect, useContext } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
-
+import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
+import axios from "axios"
 
 import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
@@ -17,17 +17,78 @@ function usePrevious(value) {
   return ref.current
 }
 
-const TopTracksContainer = (props) => {
-  const { userTopTracksListData } = useContext(PlaylistContext)
-  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
-  const { getToken } = useContext(AuthContext)
+const urlDetection = (text) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  return text.replace(urlRegex, function (url) {
+    return '<a class="omg" href="' + url + '">' + url + "</a>"
+  })
+}
+
+const Playlist2020 = (props) => {
   let history = useHistory()
+  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
+  const { featuredPlaylistsData } = useContext(PlaylistContext)
+  const { getToken } = useContext(AuthContext)
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
     canScrollLeft: false,
     canScrollRight: false,
   })
+
+  const [userTop2020Songs, setUserTop2020Songs] = useState({})
+  const [userMissHitSongs, setUserMissHitSongs] = useState({})
+
+  const getUserTop2020Playlist = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/playlists/${id}`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        setUserTop2020Songs(response.data)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
+  const getUserMissedHitsPlaylist = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/playlists/${id}`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        setUserMissHitSongs(response.data)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
+  useEffect(() => {
+    getUserTop2020Playlist(getToken(), "37i9dQZF1EMc4fdopPFnaO")
+    getUserMissedHitsPlaylist(getToken(), "37i9dQZF1EO91j1ytS1iRc")
+  }, [getToken()])
 
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current
@@ -53,27 +114,42 @@ const TopTracksContainer = (props) => {
 
   const buildItems = () => {
     return (
-      userTopTracksListData &&
-      userTopTracksListData.map((item, index) => {
+      userTop2020Songs &&
+      userMissHitSongs &&
+      [userTop2020Songs, userMissHitSongs].map((item, index) => {
         return (
-          <li class="hs__item" key={index}>
-            <div
-              class="hs__item__image__wrapper"
-              onClick={() => {
-                history.push(`/album/${item.album.id}`)
-              }}
-            >
+          <li
+            class="hs__item"
+            key={index}
+            onClick={() => {
+              history.push(`/playlist/${item.id}`)
+            }}
+          >
+            <div class="hs__item__image__wrapper">
               <img
                 class="hs__item__image"
-                src={item && item.album.images && item.album.images[0].url}
+                src={item && item.images && item.images[0].url}
                 alt=""
               />
             </div>
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">{item.name}</span>
-              <span class="hs__item__subtitle">{item.artists[0].name}</span>
+              <div
+                className="subtitle is-7 has-text-grey"
+                style={{
+                  letterSpacing: 1,
+                  lineHeight: 1.2,
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: urlDetection(
+                    (item &&
+                      item.description &&
+                      item.description.replace(/\n/g, "")) ||
+                      ""
+                  ),
+                }}
+              />
             </div>
-
             <div class="hs__item__play__button">
               <a
                 href="javascript:void(0)"
@@ -83,12 +159,12 @@ const TopTracksContainer = (props) => {
               >
                 {globalState &&
                 globalState.isPlaying &&
-                globalState.track &&
-                globalState.track.album &&
-                globalState.track.album.uri.includes(item && item.uri) ? (
+                globalState.contextUrl &&
+                globalState.contextUrl.includes(item && item.uri) ? (
                   <button
                     class="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation()
                       pauseFn(getToken())
                     }}
                   >
@@ -102,9 +178,9 @@ const TopTracksContainer = (props) => {
                       playFn(
                         getToken(),
                         globalState.currentDeviceId,
-                        item.uri,
                         "",
-                        ""
+                        "",
+                        item.uri
                       )
                     }}
                   >
@@ -163,28 +239,23 @@ const TopTracksContainer = (props) => {
       debounceCheckForOverflow.cancel()
     )
   }, [])
-  const prevState = usePrevious(userTopTracksListData)
+  const prevState = usePrevious(featuredPlaylistsData)
 
   useEffect(() => {
-    if (
-      userTopTracksListData &&
-      undefined !== prevState &&
-      userTopTracksListData.length
-    ) {
-      if (prevState.length !== userTopTracksListData.length) {
+    if (undefined !== prevState && featuredPlaylistsData.length) {
+      if (prevState.length !== featuredPlaylistsData.length) {
         checkForOverflow()
         checkForScrollPosition()
       }
     }
-  }, [prevState, userTopTracksListData])
+  }, [prevState, featuredPlaylistsData])
 
   return (
     <div>
       <div class="hs__header">
-        <h2 class="hs__headline  has-text-black">
-          <div class="title is-5">Top tracks</div>
+        <h2 class="hs__headline has-text-black">
+          <div class="title is-5">Your 2020 Wrapped</div>
         </h2>
-        {buildControls()}
       </div>
       <ul className="hs item-container" ref={container}>
         {buildItems()}
@@ -193,4 +264,4 @@ const TopTracksContainer = (props) => {
   )
 }
 
-export default TopTracksContainer
+export default Playlist2020

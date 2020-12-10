@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect, useContext } from "react"
+import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
-import { Link, BrowserRouter, useHistory } from "react-router-dom"
-
 import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
 import { AuthContext } from "../../../context/auth"
+import axios from "axios"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -16,17 +16,10 @@ function usePrevious(value) {
   return ref.current
 }
 
-const urlDetection = (text) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  return text.replace(urlRegex, function (url) {
-    return '<a class="omg" href="' + url + '">' + url + "</a>"
-  })
-}
-
-const PlaylistContainer = (props) => {
+const RecentPlayedContainer = (props) => {
   let history = useHistory()
   const { playFn, globalState, pauseFn } = useContext(PlayerContext)
-  const { featuredPlaylistsData } = useContext(PlaylistContext)
+  const { userPlayedTracksListData } = useContext(PlaylistContext)
   const { getToken } = useContext(AuthContext)
   const container = useRef(null)
   const [state, setstate] = useState({
@@ -34,18 +27,15 @@ const PlaylistContainer = (props) => {
     canScrollLeft: false,
     canScrollRight: false,
   })
+  const [relatedShowList, setRelatedShowList] = useState([])
 
   const checkForScrollPosition = () => {
-    if (container && container.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        container && container.current
+    const { scrollLeft, scrollWidth, clientWidth } = container.current
 
-      setstate({
-        canScrollLeft: scrollLeft > 0,
-        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-      })
-    }
-    return null
+    setstate({
+      canScrollLeft: scrollLeft > 0,
+      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+    })
   }
 
   const checkForOverflow = () => {
@@ -61,45 +51,58 @@ const PlaylistContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
+  const getRelatedShowList = (validateToken) => {
+    const url = `https://api.spotify.com/v1/shows/?ids=5XOuEolVXN2paH626w5WV4,0GwBlCL75rI0Tce9JABoE9,1GdTMF4b8x5WTJuk66enCq,0MP5I0nVsnQbfKD8f682Ff&market=US`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        console.log(response, "list")
+        setRelatedShowList(response.data.shows)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
+  useEffect(() => {
+    getRelatedShowList(getToken())
+  }, [getToken()])
+
   const buildItems = () => {
-    return featuredPlaylistsData.map((item, index) => {
+    return relatedShowList.map((item, index) => {
       return (
-        <li
-          class="hs__item"
-          key={index}
-          onClick={() => {
-            history.push(`/playlist/${item.id}`)
-          }}
-        >
-          <div class="hs__item__image__wrapper">
+        <li class="hs__item" key={index}>
+          <div
+            class="hs__item__image__wrapper"
+            onClick={() => {
+              history.push(`/show/${item.id}`)
+            }}
+          >
             <img class="hs__item__image" src={item.images[0].url} alt="" />
           </div>
           <div class="hs__item__description">
+            <div></div>
             <span class="hs__item__title has-text-black">{item.name}</span>
-            <div
-              className="subtitle is-7 has-text-grey"
-              style={{
-                letterSpacing: 1,
-                lineHeight: 1.2,
-              }}
-              dangerouslySetInnerHTML={{
-                __html: urlDetection(
-                  (item && item.description.replace(/\n/g, "")) || ""
-                ),
-              }}
-            />
+            {/* <span class="hs__item__subtitle">{item.artists[0].name}</span> */}
           </div>
+
           <div class="hs__item__play__button">
-            <a
-              href="javascript:void(0)"
-              onClick={(e) => {
-                e.stopPropagation()
-              }}
-            >
+            <a href="javascript:void(0)">
               {globalState &&
               globalState.isPlaying &&
-              globalState.contextUrl &&
-              globalState.contextUrl.includes(item && item.uri) ? (
+              globalState.track &&
+              globalState.track.id == item.id ? (
                 <button
                   class="button"
                   onClick={(e) => {
@@ -114,13 +117,7 @@ const PlaylistContainer = (props) => {
                   class="button"
                   onClick={(e) => {
                     e.stopPropagation()
-                    playFn(
-                      getToken(),
-                      globalState.currentDeviceId,
-                      "",
-                      "",
-                      item.uri
-                    )
+                    playFn(getToken(), globalState.currentDeviceId, item.uri)
                   }}
                 >
                   <FontAwesomeIcon icon={faPlay} />
@@ -177,22 +174,22 @@ const PlaylistContainer = (props) => {
       debounceCheckForOverflow.cancel()
     )
   }, [])
-  const prevState = usePrevious(featuredPlaylistsData)
+  const prevState = usePrevious(userPlayedTracksListData)
 
   useEffect(() => {
-    if (undefined !== prevState && featuredPlaylistsData.length) {
-      if (prevState.length !== featuredPlaylistsData.length) {
+    if (undefined !== prevState && userPlayedTracksListData.length) {
+      if (prevState.length !== userPlayedTracksListData.length) {
         checkForOverflow()
         checkForScrollPosition()
       }
     }
-  }, [prevState, featuredPlaylistsData])
+  }, [prevState, userPlayedTracksListData])
 
   return (
     <div>
       <div class="hs__header">
         <h2 class="hs__headline has-text-black">
-          <div class="title is-5">Popular playlists</div>
+          <div class="title is-5">Featured Podcasts</div>
         </h2>
         {buildControls()}
       </div>
@@ -203,4 +200,4 @@ const PlaylistContainer = (props) => {
   )
 }
 
-export default PlaylistContainer
+export default RecentPlayedContainer

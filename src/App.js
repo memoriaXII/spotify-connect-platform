@@ -35,22 +35,34 @@ import { AuthProvider } from "./context/auth"
 import { PlaylistProvider } from "./context/playlist"
 import { PlayerProvider } from "./context/player"
 import { ProfileProvider } from "./context/profile"
+import { PodCastProvider } from "./context/podcast"
 
 import Home from "./pages/Home"
 import Login from "./pages/Login"
+import Search from "./pages/Search"
+import SearchDetail from "./pages/SearchDetail"
 
+import ShowDetail from "./pages/ShowDetail"
 import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
 import AlbumDetail from "./pages/AlbumDetail"
 import UserSaveTracks from "./pages/Collection/Tracks"
 import UserSaveAlbums from "./pages/Collection/Alubms"
 import UserSaveArtists from "./pages/Collection/Artists"
+import UserPlayedTracks from "./pages/Collection/RecentPlayed"
+import Broadcast from "./pages/Broadcast"
+
+import { useScrollPosition } from "@n8tb1t/use-scroll-position"
+
+import { TweenLite, TimelineLite, Linear, Power1 } from "gsap"
 
 function App() {
   const location = useLocation()
   const scrollContainer = useRef(null)
+  const sectionRef = useRef(null)
   const [gradientNum, setGradientNum] = useState(null)
   const [trimHeader, setTrimHeader] = useState(false)
+  const [clientHeight, setClientHeight] = useState(0)
 
   const handleScroll = () => {
     if (
@@ -76,7 +88,7 @@ function App() {
       }
     } else {
       setTrimHeader(false)
-      setGradientNum(null)
+      setGradientNum(1000)
     }
   }
 
@@ -88,161 +100,228 @@ function App() {
   }, [scrollContainer])
 
   const routeDetection = location.pathname == `/login`
+  const searchPageDetection = location.pathname.includes("search")
+  useScrollPosition(({ prevPos, currPos }) => {})
+
   return (
     <>
       <div>
-        <ProfileProvider>
-          <AuthProvider>
-            <PlayerProvider>
-              <PlaylistProvider>
-                <div className="wrap">
-                  <div
-                    className="list-area"
-                    style={{
-                      height: !routeDetection
-                        ? `calc(${100}vh - ${86}px)`
-                        : `${100}vh`,
-                    }}
-                  >
-                    {routeDetection ? null : (
-                      <>
-                        <SideMenu />
-                      </>
-                    )}
-
-                    <div className="main" ref={scrollContainer}>
+        <PodCastProvider>
+          <ProfileProvider>
+            <AuthProvider>
+              <PlayerProvider>
+                <PlaylistProvider>
+                  <div className="wrap">
+                    <div
+                      className="list-area"
+                      style={{
+                        height: !routeDetection
+                          ? `calc(${100}vh - ${86}px)`
+                          : `${100}vh`,
+                      }}
+                    >
                       {routeDetection ? null : (
                         <>
-                          <div
-                            className="main__wrap top-scroll-bg"
-                            style={{
-                              display: trimHeader ? "block" : "none",
-                              background: trimHeader ? "white" : "white",
-                              zIndex: 3,
-                            }}
-                          ></div>
-                          <div
-                            className="main__wrap summary on ml-0"
-                            style={{
-                              display: trimHeader ? "block" : "none",
-                              borderBottom: `1px solid #eee`,
-                            }}
-                          >
-                            <div className="summary__box ml-3">
-                              <div className="summary__text">
-                                <ul>
-                                  <li>
-                                    <strong className="summary__text--title title is-4">
-                                      {location.pathname === "/"
-                                        ? "Browse"
-                                        : null}
-                                    </strong>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="is-hidden-touch">
-                            <Topbar />
-                          </div>
+                          <SideMenu />
                         </>
                       )}
+                      <div className="main" ref={scrollContainer}>
+                        {routeDetection ? null : (
+                          <>
+                            {!searchPageDetection ? (
+                              <div
+                                className="main__wrap top-scroll-bg"
+                                style={{
+                                  background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255,1) ${gradientNum}%)`,
+                                }}
+                              ></div>
+                            ) : null}
 
-                      <section className={routeDetection ? "" : "section"}>
-                        <div className="hs__wrapper">
-                          <Switch>
-                            <Route path="/login" component={Login} />
+                            <div
+                              className="main__wrap summary on ml-0"
+                              style={{
+                                display: trimHeader ? "block" : "none",
+                                borderBottom: !searchPageDetection
+                                  ? `1px solid #eee`
+                                  : `0px solid #eee`,
+                              }}
+                            >
+                              <div className="summary__box ml-3">
+                                <div className="summary__text">
+                                  <ul>
+                                    <li>
+                                      <strong className="summary__text--title title is-4">
+                                        {location.pathname === "/"
+                                          ? "Browse"
+                                          : null}
+                                      </strong>
+                                    </li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="is-hidden-touch">
+                              <Topbar />
+                            </div>
+                          </>
+                        )}
 
-                            <Route
-                              exact
-                              path="/"
-                              render={(props) => (
-                                <Home {...props} component={Home} />
-                              )}
-                            />
-                            <Route
-                              path="/playlist/:id"
-                              render={(props) => (
-                                <PlaylistDetail
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
-                            <Route
-                              path="/artist/:id"
-                              render={(props) => (
-                                <ArtistDetail
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
-                            <Route
-                              path="/album/:id"
-                              render={(props) => (
-                                <AlbumDetail
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
+                        <section
+                          className={routeDetection ? "" : "section"}
+                          ref={sectionRef}
+                        >
+                          <div className="hs__wrapper">
+                            <Switch>
+                              <Route path="/login" component={Login} />
 
-                            <Route
-                              path="/collection/tracks"
-                              render={(props) => (
-                                <UserSaveTracks
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
+                              <Route
+                                exact
+                                path="/"
+                                render={(props) => (
+                                  <Home {...props} component={Home} />
+                                )}
+                              />
 
-                            <Route
-                              path="/collection/albums"
-                              render={(props) => (
-                                <UserSaveAlbums
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
+                              <Route
+                                path="/search/:id"
+                                render={(props) => (
+                                  <SearchDetail
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
 
-                            <Route
-                              path="/collection/artists"
-                              render={(props) => (
-                                <UserSaveArtists
-                                  trimHeader={trimHeader}
-                                  setTrimHeader={setTrimHeader}
-                                  {...props}
-                                />
-                              )}
-                            />
-                          </Switch>
-                        </div>
-                      </section>
+                              <Route
+                                path="/search"
+                                render={(props) => (
+                                  <Search
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                exact
+                                path="/broadcast"
+                                render={(props) => (
+                                  <Broadcast
+                                    {...props}
+                                    component={Broadcast}
+                                    gradientNum={gradientNum}
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/playlist/:id"
+                                render={(props) => (
+                                  <PlaylistDetail
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/artist/:id"
+                                render={(props) => (
+                                  <ArtistDetail
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    setGradientNum={setGradientNum}
+                                    {...props}
+                                  />
+                                )}
+                              />
+                              <Route
+                                path="/album/:id"
+                                render={(props) => (
+                                  <AlbumDetail
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                path="/collection/recent-played"
+                                render={(props) => (
+                                  <UserPlayedTracks
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                path="/collection/tracks"
+                                render={(props) => (
+                                  <UserSaveTracks
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                path="/collection/albums"
+                                render={(props) => (
+                                  <UserSaveAlbums
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                path="/collection/artists"
+                                render={(props) => (
+                                  <UserSaveArtists
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+
+                              <Route
+                                path="/show/:id"
+                                render={(props) => (
+                                  <ShowDetail
+                                    trimHeader={trimHeader}
+                                    setTrimHeader={setTrimHeader}
+                                    {...props}
+                                  />
+                                )}
+                              />
+                            </Switch>
+                          </div>
+                        </section>
+                      </div>
+                      {routeDetection ? null : (
+                        <>
+                          <SideChildMenu />
+                        </>
+                      )}
                     </div>
                     {routeDetection ? null : (
                       <>
-                        <SideChildMenu />
+                        <PlayerControl />
                       </>
                     )}
                   </div>
-                  {routeDetection ? null : (
-                    <>
-                      <PlayerControl />
-                    </>
-                  )}
-                </div>
-              </PlaylistProvider>
-            </PlayerProvider>
-          </AuthProvider>
-        </ProfileProvider>
+                </PlaylistProvider>
+              </PlayerProvider>
+            </AuthProvider>
+          </ProfileProvider>
+        </PodCastProvider>
       </div>
     </>
   )
