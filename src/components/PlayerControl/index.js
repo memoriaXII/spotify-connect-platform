@@ -44,6 +44,7 @@ import { useHistory } from "react-router-dom"
 export const PlayerControl = (props) => {
   let history = useHistory()
   const {
+    testText,
     volumeBar,
     progressBar,
     setIsSeeking,
@@ -94,12 +95,12 @@ export const PlayerControl = (props) => {
     loaderColor: "#ccc",
     loaderSize: 32,
     savedColor: "#1cb954",
-    sliderColor: "#0088FF",
+    sliderColor: "#3D83FF",
     sliderHandleBorderRadius: "50%",
     sliderHandleColor: "#fff",
     sliderHeight: 0.5,
     sliderTrackBorderRadius: 0,
-    sliderTrackColor: "#ccc",
+    sliderTrackColor: "rgba(193, 193, 193, 0.3)",
     trackArtistColor: "#999",
     trackNameColor: "#333",
   }
@@ -224,16 +225,16 @@ export const PlayerControl = (props) => {
       <div class="play-btns">
         <ul class="play-btns__wrap play-btns__icon-box">
           <li class="play-btns__list">
-            <i class="play-btns__icon fas fa-random has-text-grey-light">
+            <i class="play-btns__icon fas fa-random">
               <FontAwesomeIcon
                 icon={faRandom}
-                style={{ color: globalState.isShuffled ? "#0088ff" : "" }}
+                style={{ color: globalState.isShuffled ? "#3D83FF" : "" }}
               />
             </i>
           </li>
           <li class="play-btns__list">
             <i
-              class="play-btns__icon fas fa-step-backward has-text-grey-light"
+              class="play-btns__icon fas fa-step-backward"
               onClick={() => {
                 previousFn(getToken())
               }}
@@ -264,7 +265,7 @@ export const PlayerControl = (props) => {
           </li>
           <li class="play-btns__list">
             <i
-              class="play-btns__icon fas fa-step-forward has-text-grey-light"
+              class="play-btns__icon fas fa-step-forward"
               onClick={() => {
                 nextFn(getToken())
               }}
@@ -273,10 +274,10 @@ export const PlayerControl = (props) => {
             </i>
           </li>
           <li class="play-btns__list">
-            <i class="play-btns__icon fas fa-sync has-text-grey-light">
+            <i class="play-btns__icon fas fa-sync">
               <FontAwesomeIcon
                 icon={faSync}
-                style={{ color: globalState.isRepeated ? "#0088ff" : "" }}
+                style={{ color: globalState.isRepeated ? "#3D83FF" : "" }}
               />
             </i>
           </li>
@@ -325,13 +326,9 @@ export const PlayerControl = (props) => {
           </li>
           <li>
             <p class="has-text-grey-light">
-              {globalState.isPlaying
-                ? millisToMinutesAndSeconds(
-                    globalState &&
-                      globalState.track &&
-                      globalState.track.durationMs
-                  )
-                : millisToMinutesAndSeconds()}
+              {millisToMinutesAndSeconds(
+                globalState.track && globalState.track.durationMs
+              )}
             </p>
           </li>
         </ul>
@@ -358,7 +355,7 @@ export const PlayerControl = (props) => {
                     handleColor: getMergedStyles.bgColor,
                     handleSize: 12,
                     padding: 0,
-                    rangeColor: getMergedStyles.altColor || "#ccc",
+                    rangeColor: getMergedStyles.altColor,
                     trackColor: getMergedStyles.color,
                     height: 5,
                   },
