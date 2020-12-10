@@ -36,6 +36,7 @@ export default (props) => {
   const [relatedAlbums, setRelatedAlbums] = useState([])
   const [albumBackground, setAlbumBackground] = useState("")
   const albumRef = useRef(null)
+  const playlistRef = useRef(null)
 
   const getSingleAlbumDes = (validateToken, id) => {
     const url = `https://api.spotify.com/v1/albums/${id}`
@@ -114,7 +115,7 @@ export default (props) => {
       })
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     setTrimHeader(false)
     if (getToken()) {
       getSingleAlbumDes(getToken(), props.match.params.id)
@@ -138,7 +139,6 @@ export default (props) => {
         // image  has been loaded
         const result = colorThief.getColor(img)
         rgbToHex(result[0], result[1], result[2])
-        console.log(rgbToHex(result[0], result[1], result[2]), "test")
         setAlbumBackground(rgbToHex(result[0], result[1], result[2]))
       }
       const rgbToHex = (r, g, b) =>
@@ -151,8 +151,6 @@ export default (props) => {
           .join("")
     }
   }, [albumInfo])
-
-  console.log(albumInfo, "albumInfo")
 
   const HoursCounter = () => {
     let totalDuration = albumTracks.reduce((sum, eachSong) => {
@@ -188,7 +186,11 @@ export default (props) => {
         <div
           class="summary__bg"
           style={{
-            background: `linear-gradient( to left bottom ,rgba(0,0,0,0.5),${albumBackground} 95%,${albumBackground}),
+            background: `linear-gradient(
+              to bottom,
+              rgba(243, 121, 221, 0),
+              rgba(28, 29, 29, 0.9)
+              ),
             url(${albumInfo && albumInfo.images && albumInfo.images[0].url})`,
             height: 290,
           }}

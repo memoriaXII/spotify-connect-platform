@@ -25,14 +25,15 @@ export default (props) => {
   const { trimHeader, setTrimHeader } = props
   const { getToken } = useContext(AuthContext)
   const { globalState, playFn, pauseFn } = useContext(PlayerContext)
-  const [playlistInfo, setPlaylistInfo] = useState({})
+  const [showInfo, setShowInfo] = useState({})
   const [playlistImages, setPlaylistImages] = useState([])
   const [playlistTracks, setPlaylistTracks] = useState([])
+  const [showEpisodes, setShowEpisodes] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
 
-  const getSinglePlaylistImages = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/playlists/${id}/images`
+  const getSingleShowDes = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/shows/${id}`
     axios
       .get(url, {
         method: "GET",
@@ -47,74 +48,47 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data, "images")
-        setPlaylistImages(response.data)
+        setShowInfo(response.data)
       })
       .catch((err) => {
-        // Handle Error Here
+        console.error(err)
+      })
+  }
+  const getSingleShowEpisodes = (validateToken, id) => {
+    const url = `https://api.spotify.com/v1/shows/${id}/episodes`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        setShowEpisodes(response.data.items)
+      })
+      .catch((err) => {
         console.error(err)
       })
   }
 
-  const getSinglePlaylistDes = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/playlists/${id}`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {
-        setPlaylistInfo(response.data)
-      })
-      .catch((err) => {
-        console.error(err)
-      })
-  }
-  const getSinglePlaylistTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/playlists/${id}/tracks`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {
-        setPlaylistTracks(response.data.items)
-      })
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
-  }
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     setTrimHeader(false)
     if (getToken()) {
-      getSinglePlaylistImages(getToken(), props.match.params.id)
-      getSinglePlaylistDes(getToken(), props.match.params.id)
-      getSinglePlaylistTracks(getToken(), props.match.params.id)
+      getSingleShowEpisodes(getToken(), props.match.params.id)
+      getSingleShowDes(getToken(), props.match.params.id)
     }
   }, [getToken(), props.match.params.id])
 
   useEffect(() => {
-    if (globalState && globalState.track && playlistTracks) {
+    if (globalState && globalState.track) {
       const hasMatch = playlistTracks.filter(function (value) {
-        return value.track && value.track.id == globalState.track.id
+        return value.track.id == globalState.track.id
       })
 
       if (hasMatch.length == 1 && globalState.isPlaying) {
@@ -123,7 +97,7 @@ export default (props) => {
         setPlayingPlaylistStatus(false)
       }
     }
-  }, [globalState, playlistTracks])
+  }, [globalState])
 
   useEffect(() => {
     const rgbToHex = (r, g, b) =>
@@ -134,13 +108,12 @@ export default (props) => {
           return hex.length === 1 ? "0" + hex : hex
         })
         .join("")
-    if (playlistInfo && playlistInfo.images) {
+    if (showInfo && showInfo.images) {
       const colorThief = new ColorThief()
       const img = playlistRef.current
       img.onload = () => {
         const result = colorThief.getColor(img)
         rgbToHex(result[0], result[1], result[2])
-        console.log(rgbToHex(result[0], result[1], result[2]), "test")
         setPlaylistBackground(rgbToHex(result[0], result[1], result[2]))
       }
       const rgbToHex = (r, g, b) =>
@@ -152,7 +125,7 @@ export default (props) => {
           })
           .join("")
     }
-  }, [playlistInfo])
+  }, [showInfo])
 
   return (
     <div>
@@ -163,11 +136,9 @@ export default (props) => {
             background: `linear-gradient(
               to bottom,
               rgba(243, 121, 221, 0),
-              rgba(28, 29, 29, 0.9) 80%
+              rgba(28, 29, 29, 0.9)
               ),
-            url(${
-              playlistImages && playlistImages[0] && playlistImages[0].url
-            })`,
+            url(${showInfo && showInfo.images && showInfo.images[0].url})`,
             height: 350,
           }}
         ></div>
@@ -175,7 +146,7 @@ export default (props) => {
           class="summary__img"
           style={{
             backgroundImage: `url(${
-              playlistImages && playlistImages[0] && playlistImages[0].url
+              showInfo && showInfo.images && showInfo.images[0].url
             })`,
           }}
         ></div>
@@ -184,34 +155,22 @@ export default (props) => {
             <ul>
               <li>
                 <span class="summary__text--white summary__text--for-me">
-                  {playlistInfo &&
-                    playlistInfo.type &&
-                    playlistInfo.type.toUpperCase()}
+                  {showInfo && showInfo.type && showInfo.type.toUpperCase()}
                 </span>
               </li>
               <li>
                 <strong class="summary__text--title has-text-white">
-                  {playlistInfo.name}
+                  {showInfo.name}
                 </strong>
               </li>
               <li>
                 <p class="line-clamp-text has-text-white">
-                  {playlistInfo.description}
-                </p>
-              </li>
-              <li class="summary__text--by-spotify has-text-grey-light">
-                <p>
-                  Created by
-                  <span class="summary__text--white ml-1 mr-1">
-                    {playlistInfo.owner && playlistInfo.owner.display_name}
-                  </span>
-                  &bull; {playlistInfo.tracks && playlistInfo.tracks.total}
-                  songs
+                  {showInfo.description}
                 </p>
               </li>
             </ul>
           </div>
-          <div class="buttons">
+          <div class="buttons mt-2">
             {isPlayingPlaylist ? (
               <>
                 <button
@@ -262,16 +221,14 @@ export default (props) => {
           crossOrigin={"anonymous"}
           ref={playlistRef}
           alt={""}
-          src={
-            playlistInfo && playlistInfo.images && playlistInfo.images[0].url
-          }
+          src={showInfo && showInfo.images && showInfo.images[0].url}
         />
         <div class="summary__box">
           <div class="summary__text">
             <ul>
               <li>
                 <strong class="summary__text--title title is-4">
-                  {playlistInfo.name}
+                  {showInfo.name}
                 </strong>
               </li>
             </ul>
@@ -286,41 +243,46 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap mt-6">
-        <table class="playlist">
-          <colgroup>
-            <col width="3%" />
-            <col width="3%" />
-            <col width="35%" />
-            <col width="23%" />
-            <col width="23%" />
-            <col width="7%" />
-            <col width="3%" />
-            <col width="3%" />
-          </colgroup>
-          <tr class="playlist__tr">
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th">TITLE</th>
-            <th class="playlist__th">ALBUM</th>
-            <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th">
-              <i class="far fa-calendar-alt"></i>
-            </th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-          </tr>
+        <p class="title is-5 has-text-black">Episodes</p>
 
-          {playlistTracks &&
-            playlistTracks.map((item, index) => {
+        {showEpisodes &&
+          showEpisodes.map((item, index) => {
+            return (
+              <div class="columns is-multline is-variable is-2">
+                <div class="column is-2">
+                  <img
+                    style={{ borderRadius: 5, width: 200 }}
+                    src={item && item.images[0].url}
+                    alt=""
+                  />
+                </div>
+                <div class="column is-10">
+                  <span class="has-text-blck title is-6"> {item.name}</span>
+                  <p class="line-clamp-text">{item.description}</p>
+                  <div class="buttons">
+                    <button class="button is-white">
+                      <FontAwesomeIcon
+                        icon={faPlay}
+                        style={{ color: "grey" }}
+                      />
+                    </button>
+                    <span class="has-text-grey title is-7">
+                      {millisToMinutesAndSeconds(item.duration_ms)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+
+        {/* {showEpisodes &&
+            showEpisodes.map((item, index) => {
               return (
                 <tr
                   class={
                     globalState.track &&
-                    globalState.track &&
                     globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id
+                    globalState.track.id == item.id
                       ? "playlist__tr nowplay"
                       : "playlist__tr "
                   }
@@ -330,7 +292,7 @@ export default (props) => {
                     await playFn(
                       getToken(),
                       globalState.currentDeviceId,
-                      item.track && item.track.uri
+                      item.uri
                     )
                   }}
                 >
@@ -338,11 +300,9 @@ export default (props) => {
                     class="playlist__td playlist__td--play"
                     style={{ verticalAlign: "middle" }}
                   >
-                    {globalState.track &&
-                    globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id ? (
+                    {globalState &&
+                    globalState.id &&
+                    globalState.id == item.id ? (
                       <SoundEqualizer />
                     ) : (
                       <FontAwesomeIcon
@@ -354,21 +314,12 @@ export default (props) => {
                   <td style={{ verticalAlign: "middle" }}>
                     <img
                       style={{ borderRadius: 5 }}
-                      src={
-                        item.track &&
-                        item.track.album &&
-                        item.track.album.images[0].url
-                      }
+                      src={item && item.images[0].url}
                       alt=""
                     />
                   </td>
                   <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
-                    {item.track && item.track.name}
-
-                    <p class="mt-2 ">
-                      {item.track &&
-                        item.track.artists.map((d) => d.name).join(", ")}
-                    </p>
+                    {item && item.name}
                   </td>
 
                   <td
@@ -379,7 +330,7 @@ export default (props) => {
                       verticalAlign: "middle",
                     }}
                   >
-                    {item.track && item.track.album && item.track.album.name}
+                    {item.name}
                   </td>
                   <td
                     class="playlist__td playlist__td--hour title is-7"
@@ -387,9 +338,7 @@ export default (props) => {
                       verticalAlign: "middle",
                     }}
                   >
-                    {millisToMinutesAndSeconds(
-                      item.track && item.track.duration_ms
-                    )}
+                    {millisToMinutesAndSeconds(item.duration_ms)}
                   </td>
                   <td class="playlist__td playlist__td--dislike"></td>
                   <td
@@ -401,7 +350,7 @@ export default (props) => {
                 </tr>
               )
             })}
-        </table>
+      */}
       </div>
     </div>
   )

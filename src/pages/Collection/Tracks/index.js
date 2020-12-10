@@ -29,9 +29,20 @@ export default (props) => {
   const [savedTracks, setSavedTracks] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
+  const [current, setCurrent] = useState(1)
+  const handleNext = () => {
+    setCurrent(current + 1)
+  }
+  useEffect(() => {
+    setTrimHeader(false)
+    getSavedTracks(getToken(), current)
+  }, [current, getToken(), props.match.params.id])
 
-  const getSavedTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/me/tracks?market=TW&limit=50&offset=0`
+  const getSavedTracks = (validateToken, currentValue) => {
+    let previousArray = []
+    const url = `https://api.spotify.com/v1/me/tracks?market=TW&limit=50&offset=${
+      (currentValue - 1) * 10
+    }`
     axios
       .get(url, {
         method: "GET",
@@ -46,20 +57,14 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        setSavedTracks(response.data.items)
+        previousArray.push(...savedTracks, ...response.data.items)
+        setSavedTracks(previousArray)
       })
       .catch((err) => {
         // Handle Error Here
         console.error(err)
       })
   }
-
-  useLayoutEffect(() => {
-    setTrimHeader(false)
-    if (getToken()) {
-      getSavedTracks(getToken(), props.match.params.id)
-    }
-  }, [getToken(), props.match.params.id])
 
   useEffect(() => {
     if (globalState && globalState.track) {
@@ -78,18 +83,11 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top, #f3f2f7, #eae7f6, #e0dbf5, #d7d0f3, #cec5f2)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 120 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
+                <strong class="summary__text--title has-text-black">
                   Liked Songs
                 </strong>
               </li>
@@ -160,7 +158,7 @@ export default (props) => {
           </div>
         </div>
       </div>
-      <div class="main__wrap">
+      <div class="main__wrap mt-5">
         <table class="playlist">
           <colgroup>
             <col width="3%" />
@@ -263,6 +261,16 @@ export default (props) => {
             )
           })}
         </table>
+        <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
+          <button
+            class="button is-light is-outlined has-text-grey"
+            onClick={() => {
+              handleNext()
+            }}
+          >
+            Load More
+          </button>
+        </p>
       </div>
     </div>
   )

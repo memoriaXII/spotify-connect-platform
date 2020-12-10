@@ -6,9 +6,10 @@ import axios from "axios"
 
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
-import { PlaylistContext } from "./context/playlist"
-import { PlayerContext } from "./context/player"
-import { AuthContext } from "./context/auth"
+import { PlaylistContext } from "../../../context/playlist"
+import { PlayerContext } from "../../../context/player"
+import { AuthContext } from "../../../context/auth"
+import { PodCastContext } from "../../../context/podcast"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -19,11 +20,12 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
-  const { playFn, globalState } = useContext(PlayerContext)
+  const { playFn, globalState, pauseFn, testText } = useContext(PlayerContext)
+  const { userPodCastData } = useContext(PodCastContext)
   const { getToken } = useContext(AuthContext)
 
   let history = useHistory()
-  const { newReleaseData, isArtistAlbum } = props
+  const { isArtistAlbum } = props
   const container = useRef(null)
   const [state, setstate] = useState({
     hasOverflow: false,
@@ -32,21 +34,16 @@ const AlbumContainer = (props) => {
   })
 
   const checkForScrollPosition = () => {
-    if (container && container.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = container.current
+    const { scrollLeft, scrollWidth, clientWidth } = container.current
 
-      setstate({
-        canScrollLeft: scrollLeft > 0,
-        canScrollRight: scrollLeft !== scrollWidth - clientWidth,
-      })
-    } else {
-      return
-    }
+    setstate({
+      canScrollLeft: scrollLeft > 0,
+      canScrollRight: scrollLeft !== scrollWidth - clientWidth,
+    })
   }
 
   const checkForOverflow = () => {
     const { scrollWidth, clientWidth } = container.current
-    // const hasOverflow = scrollWidth > clientWidth
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
@@ -81,28 +78,28 @@ const AlbumContainer = (props) => {
 
   const buildItems = () => {
     return (
-      newReleaseData &&
-      newReleaseData.map((item, index) => {
+      userPodCastData &&
+      userPodCastData.map((item, index) => {
         return (
           <li class="hs__item" key={index}>
             <div
               class="hs__item__image__wrapper"
               onClick={() => {
-                history.push(`/album/${item.id}`)
+                history.push(`/show/${item.show.id}`)
               }}
             >
               <img
                 class="hs__item__image"
-                src={item && item.images[1].url}
+                src={item && item.show.images[1].url}
                 alt=""
               />
             </div>
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">
-                {item && item.name}
+                {item && item.show.name}
               </span>
               <span class="hs__item__subtitle">
-                {item && item.artists[0].name}
+                {item && item.show.publisher}
               </span>
             </div>
             <div class="hs__item__play__button">
@@ -110,24 +107,36 @@ const AlbumContainer = (props) => {
                 href="javascript:void(0)"
                 onClick={(e) => {
                   e.stopPropagation()
-                  playFn(
-                    getToken(),
-                    globalState.currentDeviceId,
-                    "",
-                    "",
-                    item.uri
-                  )
                 }}
               >
                 {globalState &&
+                globalState.isPlaying &&
                 globalState.track &&
                 globalState.track.album &&
                 globalState.track.album.uri.includes(item && item.uri) ? (
-                  <button class="button">
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      pauseFn(getToken())
+                    }}
+                  >
                     <FontAwesomeIcon icon={faPause} />
                   </button>
                 ) : (
-                  <button class="button">
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        "",
+                        "",
+                        item.show.uri
+                      )
+                    }}
+                  >
                     <FontAwesomeIcon icon={faPlay} />
                   </button>
                 )}
@@ -183,31 +192,20 @@ const AlbumContainer = (props) => {
       debounceCheckForOverflow.cancel()
     )
   }, [])
-  const prevState = usePrevious(newReleaseData)
+  const prevState = usePrevious(userPodCastData)
 
   useEffect(() => {
-    if (undefined !== prevState && newReleaseData.length) {
-      if (prevState.length !== newReleaseData.length) {
+    if (undefined !== prevState && userPodCastData && userPodCastData.length) {
+      if (prevState.length !== userPodCastData.length) {
         checkForOverflow()
         checkForScrollPosition()
       }
     }
-  }, [prevState, newReleaseData])
+  }, [prevState, userPodCastData])
 
   return (
     <div>
-      <div class="hs__header">
-        <h2 class="hs__headline has-text-black">
-          {isArtistAlbum ? (
-            <>
-              <p class="title is-5 mt-4">Albums</p>
-            </>
-          ) : (
-            <div class="title is-5">New Release</div>
-          )}
-        </h2>
-        {buildControls()}
-      </div>
+      <div class="hs__header"></div>
       <ul className="hs item-container" ref={container}>
         {buildItems()}
       </ul>

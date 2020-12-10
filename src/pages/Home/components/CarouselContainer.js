@@ -37,7 +37,7 @@ export default memo((props) => {
                     class="title is-6 truncate mb-1"
                     style={{ width: 270, fontSize: 15 }}
                   >
-                    <span style={{ color: "#0088FF", fontSize: 10 }}>
+                    <span style={{ color: "#3D83FF", fontSize: 10 }}>
                       NEW SINGLE
                     </span>
                     <br />
