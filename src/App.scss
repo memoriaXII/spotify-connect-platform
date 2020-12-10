@@ -15,7 +15,7 @@
 @import "../node_modules/bulma/sass/components/tabs.sass";
 @import "../node_modules/bulma/sass/components/menu.sass";
 
-@import url(//db.onlinewebfonts.com/c/860c3ec7bbc5da3e97233ccecafe512e?family=Circular+Std+Book);
+@import url("http://fonts.cdnfonts.com/css/circular-std-book");
 
 $main-color-darker: #1dba54;
 $main-color: #1ed761;
@@ -28,21 +28,6 @@ $main-color: #1ed761;
 @mixin flex-justify-btw {
   display: flex;
   justify-content: space-between;
-}
-
-@font-face {
-  font-family: "Circular Std Book";
-  src: url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.eot");
-  src: url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.eot?#iefix")
-      format("embedded-opentype"),
-    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.woff2")
-      format("woff2"),
-    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.woff")
-      format("woff"),
-    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.ttf")
-      format("truetype"),
-    url("//db.onlinewebfonts.com/t/860c3ec7bbc5da3e97233ccecafe512e.svg#Circular Std Book")
-      format("svg");
 }
 
 * {
