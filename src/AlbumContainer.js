@@ -19,7 +19,7 @@ function usePrevious(value) {
 }
 
 const AlbumContainer = (props) => {
-  const { playFn, globalState } = useContext(PlayerContext)
+  const { playFn, globalState, pauseFn } = useContext(PlayerContext)
   const { getToken } = useContext(AuthContext)
 
   let history = useHistory()
@@ -106,32 +106,37 @@ const AlbumContainer = (props) => {
               </span>
             </div>
             <div class="hs__item__play__button">
-              <a
-                href="javascript:void(0)"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  playFn(
-                    getToken(),
-                    globalState.currentDeviceId,
-                    "",
-                    "",
-                    item.uri
-                  )
-                }}
-              >
-                {globalState &&
-                globalState.track &&
-                globalState.track.album &&
-                globalState.track.album.uri.includes(item && item.uri) ? (
-                  <button class="button">
-                    <FontAwesomeIcon icon={faPause} />
-                  </button>
-                ) : (
-                  <button class="button">
-                    <FontAwesomeIcon icon={faPlay} />
-                  </button>
-                )}
-              </a>
+              {globalState &&
+              globalState.isPlaying &&
+              globalState.track &&
+              globalState.track.album &&
+              globalState.track.album.uri.includes(item && item.uri) ? (
+                <button
+                  class="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    pauseFn(getToken())
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPause} />
+                </button>
+              ) : (
+                <button
+                  class="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      "",
+                      "",
+                      item.uri
+                    )
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlay} />
+                </button>
+              )}
             </div>
           </li>
         )
@@ -200,7 +205,16 @@ const AlbumContainer = (props) => {
         <h2 class="hs__headline has-text-black">
           {isArtistAlbum ? (
             <>
-              <p class="title is-5 mt-4">Albums</p>
+              <p class="title is-5 mt-4">
+                More by
+                <span class="ml-2">
+                  {newReleaseData &&
+                    newReleaseData[0] &&
+                    newReleaseData[0].artists &&
+                    newReleaseData[0].artists[0] &&
+                    newReleaseData[0].artists[0].name}
+                </span>
+              </p>
             </>
           ) : (
             <div class="title is-5">New Release</div>

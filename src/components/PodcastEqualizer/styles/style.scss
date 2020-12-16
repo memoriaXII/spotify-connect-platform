@@ -1,0 +1,57 @@
+:root {
+  --podcastPulseSize: 40px;
+  --podcastColor: rgba(224, 224, 224, 0.45);
+  --transparentBlue: rgba(95, 139, 250, 0);
+}
+
+// .center {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   height: 100vh;
+// }
+
+.podcast-pulse {
+  position: relative;
+  width: var(--podcastPulseSize);
+  height: var(--podcastPulseSize);
+  border-radius: 50%;
+  background: var(--podcastColor);
+  box-shadow: 0 0 0 var(--podcastColor);
+  animation: podcastPulsing 1.3s infinite;
+  transition: all 0.2s;
+  cursor: pointer;
+  &__icon {
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    svg {
+      color: #3d83ff;
+    }
+  }
+}
+
+.podcast-pulse:hover {
+  --podcastColor: rgba(0, 123, 255, 0.65);
+  --transparentBlue: rgba(209, 167, 160, 0);
+}
+
+.podcast-pulse:active {
+  transform: scale(1.5);
+}
+
+@keyframes podcastPulsing {
+  from {
+    box-shadow: 0 0 0 0 var(--podcastColor);
+  }
+  70% {
+    box-shadow: 0 0 0 var(--podcastPulseSize) var(--transparentBlue);
+  }
+  to {
+    box-shadow: 0 0 0 0 var(--transparentBlue);
+  }
+}

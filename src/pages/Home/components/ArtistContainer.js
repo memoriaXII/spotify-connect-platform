@@ -100,43 +100,40 @@ const ArtistContainer = (props) => {
             </div>
             <div class="hs__item__play__artist__button">
               <a href="javascript:void(0)">
-                <button
-                  class="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                >
-                  {globalState &&
-                  globalState.isPlaying &&
-                  globalState.track &&
-                  globalState.track.artists &&
-                  globalState.track.artists.includes(item && item.name) ? (
-                    <FontAwesomeIcon
-                      icon={faPause}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        pauseFn(getToken())
-                      }}
-                    />
-                  ) : (
-                    <FontAwesomeIcon
-                      icon={faPlay}
-                      onClick={async (e) => {
-                        e.stopPropagation()
-                        const { tracks } = await getArtistSongs(
-                          getToken(),
-                          item.id
-                        )
-                        playFn(
-                          getToken(),
-                          globalState.currentDeviceId,
-                          "",
-                          tracks
-                        )
-                      }}
-                    />
-                  )}
-                </button>
+                {globalState &&
+                globalState.isPlaying &&
+                globalState.track &&
+                globalState.track.artists &&
+                globalState.track.artists.includes(item && item.name) ? (
+                  <button
+                    class="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      pauseFn(getToken())
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPause} />
+                  </button>
+                ) : (
+                  <button
+                    class="button"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      const { tracks } = await getArtistSongs(
+                        getToken(),
+                        item.id
+                      )
+                      playFn(
+                        getToken(),
+                        globalState.currentDeviceId,
+                        "",
+                        tracks
+                      )
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlay} />
+                  </button>
+                )}
               </a>
             </div>
           </li>

@@ -17,12 +17,14 @@ import {
   useRouteMatch,
   useHistory,
   generatePath,
+  useLocation,
 } from "react-router-dom"
 import ColorThief from "colorthief"
 import "./styles/style.scss"
 
 export const Topbar = (props) => {
   const history = useHistory()
+  const location = useLocation()
   const [clickedOutside, setClickedOutside] = useState(false)
   const [previewProfileHidden, setPreviewProfileHidden] = useState(false)
   const menuRef = useRef()
@@ -30,6 +32,14 @@ export const Topbar = (props) => {
   const [historyArray, setHistoryArray] = useState([])
   const searchRef = useRef()
   const [searchBackground, setSearchBackground] = useState("")
+  const customSideMenuDetection =
+    location.pathname == "/collection/tracks" ||
+    location.pathname.includes("artist") ||
+    (location.pathname.includes("album") && pararm_id !== "albums")
+
+  var pararm_id = location.pathname.substring(
+    location.pathname.lastIndexOf("/") + 1
+  )
 
   const [searchState, setSearchState] = useState({
     albums: [],
@@ -48,17 +58,17 @@ export const Topbar = (props) => {
     history.replace("/search/" + query)
   }, 500)
 
-  const handleClickOutside = (e) => {
-    if (!menuRef.current.contains(e.target)) {
-      setClickedOutside(true)
-    }
-  }
-  const handleClickInside = () => setClickedOutside(false)
+  // const handleClickOutside = (e) => {
+  //   if (!menuRef.current.contains(e.target)) {
+  //     setClickedOutside(true)
+  //   }
+  // }
+  // const handleClickInside = () => setClickedOutside(false)
 
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  })
+  // useEffect(() => {
+  //   document.addEventListener("click", handleClickOutside)
+  //   return () => document.removeEventListener("click", handleClickOutside)
+  // })
 
   useEffect(() => {
     if (clickedOutside) {
@@ -81,7 +91,18 @@ export const Topbar = (props) => {
 
   return (
     <div ref={menuRef}>
-      <div class="main__wrap top-bar">
+      <div
+        class="main__wrap top-bar"
+        style={{
+          width:
+            location.pathname == "/collection/albums" ||
+            location.pathname == "/collection/artists"
+              ? `calc(100% - (${250}px))`
+              : customSideMenuDetection
+              ? `calc(100% - (${550}px))`
+              : `calc(100% - (${250}px))`,
+        }}
+      >
         <ul class="top-bar__left top-bar__wrap">
           <li class="top-bar__search">
             <div class="field">

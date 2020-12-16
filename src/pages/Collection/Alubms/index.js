@@ -61,8 +61,8 @@ export default (props) => {
 
   const getSaveAlbums = (validateToken, currentValue) => {
     let prevAlbumsArray = []
-    const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=8&offset=${
-      (currentValue - 1) * 8
+    const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=12&offset=${
+      (currentValue - 1) * 12
     }`
     axios
       .get(url, {
@@ -136,7 +136,7 @@ export default (props) => {
       saveAlbums &&
       saveAlbums.map((item, index) => {
         return (
-          <div class="column is-3 album__item" key={index}>
+          <div class="column is-2 album__item" key={index}>
             <div
               class="album__item__image__wrapper"
               onClick={() => {
@@ -208,6 +208,7 @@ export default (props) => {
           </div>
         </div>
       </div>
+      <hr class="mt-0" />
       <div
         class="main__wrap summary on"
         style={{

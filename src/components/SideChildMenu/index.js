@@ -293,7 +293,7 @@ export const SideChildMenu = (props) => {
       location.pathname !== "/collection/albums"
     ) {
       return (
-        <div class="main__wrap summary">
+        <div class="main__wrap summary" style={{ background: "transparent" }}>
           <div
             class="summary__bg"
             style={{
@@ -396,9 +396,9 @@ export const SideChildMenu = (props) => {
         <>
           <div class="side-chart__wrap side-chart__nav pl-3">
             <ul class="nav">
-              <li class="nav__list pl-0">
+              {/* <li class="nav__list pl-0">
                 <p class="title is-5">Charts</p>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div class="side-chart__wrap side-chart__contents">

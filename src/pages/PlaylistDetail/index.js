@@ -318,9 +318,7 @@ export default (props) => {
                     globalState.track &&
                     globalState.track &&
                     globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id
+                    globalState.track.id == item.track.id
                       ? "playlist__tr nowplay"
                       : "playlist__tr "
                   }
@@ -339,10 +337,9 @@ export default (props) => {
                     style={{ verticalAlign: "middle" }}
                   >
                     {globalState.track &&
+                    globalState.track &&
                     globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id ? (
+                    globalState.track.id == item.track.id ? (
                       <SoundEqualizer />
                     ) : (
                       <FontAwesomeIcon

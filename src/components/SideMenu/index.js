@@ -46,6 +46,12 @@ export const SideMenu = (props) => {
     <div>
       <div class="side is-hidden-touch">
         <div class="side__wrap side__nav">
+          <img
+            class="ml-2 mt-4 mr-2"
+            width="120"
+            src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Black.png"
+            alt=""
+          />
           <MainNavLink />
         </div>
         <div class="side__wrap side__contents mt-4">
