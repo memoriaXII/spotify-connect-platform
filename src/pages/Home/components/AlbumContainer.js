@@ -103,12 +103,7 @@ const AlbumContainer = (props) => {
               </span>
             </div>
             <div class="hs__item__play__button">
-              <a
-                href="javascript:void(0)"
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}
-              >
+              <a href="javascript:void(0)">
                 {globalState &&
                 globalState.isPlaying &&
                 globalState.track &&

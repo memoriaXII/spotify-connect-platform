@@ -112,8 +112,7 @@ const AlbumContainer = (props) => {
                 {globalState &&
                 globalState.isPlaying &&
                 globalState.track &&
-                globalState.track.album &&
-                globalState.track.album.uri.includes(item && item.uri) ? (
+                globalState.track.showUri == item.show.uri ? (
                   <button
                     class="button"
                     onClick={(e) => {

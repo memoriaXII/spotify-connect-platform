@@ -83,7 +83,7 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div class="summary__box" style={{ height: 120 }}>
+        <div class="summary__box" style={{ height: 140 }}>
           <div class="summary__text">
             <ul>
               <li>
@@ -93,6 +93,7 @@ export default (props) => {
               </li>
             </ul>
           </div>
+
           <div class="buttons mt-4">
             {isPlayingPlaylist ? (
               <>
@@ -132,6 +133,7 @@ export default (props) => {
           <div class="summary__button"></div>
         </div>
       </div>
+      <hr class="mt-0" />
       <div
         class="main__wrap summary on"
         style={{
@@ -162,7 +164,7 @@ export default (props) => {
         <table class="playlist">
           <colgroup>
             <col width="3%" />
-            <col width="3%" />
+            <col width="4%" />
             <col width="35%" />
             <col width="23%" />
             <col width="23%" />
@@ -176,9 +178,7 @@ export default (props) => {
             <th class="playlist__th">TITLE</th>
             <th class="playlist__th">ALBUM</th>
             <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th">
-              <i class="far fa-calendar-alt"></i>
-            </th>
+            <th class="playlist__th"></th>
             <th class="playlist__th"></th>
             <th class="playlist__th"></th>
           </tr>

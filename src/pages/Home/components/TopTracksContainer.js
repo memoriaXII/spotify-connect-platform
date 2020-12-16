@@ -40,7 +40,6 @@ const TopTracksContainer = (props) => {
 
   const checkForOverflow = () => {
     const { scrollWidth, clientWidth } = container.current
-    // const hasOverflow = scrollWidth > clientWidth
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
@@ -75,21 +74,16 @@ const TopTracksContainer = (props) => {
             </div>
 
             <div class="hs__item__play__button">
-              <a
-                href="javascript:void(0)"
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}
-              >
+              <a href="javascript:void(0)">
                 {globalState &&
                 globalState.isPlaying &&
-                globalState.track &&
                 globalState.track.album &&
-                globalState.track.album.uri.includes(item && item.uri) ? (
+                globalState.track.album.id == item.album.id ? (
                   <button
                     class="button"
-                    onClick={() => {
-                      pauseFn(getToken())
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await pauseFn(getToken())
                     }}
                   >
                     <FontAwesomeIcon icon={faPause} />
@@ -97,14 +91,12 @@ const TopTracksContainer = (props) => {
                 ) : (
                   <button
                     class="button"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation()
-                      playFn(
+                      await playFn(
                         getToken(),
                         globalState.currentDeviceId,
-                        item.uri,
-                        "",
-                        ""
+                        item.uri
                       )
                     }}
                   >
@@ -182,7 +174,7 @@ const TopTracksContainer = (props) => {
     <div>
       <div class="hs__header">
         <h2 class="hs__headline  has-text-black">
-          <div class="title is-5">Top tracks</div>
+          <div class="title is-5">Jump Back in</div>
         </h2>
         {buildControls()}
       </div>

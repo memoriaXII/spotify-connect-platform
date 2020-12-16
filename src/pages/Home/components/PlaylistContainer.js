@@ -79,11 +79,7 @@ const PlaylistContainer = (props) => {
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">{item.name}</span>
               <div
-                className="subtitle is-7 has-text-grey"
-                style={{
-                  letterSpacing: 1,
-                  lineHeight: 1.2,
-                }}
+                className="subtitle is-7 has-text-grey line-clamp-text"
                 dangerouslySetInnerHTML={{
                   __html: urlDetection(
                     (item && item.description.replace(/\n/g, "")) || ""
@@ -183,7 +179,11 @@ const PlaylistContainer = (props) => {
   const prevState = usePrevious(featuredPlaylistsData)
 
   useEffect(() => {
-    if (undefined !== prevState && featuredPlaylistsData.length) {
+    if (
+      featuredPlaylistsData &&
+      undefined !== prevState &&
+      featuredPlaylistsData.length
+    ) {
       if (prevState.length !== featuredPlaylistsData.length) {
         checkForOverflow()
         checkForScrollPosition()

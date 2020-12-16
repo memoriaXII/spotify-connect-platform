@@ -40,9 +40,60 @@ export default (props) => {
   }
   return (
     <div>
-      <div class="ad__header mt-6">
-        <h2 class="ad__headline title is-3 has-text-black">Browse</h2>
+      <div class="main__wrap summary">
+        <div
+          class="summary__bg"
+          style={{
+            background: `linear-gradient(
+              to bottom,
+              rgba(243, 121, 221, 0),
+              rgba(28, 29, 29, 0.1)
+              ),
+            url("https://storage.googleapis.com/pr-newsroom-wp/1/2020/04/MM-MAIN-PRESS-SHOT.jpg")`,
+            height: 390,
+          }}
+        ></div>
+        <div
+          class="summary__img mb-6"
+          style={{
+            backgroundImage: `url("https://i.scdn.co/image/ab67616d0000b27392920063c6fd7bb2bcd83160")`,
+          }}
+        ></div>
+        <div class="summary__box">
+          <div class="summary__text mt-5" style={{ width: 200, bottom: 0 }}>
+            <ul>
+              <li>
+                <strong class="summary__text--title title is-7 has-text-white">
+                  Top track
+                </strong>
+              </li>
+              <li>
+                <strong class="summary__text--title title is-4 has-text-white">
+                  F*cked Myself Up
+                </strong>
+              </li>
+              <li>
+                <strong
+                  class="summary__text--title title is-6 has-text-white"
+                  style={{ opacity: 0.8 }}
+                >
+                  merci, mercy
+                </strong>
+              </li>
+              <li>
+                <button class="button is-light is-small is-rounded mt-2">
+                  View Album
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
+
+      {/* <div class="ad__header mt-6">
+        <h2 class="ad__headline title is-5 has-text-black">Browse</h2>
+      </div> */}
+
       <hr />
       <AlbumContainer
         globalState={globalState}

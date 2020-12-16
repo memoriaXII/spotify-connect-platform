@@ -172,7 +172,7 @@ export default (props) => {
         <div
           class="summary__bg"
           style={{
-            background: `linear-gradient( to left bottom ,rgba(0,0,0,0.3),${artistBackground} 90%,${artistBackground}),
+            background: `linear-gradient( to bottom ,rgba(0,0,0,0.1),${artistBackground} 90%),
             url(${
               artistInfo && artistInfo.images && artistInfo.images[0].url
             })`,

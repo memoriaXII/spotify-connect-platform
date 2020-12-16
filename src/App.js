@@ -101,7 +101,14 @@ function App() {
 
   const routeDetection = location.pathname == `/login`
   const searchPageDetection = location.pathname.includes("search")
-  useScrollPosition(({ prevPos, currPos }) => {})
+  const customSideMenuDetection =
+    location.pathname == "/collection/tracks" ||
+    location.pathname.includes("artist") ||
+    (location.pathname.includes("album") && pararm_id !== "albums")
+
+  var pararm_id = location.pathname.substring(
+    location.pathname.lastIndexOf("/") + 1
+  )
 
   return (
     <>
@@ -305,11 +312,12 @@ function App() {
                           </div>
                         </section>
                       </div>
-                      {routeDetection ? null : (
-                        <>
-                          <SideChildMenu />
-                        </>
-                      )}
+                      {routeDetection ||
+                      location.pathname == "/collection/albums" ||
+                      location.pathname ==
+                        "/collection/artists" ? null : customSideMenuDetection ? (
+                        <SideChildMenu />
+                      ) : null}
                     </div>
                     {routeDetection ? null : (
                       <>

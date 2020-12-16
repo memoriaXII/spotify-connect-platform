@@ -13,6 +13,7 @@ import React, {
 import { useHistory, useLocation } from "react-router-dom"
 import queryString from "query-string"
 import { usePrevious } from "../utils/customHook"
+import axios from "axios"
 
 import ColorThief from "colorthief"
 import { useWindowDimensions } from "../utils/customHook"
@@ -124,9 +125,31 @@ export const PlayerProvider = (props) => {
         localStorage.removeItem("spotifyAuthToken")
         history.push("/login")
       }
-
       return d.json()
     })
+  }
+
+  async function getCurrentPlaying(token) {
+    const url = `https://api.spotify.com/v1/me/player/currently-playing?market=TW&additional_types=episode`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        console.log(response, "is normal")
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   }
 
   async function setVolume(validateToken, volume, deviceID) {
@@ -145,6 +168,7 @@ export const PlayerProvider = (props) => {
   const syncDevice = async (validateToken) => {
     try {
       const player = await getPlaybackState(validateToken)
+
       let track = emptyTrack
       if (!player) {
         throw new Error("No player")
@@ -198,6 +222,7 @@ export const PlayerProvider = (props) => {
             image: player.item.images[0].url,
             uri: player.item.uri,
             durationMs: player.item.duration_ms,
+            showUri: player.item.show.uri,
           },
           isShuffled: player.shuffle_state,
           isPlaying: player.is_playing,
@@ -429,6 +454,12 @@ export const PlayerProvider = (props) => {
       },
       body,
       method: "PUT",
+    }).then((d) => {
+      if (d.status == 403) {
+        getCurrentPlaying(validateToken)
+        return
+      }
+      // return d.json()
     })
   }
 

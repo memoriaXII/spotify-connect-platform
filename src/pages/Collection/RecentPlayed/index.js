@@ -48,7 +48,7 @@ export default (props) => {
   const getRecentPlayed = (validateToken, currentValue) => {
     const afterCondition = currentValue == "" ? `` : `&before=${currentValue}`
     let prevRecentPlayedArray = []
-    const url = `https://api.spotify.com/v1/me/player/recently-played?limit=20${afterCondition}`
+    const url = `https://api.spotify.com/v1/me/player/recently-played?limit=24${afterCondition}`
     axios
       .get(url, {
         method: "GET",
@@ -85,7 +85,7 @@ export default (props) => {
       recentPlayed &&
       recentPlayed.map((item, index) => {
         return (
-          <div class="column is-3 album__item" key={index}>
+          <div class="column is-2 album__item" key={index}>
             <div
               class="album__item__image__wrapper"
               onClick={() => {
@@ -145,26 +145,21 @@ export default (props) => {
   return (
     <div>
       <div class="main__wrap summary">
-        <div
-          class="summary__bg"
-          style={{
-            background: `linear-gradient(to left top,#f3f2f7, #cbcad7, #a2a4b8, #78819a, #4e5f7d)`,
-            height: 230,
-          }}
-        ></div>
-        <div class="summary__box">
+        <div class="summary__box" style={{ height: 70 }}>
           <div class="summary__text">
             <ul>
               <li>
-                <strong class="summary__text--title has-text-white">
-                  Recent played
+                <strong class="summary__text--title has-text-black">
+                  Recent Played
                 </strong>
               </li>
             </ul>
           </div>
+
           <div class="summary__button"></div>
         </div>
       </div>
+      <hr class="mt-0" />
       <div
         class="main__wrap summary on"
         style={{

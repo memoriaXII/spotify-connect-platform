@@ -8,14 +8,9 @@ import React, {
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faCoffee,
-  faFastForward,
-  faFastBackward,
-  faBackward,
   faPlay,
   faPause,
   faPlayCircle,
-  faForward,
   faSync,
   faRandom,
   faVolumeUp,
@@ -40,6 +35,14 @@ import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
 import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
 import { useHistory } from "react-router-dom"
+import backwardIcon from "../../images/skipbackward.svg"
+import forwardIcon from "../../images/skipforward.svg"
+import pauseIcon from "../../images/pause.svg"
+import shuffleIcon from "../../images/shuffle.svg"
+import repeatIcon from "../../images/repeat.svg"
+import playIcon from "../../images/play.svg"
+
+import { usePrevious } from "../../utils/customHook"
 
 export const PlayerControl = (props) => {
   let history = useHistory()
@@ -144,7 +147,7 @@ export const PlayerControl = (props) => {
 
   const handleChangeRangeFn = debounce(({ x }) => {
     handleChangeRange(x)
-  }, 500)
+  }, 100)
 
   const Wrapper = ({ styles }) => {
     return (
@@ -207,10 +210,14 @@ export const PlayerControl = (props) => {
             {globalState &&
               globalState.track &&
               globalState.track.artistsArray &&
-              globalState.track.artistsArray.map((d) => {
+              globalState.track.artistsArray.map((d, index) => {
                 return (
                   <span
-                    class="album-cover__artist"
+                    class={
+                      index == 0
+                        ? "album-cover__artist"
+                        : "album-cover__artist ml-1"
+                    }
                     onClick={() => {
                       history.push(`/artist/${d.id}`)
                     }}
@@ -226,10 +233,16 @@ export const PlayerControl = (props) => {
         <ul class="play-btns__wrap play-btns__icon-box">
           <li class="play-btns__list">
             <i class="play-btns__icon fas fa-random">
-              <FontAwesomeIcon
+              <img
+                class="icon mt-1"
+                style={{ width: 15, opacity: 0.9 }}
+                src={shuffleIcon}
+                alt=""
+              />
+              {/* <FontAwesomeIcon
                 icon={faRandom}
                 style={{ color: globalState.isShuffled ? "#3D83FF" : "" }}
-              />
+              /> */}
             </i>
           </li>
           <li class="play-btns__list">
@@ -239,28 +252,43 @@ export const PlayerControl = (props) => {
                 previousFn(getToken())
               }}
             >
-              <FontAwesomeIcon icon={faBackward} />
+              <img
+                class="icon mt-1"
+                style={{ width: 17, opacity: 0.5 }}
+                src={backwardIcon}
+                alt=""
+              />
             </i>
           </li>
-          <li class="play-btns__list">
+          <li>
             {globalState.isPlaying ? (
-              <i
-                class="play-btns__icon far fa-play-circle"
+              <div
+                class="pulse2"
                 onClick={() => {
                   pauseFn(getToken())
                 }}
               >
-                <FontAwesomeIcon icon={faPause} />
-              </i>
+                <span class="pulse2__icon">
+                  {/* {brodcastIcon()} */}
+                  <img class="icon" src={pauseIcon} alt="" />
+                </span>
+              </div>
             ) : (
-              <i
-                class="play-btns__icon far fa-play-circle"
+              <div
+                class="pulse2"
                 onClick={() => {
                   playFn(getToken(), globalState.currentDeviceId)
                 }}
               >
-                <FontAwesomeIcon icon={faPlayCircle} />
-              </i>
+                <span class="pulse2__icon">
+                  <img
+                    class="icon"
+                    style={{ cursor: "pointer" }}
+                    src={playIcon}
+                    alt=""
+                  />
+                </span>
+              </div>
             )}
           </li>
           <li class="play-btns__list">
@@ -270,15 +298,26 @@ export const PlayerControl = (props) => {
                 nextFn(getToken())
               }}
             >
-              <FontAwesomeIcon icon={faForward} />
+              <img
+                class="icon mt-1"
+                style={{ width: 17, opacity: 0.5 }}
+                src={forwardIcon}
+                alt=""
+              />
             </i>
           </li>
           <li class="play-btns__list">
             <i class="play-btns__icon fas fa-sync">
-              <FontAwesomeIcon
+              <img
+                class="icon mt-1"
+                style={{ width: 15 }}
+                src={repeatIcon}
+                alt=""
+              />
+              {/* <FontAwesomeIcon
                 icon={faSync}
                 style={{ color: globalState.isRepeated ? "#3D83FF" : "" }}
-              />
+              /> */}
             </i>
           </li>
         </ul>
@@ -314,7 +353,7 @@ export const PlayerControl = (props) => {
                     padding: 0,
                     rangeColor: getMergedStyles.sliderColor,
                     trackBorderRadius: getMergedStyles.sliderTrackBorderRadius,
-                    trackColor: getMergedStyles.sliderTrackColor,
+                    trackColor: "rgba(176, 176, 176, 0.3)",
                   },
                 }}
                 x={position}
@@ -352,11 +391,12 @@ export const PlayerControl = (props) => {
                 styles={{
                   options: {
                     handleBorderRadius: 12,
+                    handleBorder: "1px solid  rgba(176, 176, 176, 0.4)",
                     handleColor: getMergedStyles.bgColor,
                     handleSize: 12,
                     padding: 0,
-                    rangeColor: getMergedStyles.altColor,
-                    trackColor: getMergedStyles.color,
+                    rangeColor: getMergedStyles.sliderColor,
+                    trackColor: "rgba(176, 176, 176, 0.3)",
                     height: 5,
                   },
                 }}

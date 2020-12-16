@@ -11,26 +11,74 @@ import React, {
 import axios from "axios"
 
 import ColorThief from "colorthief"
-
+import RangeSlider from "@gilbarbara/react-range-slider"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEllipsisH, faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 import { AuthContext } from "../../context/auth"
 import { PlayerContext } from "../../context/player"
 
+import { PodcastEqualizer } from "../../components/PodcastEqualizer"
 import { SoundEqualizer } from "../../components/SoundEqualizer"
 
 export default (props) => {
   const playlistRef = useRef(null)
   const { trimHeader, setTrimHeader } = props
   const { getToken } = useContext(AuthContext)
-  const { globalState, playFn, pauseFn } = useContext(PlayerContext)
+  const { globalState, playFn, pauseFn, progressBar } = useContext(
+    PlayerContext
+  )
+  const { position } = progressBar
   const [showInfo, setShowInfo] = useState({})
   const [playlistImages, setPlaylistImages] = useState([])
   const [playlistTracks, setPlaylistTracks] = useState([])
   const [showEpisodes, setShowEpisodes] = useState([])
   const [isPlayingPlaylist, setPlayingPlaylistStatus] = useState(false)
   const [playlistBackground, setPlaylistBackground] = useState("")
+
+  const millisToMinutesAndSeconds2 = (millis) => {
+    var minutes = Math.floor((millis / (1000 * 60)) % 60)
+    var seconds = Math.floor((millis % 60000) / 1000).toFixed(0)
+    var hours = Math.floor((millis / (1000 * 60 * 60)) % 24)
+
+    var hours2 = hours < 10 ? "" + hours : hours
+    var minutes2 = minutes < 10 ? "" + minutes : minutes
+    var seconds2 = seconds < 10 ? "" + seconds : seconds
+
+    return (
+      (hours2 > 1 ? hours2 + " hr " : "") +
+      (minutes2 > 1 ? minutes2 + " min " : "") +
+      (seconds2 > 1 && minutes2 < 3 ? seconds2 + " sec" : "")
+    )
+  }
+
+  const getMergedStyles = {
+    altColor: "#ccc",
+    bgColor: "#fff",
+    color: "#333",
+    errorColor: "#a60000",
+    height: 40,
+    loaderColor: "#ccc",
+    loaderSize: 32,
+    savedColor: "#1cb954",
+    sliderColor: "#3D83FF",
+    sliderHandleBorderRadius: "50%",
+    sliderHandleColor: "#fff",
+    sliderHeight: 0.5,
+    sliderTrackBorderRadius: 0,
+    sliderTrackColor: "rgba(193, 193, 193, 0.3)",
+    trackArtistColor: "#999",
+    trackNameColor: "#333",
+  }
+
+  const nextStyles = {
+    ...getMergedStyles,
+    sliderHeight: true
+      ? getMergedStyles.sliderHeight + 4
+      : getMergedStyles.sliderHeight,
+  }
+
+  const handleSize = getMergedStyles.sliderHeight + 6
 
   const getSingleShowDes = (validateToken, id) => {
     const url = `https://api.spotify.com/v1/shows/${id}`
@@ -133,15 +181,14 @@ export default (props) => {
         <div
           class="summary__bg"
           style={{
-            background: `linear-gradient(
+            backgroundImage: `linear-gradient(
               to bottom,
-              rgba(243, 121, 221, 0),
-              rgba(28, 29, 29, 0.9)
-              ),
-            url(${showInfo && showInfo.images && showInfo.images[0].url})`,
-            height: 350,
+              rgba(28, 29, 29, 0.4),${playlistBackground}
+              )`,
+            height: 300,
           }}
         ></div>
+
         <div
           class="summary__img"
           style={{
@@ -171,39 +218,42 @@ export default (props) => {
             </ul>
           </div>
           <div class="buttons mt-2">
-            {isPlayingPlaylist ? (
-              <>
-                <button
-                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
-                  onClick={(e) => {
-                    pauseFn(getToken())
-                  }}
-                >
-                  <FontAwesomeIcon icon={faPause} />
-                  <span class="ml-2">Pause</span>
-                </button>
-              </>
+            {isPlayingPlaylist &&
+            globalState &&
+            globalState.isPlaying &&
+            globalState.track &&
+            globalState.track.showUri == showInfo.uri ? (
+              <button
+                class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  pauseFn(getToken())
+                }}
+              >
+                <FontAwesomeIcon icon={faPause} />
+                <span class="ml-2">Pause</span>
+              </button>
             ) : (
-              <>
-                <button
-                  class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
-                  onClick={async (e) => {
-                    await playFn(
-                      getToken(),
-                      globalState.currentDeviceId,
-                      "",
-                      playlistTracks
-                    )
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faPlay}
-                    class="icon  ml-1 mr-2"
-                    style={{ fontSize: 8 }}
-                  />
-                  Play
-                </button>
-              </>
+              <button
+                class="button has-text-black has-text-centered has-text-weight-bold is-small is-rounded"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  playFn(
+                    getToken(),
+                    globalState.currentDeviceId,
+                    "",
+                    "",
+                    showInfo.uri
+                  )
+                }}
+              >
+                <FontAwesomeIcon
+                  icon={faPlay}
+                  class="icon  ml-1 mr-2"
+                  style={{ fontSize: 8 }}
+                />
+                Play
+              </button>
             )}
           </div>
           <div class="summary__button"></div>
@@ -249,108 +299,130 @@ export default (props) => {
           showEpisodes.map((item, index) => {
             return (
               <div class="columns is-multline is-variable is-2">
-                <div class="column is-2">
+                <div class="column is-1">
                   <img
-                    style={{ borderRadius: 5, width: 200 }}
+                    style={{ borderRadius: 5, width: 150 }}
                     src={item && item.images[0].url}
                     alt=""
                   />
                 </div>
-                <div class="column is-10">
-                  <span class="has-text-blck title is-6"> {item.name}</span>
-                  <p class="line-clamp-text">{item.description}</p>
-                  <div class="buttons">
-                    <button class="button is-white">
-                      <FontAwesomeIcon
-                        icon={faPlay}
-                        style={{ color: "grey" }}
-                      />
-                    </button>
-                    <span class="has-text-grey title is-7">
-                      {millisToMinutesAndSeconds(item.duration_ms)}
-                    </span>
+                <div class="column is-10 episodes-list__item">
+                  <span
+                    class="title is-6"
+                    style={{
+                      color:
+                        globalState &&
+                        globalState.isPlaying &&
+                        globalState.track &&
+                        globalState.track.uri == item.uri
+                          ? "#3D83FF"
+                          : "black",
+                    }}
+                  >
+                    {" "}
+                    {item.name}
+                  </span>
+                  <p class="line-clamp-text mt-2">{item.description}</p>
+                  <div class="columns mt-2" style={{ position: "relative" }}>
+                    <div class="column is-0 episodes-list__item__play__button">
+                      {globalState &&
+                      globalState.isPlaying &&
+                      globalState.track &&
+                      globalState.track.uri == item.uri ? (
+                        <PodcastEqualizer />
+                      ) : (
+                        <button
+                          class="button"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            await playFn(
+                              getToken(),
+                              globalState.currentDeviceId,
+                              item.uri
+                            )
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faPlay} />
+                        </button>
+                      )}
+                    </div>
+                    <div class="column is-11" style={{ margin: "auto" }}>
+                      <div class="columns">
+                        <div class="column is-4 has-text-left">
+                          <div class="columns">
+                            <div class="column is-7">
+                              <span class="has-text-grey subtitle is-6">
+                                {item.release_date} -
+                              </span>
+                              <span class="has-text-grey subtitle is-6 ml-2">
+                                {globalState &&
+                                globalState.isPlaying &&
+                                globalState.track &&
+                                globalState.track.uri == item.uri ? (
+                                  <>
+                                    <span>
+                                      {millisToMinutesAndSeconds2(
+                                        item.duration_ms -
+                                          progressBar.progressMs
+                                      )}
+                                      left
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    {millisToMinutesAndSeconds2(
+                                      item.duration_ms
+                                    )}
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                            <div class="column is-5" style={{ margin: "auto" }}>
+                              {globalState &&
+                              globalState.isPlaying &&
+                              globalState.track &&
+                              globalState.track.uri == item.uri ? (
+                                <RangeSlider
+                                  style={{ cursor: "pointer" }}
+                                  axis="x"
+                                  styles={{
+                                    options: {
+                                      handleBorder: 0,
+                                      handleColor:
+                                        getMergedStyles.sliderHandleColor,
+                                      handleSize: 0,
+                                      height: 2,
+                                      padding: 0,
+                                      rangeColor: getMergedStyles.sliderColor,
+                                      trackBorderRadius:
+                                        getMergedStyles.sliderTrackBorderRadius,
+                                      trackColor:
+                                        getMergedStyles.sliderTrackColor,
+                                    },
+                                  }}
+                                  x={position}
+                                  xMin={0}
+                                  xMax={100}
+                                  xStep={0.9}
+                                />
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                        {/* <div
+                          class="column is-2 has-text-left"
+                          style={{ margin: "auto" }}
+                        >
+                        
+                        </div> */}
+                        <div class="column is-6"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )
           })}
-
-        {/* {showEpisodes &&
-            showEpisodes.map((item, index) => {
-              return (
-                <tr
-                  class={
-                    globalState.track &&
-                    globalState.track.id &&
-                    globalState.track.id == item.id
-                      ? "playlist__tr nowplay"
-                      : "playlist__tr "
-                  }
-                  key={index}
-                  onClick={async (e) => {
-                    e.stopPropagation()
-                    await playFn(
-                      getToken(),
-                      globalState.currentDeviceId,
-                      item.uri
-                    )
-                  }}
-                >
-                  <td
-                    class="playlist__td playlist__td--play"
-                    style={{ verticalAlign: "middle" }}
-                  >
-                    {globalState &&
-                    globalState.id &&
-                    globalState.id == item.id ? (
-                      <SoundEqualizer />
-                    ) : (
-                      <FontAwesomeIcon
-                        icon={faPlay}
-                        style={{ color: "grey" }}
-                      />
-                    )}
-                  </td>
-                  <td style={{ verticalAlign: "middle" }}>
-                    <img
-                      style={{ borderRadius: 5 }}
-                      src={item && item.images[0].url}
-                      alt=""
-                    />
-                  </td>
-                  <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
-                    {item && item.name}
-                  </td>
-
-                  <td
-                    class="playlist__td playlist__td--artist "
-                    style={{
-                      fontSize: 12,
-                      margin: "auto",
-                      verticalAlign: "middle",
-                    }}
-                  >
-                    {item.name}
-                  </td>
-                  <td
-                    class="playlist__td playlist__td--hour title is-7"
-                    style={{
-                      verticalAlign: "middle",
-                    }}
-                  >
-                    {millisToMinutesAndSeconds(item.duration_ms)}
-                  </td>
-                  <td class="playlist__td playlist__td--dislike"></td>
-                  <td
-                    class="playlist__td playlist__td--more"
-                    style={{ verticalAlign: "middle" }}
-                  >
-                    <FontAwesomeIcon icon={faEllipsisH} />
-                  </td>
-                </tr>
-              )
-            })}
-      */}
       </div>
     </div>
   )

@@ -52,7 +52,7 @@ const RecentPlayedContainer = (props) => {
   }
 
   const getRelatedShowList = (validateToken) => {
-    const url = `https://api.spotify.com/v1/shows/?ids=5XOuEolVXN2paH626w5WV4,0GwBlCL75rI0Tce9JABoE9,1GdTMF4b8x5WTJuk66enCq,0MP5I0nVsnQbfKD8f682Ff&market=US`
+    const url = `https://api.spotify.com/v1/shows/?ids=5XOuEolVXN2paH626w5WV4,0GwBlCL75rI0Tce9JABoE9,1GdTMF4b8x5WTJuk66enCq,14JqHpNqNfScaYWxCTVJM9,5hKGyeCtfqh8nFHx5fuiHs&market=US`
     axios
       .get(url, {
         method: "GET",
@@ -79,6 +79,8 @@ const RecentPlayedContainer = (props) => {
     getRelatedShowList(getToken())
   }, [getToken()])
 
+  console.log(globalState, relatedShowList, "broadcast")
+
   const buildItems = () => {
     return relatedShowList.map((item, index) => {
       return (
@@ -94,7 +96,6 @@ const RecentPlayedContainer = (props) => {
           <div class="hs__item__description">
             <div></div>
             <span class="hs__item__title has-text-black">{item.name}</span>
-            {/* <span class="hs__item__subtitle">{item.artists[0].name}</span> */}
           </div>
 
           <div class="hs__item__play__button">
@@ -102,12 +103,12 @@ const RecentPlayedContainer = (props) => {
               {globalState &&
               globalState.isPlaying &&
               globalState.track &&
-              globalState.track.id == item.id ? (
+              globalState.track.showUri == item.uri ? (
                 <button
                   class="button"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation()
-                    pauseFn(getToken())
+                    await pauseFn(getToken())
                   }}
                 >
                   <FontAwesomeIcon icon={faPause} />
@@ -115,9 +116,15 @@ const RecentPlayedContainer = (props) => {
               ) : (
                 <button
                   class="button"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation()
-                    playFn(getToken(), globalState.currentDeviceId, item.uri)
+                    await playFn(
+                      getToken(),
+                      globalState.currentDeviceId,
+                      "",
+                      "",
+                      item.uri
+                    )
                   }}
                 >
                   <FontAwesomeIcon icon={faPlay} />
