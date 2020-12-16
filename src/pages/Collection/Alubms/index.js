@@ -107,30 +107,6 @@ export default (props) => {
     setTrimHeader(false)
   }, [getToken(), props.match.params.id])
 
-  // useEffect(() => {
-  //   if (testRef && testRef.current && saveAlbums) {
-  //     let someCollection = document.getElementsByClassName("album__item")
-  //     const arr = [...someCollection]
-  //     arr.forEach((el, i) => {
-  //       spring({
-  //         config: "wobbly",
-  //         values: {
-  //           translateY: [-40, 0],
-  //           opacity: [0.6, 1],
-  //         },
-  //         onUpdate: ({ translateY, opacity }) => {
-  //           el.style.opacity = opacity
-  //           el.style.transform = `translateY(${translateY}px)`
-  //         },
-  //         delay: i * 25,
-  //         onComplete: () => {
-  //           // add callback logic here if necessary
-  //         },
-  //       })
-  //     })
-  //   }
-  // }, [testRef, saveAlbums, current])
-
   const buildItems = () => {
     return (
       saveAlbums &&

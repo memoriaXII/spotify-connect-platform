@@ -205,28 +205,6 @@ export const SideChildMenu = (props) => {
     }
   }, [artistInfo])
 
-  useEffect(() => {
-    if (relatedArtists) {
-      let someCollection = document.getElementsByClassName("side-chart__item")
-      const arr = [...someCollection]
-      arr.forEach((el, i) => {
-        spring({
-          config: "wobbly",
-          values: {
-            translateY: [-15, 0],
-            opacity: [0, 1],
-          },
-          onUpdate: ({ translateY, opacity }) => {
-            el.style.opacity = opacity
-            el.style.transform = `translateY(${translateY}px)`
-          },
-          delay: i * 25,
-          onComplete: () => {},
-        })
-      })
-    }
-  }, [relatedArtists])
-
   const sideContentCondition = () => {
     if (
       location.pathname.includes("artist") &&
@@ -452,27 +430,6 @@ const TabsGroup = (props) => {
     PlaylistContext
   )
 
-  useEffect(() => {
-    if (top50TracksList && viral50TracksList) {
-      let someCollection = document.getElementsByClassName("side-chart__item")
-      const arr = [...someCollection]
-      arr.forEach((el, i) => {
-        spring({
-          config: "wobbly",
-          values: {
-            translateY: [-15, 0],
-            opacity: [0, 1],
-          },
-          onUpdate: ({ translateY, opacity }) => {
-            el.style.opacity = opacity
-            el.style.transform = `translateY(${translateY}px)`
-          },
-          delay: i * 25,
-          onComplete: () => {},
-        })
-      })
-    }
-  }, [top50TracksList, viral50TracksList])
   return (
     <Tabs selected={0}>
       <TabsContent title="Popular">
