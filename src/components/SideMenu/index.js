@@ -200,11 +200,12 @@ const UserNavLink = () => {
   return (
     <div>
       {navLinks &&
-        navLinks.map((link) => {
+        navLinks.map((link, index) => {
           return (
             <>
               <Link to={link.to}>
                 <li
+                  key={index}
                   className={
                     link.className +
                     (link.id === activeLink && location.pathname == link.to
@@ -326,27 +327,41 @@ const playOutlineIcon = () => {
     </svg>
   )
 }
+
 const browseIcon = () => {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      x="0px"
-      y="0px"
-      fill="currentColor"
-      stroke="currentColor"
-      width="18"
-      height="18"
-      viewBox="0 0 512 512"
-    >
-      <g>
-        <path d="M64,144v304h303.9V144H64z M351.9,432H80V160h271.9V432z" />
-        <g>
-          <polygon points="448,64 144,64 144,128 160,128 160,80 432,80 432,352 384,352 384,368 448,368 		" />
-        </g>
-      </g>
+    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M291.301 81.778l166.349 373.587-19.301 8.635-166.349-373.587zM64 463.746v-384h21.334v384h-21.334zM192 463.746v-384h21.334v384h-21.334z"
+        fill="currentColor"
+        width="18"
+        height="18"
+        stroke="currentColor"
+      />
     </svg>
   )
 }
+// const browseIcon = () => {
+//   return (
+//     <svg
+//       xmlns="http://www.w3.org/2000/svg"
+//       x="0px"
+//       y="0px"
+//       fill="currentColor"
+//       stroke="currentColor"
+//       width="18"
+//       height="18"
+//       viewBox="0 0 512 512"
+//     >
+//       <g>
+//         <path d="M64,144v304h303.9V144H64z M351.9,432H80V160h271.9V432z" />
+//         <g>
+//           <polygon points="448,64 144,64 144,128 160,128 160,80 432,80 432,352 384,352 384,368 448,368 		" />
+//         </g>
+//       </g>
+//     </svg>
+//   )
+// }
 
 const brodcastIcon = () => {
   return (

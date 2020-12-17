@@ -25,12 +25,6 @@ export const AuthProvider = (props) => {
     }
   }, [])
 
-  // useEffect(() => {
-  //   let parsed = queryString.parse(window.location.search)
-  //   const token = parsed.access_token
-  //   console.log(token, "token")
-  // }, [getToken()])
-
   return (
     <AuthContext.Provider
       value={{

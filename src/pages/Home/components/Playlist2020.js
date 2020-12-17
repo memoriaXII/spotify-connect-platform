@@ -101,7 +101,6 @@ const Playlist2020 = (props) => {
 
   const checkForOverflow = () => {
     const { scrollWidth, clientWidth } = container.current
-    // const hasOverflow = scrollWidth > clientWidth
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
@@ -118,78 +117,62 @@ const Playlist2020 = (props) => {
       userMissHitSongs &&
       [userTop2020Songs, userMissHitSongs].map((item, index) => {
         return (
-          <li
-            class="hs__item"
-            key={index}
-            onClick={() => {
-              history.push(`/playlist/${item.id}`)
-            }}
-          >
-            <div class="hs__item__image__wrapper">
+          <div class="column is-2 album__item" key={index}>
+            <div
+              class="album__item__image__wrapper"
+              onClick={() => {
+                history.push(`/playlist/${item.id}`)
+              }}
+            >
               <img
-                class="hs__item__image"
+                class="album__item__image"
                 src={item && item.images && item.images[0].url}
                 alt=""
               />
+              <div class="album__item__play__button">
+                <a href="javascript:void(0)">
+                  {globalState &&
+                  globalState.isPlaying &&
+                  globalState.contextUrl &&
+                  globalState.contextUrl.includes(item && item.uri) ? (
+                    <button
+                      class="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        pauseFn(getToken())
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPause} />
+                    </button>
+                  ) : (
+                    <button
+                      class="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        playFn(
+                          getToken(),
+                          globalState.currentDeviceId,
+                          "",
+                          "",
+                          item.uri
+                        )
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPlay} />
+                    </button>
+                  )}
+                </a>
+              </div>
             </div>
-            <div class="hs__item__description">
-              <span class="hs__item__title has-text-black">{item.name}</span>
-              <div
-                className="subtitle is-7 has-text-grey mt-1"
-                style={{
-                  letterSpacing: 1,
-                  lineHeight: 1.2,
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: urlDetection(
-                    (item &&
-                      item.description &&
-                      item.description.replace(/\n/g, "")) ||
-                      ""
-                  ),
-                }}
-              />
+            <div class="album__item__description">
+              <span class="album__item__title has-text-black title is-6">
+                {item && item.name}
+              </span>
+              <span class="album__item__subtitle line-clamp-text">
+                {item && item.description && item.description}
+              </span>
             </div>
-            <div class="hs__item__play__button">
-              <a
-                href="javascript:void(0)"
-                onClick={(e) => {
-                  e.stopPropagation()
-                }}
-              >
-                {globalState &&
-                globalState.isPlaying &&
-                globalState.contextUrl &&
-                globalState.contextUrl.includes(item && item.uri) ? (
-                  <button
-                    class="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      pauseFn(getToken())
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPause} />
-                  </button>
-                ) : (
-                  <button
-                    class="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      playFn(
-                        getToken(),
-                        globalState.currentDeviceId,
-                        "",
-                        "",
-                        item.uri
-                      )
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPlay} />
-                  </button>
-                )}
-              </a>
-            </div>
-          </li>
+          </div>
         )
       })
     )
@@ -257,9 +240,9 @@ const Playlist2020 = (props) => {
           <div class="title is-5">Your 2020 Wrapped</div>
         </h2>
       </div>
-      <ul className="hs item-container" ref={container}>
+      <div className="columns is-multiline mt-2" ref={container}>
         {buildItems()}
-      </ul>
+      </div>
     </div>
   )
 }

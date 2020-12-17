@@ -144,9 +144,7 @@ export const PlayerProvider = (props) => {
         redirect: "follow",
         referrerPolicy: "no-referrer",
       })
-      .then(function (response) {
-        console.log(response, "is normal")
-      })
+      .then(function (response) {})
       .catch((err) => {
         console.error(err)
       })

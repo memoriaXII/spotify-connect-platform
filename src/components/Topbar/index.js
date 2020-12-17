@@ -58,18 +58,6 @@ export const Topbar = (props) => {
     history.replace("/search/" + query)
   }, 500)
 
-  // const handleClickOutside = (e) => {
-  //   if (!menuRef.current.contains(e.target)) {
-  //     setClickedOutside(true)
-  //   }
-  // }
-  // const handleClickInside = () => setClickedOutside(false)
-
-  // useEffect(() => {
-  //   document.addEventListener("click", handleClickOutside)
-  //   return () => document.removeEventListener("click", handleClickOutside)
-  // })
-
   useEffect(() => {
     if (clickedOutside) {
       setPreviewProfileHidden(false)

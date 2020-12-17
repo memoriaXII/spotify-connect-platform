@@ -9,7 +9,7 @@ import React, {
 } from "react"
 
 import Slider from "react-slick"
-
+import useFullscreen from "@rooks/use-fullscreen"
 import AlbumContainer from "./components/AlbumContainer"
 import PlaylistContainer from "./components/PlaylistContainer"
 import TopTracksContainer from "./components/TopTracksContainer"
@@ -18,11 +18,13 @@ import ArtistContainer from "./components/ArtistContainer"
 import Playlist2020 from "./components/Playlist2020"
 
 import { PlaylistContext } from "../../context/playlist"
+import { PlayerContext } from "../../context/player"
 
 export default (props) => {
   const { userRecommendListData } = useContext(PlaylistContext)
+  const { globalState } = useContext(PlayerContext)
   const customSlider = useRef()
-  const { newReleaseData, globalState, featuredPlaylistsData } = props
+  const { newReleaseData, featuredPlaylistsData } = props
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -38,6 +40,7 @@ export default (props) => {
     initialSlide: 1,
     beforeChange: (current, next) => setCurrentIndex(next),
   }
+
   return (
     <div>
       <div class="main__wrap summary">
@@ -89,10 +92,6 @@ export default (props) => {
           </div>
         </div>
       </div>
-
-      {/* <div class="ad__header mt-6">
-        <h2 class="ad__headline title is-5 has-text-black">Browse</h2>
-      </div> */}
 
       <hr />
       <AlbumContainer
