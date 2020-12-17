@@ -63,7 +63,6 @@ export default (props) => {
           ...savedArtists,
           ...response.data.artists.items
         )
-        console.log(response.data.artists, "response.data.artists")
         setAfterRowsID(response.data.artists.cursors.after)
         setSavedArtists(previousArtistArray)
       })
