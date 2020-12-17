@@ -7,6 +7,8 @@ import React, {
   useContext,
   useMemo,
   useLayoutEffect,
+  lazy,
+  Suspense,
 } from "react"
 
 import {
@@ -37,11 +39,6 @@ import { PlayerProvider } from "./context/player"
 import { ProfileProvider } from "./context/profile"
 import { PodCastProvider } from "./context/podcast"
 
-import Home from "./pages/Home"
-import Login from "./pages/Login"
-import Search from "./pages/Search"
-import SearchDetail from "./pages/SearchDetail"
-
 import ShowDetail from "./pages/ShowDetail"
 import PlaylistDetail from "./pages/PlaylistDetail"
 import ArtistDetail from "./pages/ArtistDetail"
@@ -55,6 +52,11 @@ import Broadcast from "./pages/Broadcast"
 import { useScrollPosition } from "@n8tb1t/use-scroll-position"
 
 import { TweenLite, TimelineLite, Linear, Power1 } from "gsap"
+
+const Home = lazy(() => import("./pages/Home"))
+const Login = lazy(() => import("./pages/Login"))
+const Search = lazy(() => import("./pages/Search"))
+const SearchDetail = lazy(() => import("./pages/SearchDetail"))
 
 function App() {
   const location = useLocation()
@@ -101,7 +103,13 @@ function App() {
 
   const routeDetection = location.pathname == `/login`
   const searchPageDetection = location.pathname.includes("search")
-  useScrollPosition(({ prevPos, currPos }) => {})
+  const customSideMenuDetection =
+    location.pathname.includes("artist") ||
+    (location.pathname.includes("album") && pararm_id !== "albums")
+
+  var pararm_id = location.pathname.substring(
+    location.pathname.lastIndexOf("/") + 1
+  )
 
   return (
     <>
@@ -171,145 +179,148 @@ function App() {
                           ref={sectionRef}
                         >
                           <div className="hs__wrapper">
-                            <Switch>
-                              <Route path="/login" component={Login} />
+                            <Suspense fallback={<div>Loading...</div>}>
+                              <Switch>
+                                <Route path="/login" component={Login} />
 
-                              <Route
-                                exact
-                                path="/"
-                                render={(props) => (
-                                  <Home {...props} component={Home} />
-                                )}
-                              />
+                                <Route
+                                  exact
+                                  path="/"
+                                  render={(props) => (
+                                    <Home {...props} component={Home} />
+                                  )}
+                                />
 
-                              <Route
-                                path="/search/:id"
-                                render={(props) => (
-                                  <SearchDetail
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/search/:id"
+                                  render={(props) => (
+                                    <SearchDetail
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/search"
-                                render={(props) => (
-                                  <Search
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/search"
+                                  render={(props) => (
+                                    <Search
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                exact
-                                path="/broadcast"
-                                render={(props) => (
-                                  <Broadcast
-                                    {...props}
-                                    component={Broadcast}
-                                    gradientNum={gradientNum}
-                                  />
-                                )}
-                              />
-                              <Route
-                                path="/playlist/:id"
-                                render={(props) => (
-                                  <PlaylistDetail
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
-                              <Route
-                                path="/artist/:id"
-                                render={(props) => (
-                                  <ArtistDetail
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    setGradientNum={setGradientNum}
-                                    {...props}
-                                  />
-                                )}
-                              />
-                              <Route
-                                path="/album/:id"
-                                render={(props) => (
-                                  <AlbumDetail
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  exact
+                                  path="/broadcast"
+                                  render={(props) => (
+                                    <Broadcast
+                                      {...props}
+                                      component={Broadcast}
+                                      gradientNum={gradientNum}
+                                    />
+                                  )}
+                                />
+                                <Route
+                                  path="/playlist/:id"
+                                  render={(props) => (
+                                    <PlaylistDetail
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
+                                <Route
+                                  path="/artist/:id"
+                                  render={(props) => (
+                                    <ArtistDetail
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      setGradientNum={setGradientNum}
+                                      {...props}
+                                    />
+                                  )}
+                                />
+                                <Route
+                                  path="/album/:id"
+                                  render={(props) => (
+                                    <AlbumDetail
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/collection/recent-played"
-                                render={(props) => (
-                                  <UserPlayedTracks
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/collection/recent-played"
+                                  render={(props) => (
+                                    <UserPlayedTracks
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/collection/tracks"
-                                render={(props) => (
-                                  <UserSaveTracks
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/collection/tracks"
+                                  render={(props) => (
+                                    <UserSaveTracks
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/collection/albums"
-                                render={(props) => (
-                                  <UserSaveAlbums
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/collection/albums"
+                                  render={(props) => (
+                                    <UserSaveAlbums
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/collection/artists"
-                                render={(props) => (
-                                  <UserSaveArtists
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
+                                <Route
+                                  path="/collection/artists"
+                                  render={(props) => (
+                                    <UserSaveArtists
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
 
-                              <Route
-                                path="/show/:id"
-                                render={(props) => (
-                                  <ShowDetail
-                                    trimHeader={trimHeader}
-                                    setTrimHeader={setTrimHeader}
-                                    {...props}
-                                  />
-                                )}
-                              />
-                            </Switch>
+                                <Route
+                                  path="/show/:id"
+                                  render={(props) => (
+                                    <ShowDetail
+                                      trimHeader={trimHeader}
+                                      setTrimHeader={setTrimHeader}
+                                      {...props}
+                                    />
+                                  )}
+                                />
+                              </Switch>
+                            </Suspense>
                           </div>
                         </section>
                       </div>
-                      {routeDetection ? null : (
-                        <>
-                          <SideChildMenu />
-                        </>
-                      )}
+                      {routeDetection ||
+                      location.pathname == "/collection/albums" ||
+                      location.pathname ==
+                        "/collection/artists" ? null : customSideMenuDetection ? (
+                        <SideChildMenu />
+                      ) : null}
                     </div>
                     {routeDetection ? null : (
                       <>
@@ -328,16 +339,3 @@ function App() {
 }
 
 export default App
-
-//  <PlayerControlMobile
-// // cachedAlbumsArray={cachedAlbumsArray}
-// // deviceHeight={deviceHeight}
-// // imgRef={imgRef}
-// // playerBackground={playerBackground}
-// // setDeviceVolume={setDeviceVolume}
-// // currentPlayingState={currentPlayingState}
-// // userCurrentPlayingTrack={userCurrentPlayingTrack}
-// // progressBarStyles={progressBarStyles}
-// // authToken={authToken}
-// // onChangeRange={handleChangeRange}
-// />

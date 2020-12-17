@@ -47,7 +47,6 @@ export default (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response.data, "images")
         setPlaylistImages(response.data)
       })
       .catch((err) => {
@@ -140,7 +139,6 @@ export default (props) => {
       img.onload = () => {
         const result = colorThief.getColor(img)
         rgbToHex(result[0], result[1], result[2])
-        console.log(rgbToHex(result[0], result[1], result[2]), "test")
         setPlaylistBackground(rgbToHex(result[0], result[1], result[2]))
       }
       const rgbToHex = (r, g, b) =>
@@ -318,9 +316,7 @@ export default (props) => {
                     globalState.track &&
                     globalState.track &&
                     globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id
+                    globalState.track.id == (item.track && item.track.id)
                       ? "playlist__tr nowplay"
                       : "playlist__tr "
                   }
@@ -339,10 +335,9 @@ export default (props) => {
                     style={{ verticalAlign: "middle" }}
                   >
                     {globalState.track &&
+                    globalState.track &&
                     globalState.track.id &&
-                    globalState.track.id == item.track &&
-                    item.track.id &&
-                    item.track.id ? (
+                    globalState.track.id == (item.track && item.track.id) ? (
                       <SoundEqualizer />
                     ) : (
                       <FontAwesomeIcon

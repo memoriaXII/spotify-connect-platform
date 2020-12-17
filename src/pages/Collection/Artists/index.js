@@ -43,7 +43,7 @@ export default (props) => {
 
   const getSavedArtists = (validateToken, currentValue) => {
     const afterCondition = currentValue == "" ? `` : `&after=${currentValue}`
-    const url = `https://api.spotify.com/v1/me/following?type=artist&limit=8${afterCondition}`
+    const url = `https://api.spotify.com/v1/me/following?type=artist&limit=12${afterCondition}`
     let previousArtistArray = []
     axios
       .get(url, {
@@ -63,7 +63,6 @@ export default (props) => {
           ...savedArtists,
           ...response.data.artists.items
         )
-        console.log(response.data.artists, "response.data.artists")
         setAfterRowsID(response.data.artists.cursors.after)
         setSavedArtists(previousArtistArray)
       })
@@ -97,7 +96,7 @@ export default (props) => {
       savedArtists &&
       savedArtists.map((item, index) => {
         return (
-          <div class="column is-3 album__item" key={index}>
+          <div class="column is-2 album__item" key={index}>
             <div
               class="album__item__image__wrapper"
               style={{ borderRadius: `${50}%` }}
@@ -153,13 +152,10 @@ export default (props) => {
                 </a>
               </div>
             </div>
-            <div class="album__item__description has-text-centered">
-              <span class="album__item__title title is-6 has-text-black has-text-centered">
+            <div class="has-text-centered">
+              <p class="title is-6 has-text-centered mt-2 has-text-black">
                 {item && item.name}
-              </span>
-              {/* <span class="album__item__subtitle">
-                {item && item.artists[0].name}
-              </span> */}
+              </p>
             </div>
           </div>
         )

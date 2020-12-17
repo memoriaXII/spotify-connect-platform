@@ -12,12 +12,13 @@ import axios from "axios"
 import logoIcon from "../../images/logo.svg"
 import queryString from "query-string"
 import "./styles/style.scss"
+import percentIcon from "../../images/percent.png"
 
 export default (props) => {
   const handlelogin = () => {
     window.location = window.location.href.includes("localhost")
-      ? "http://localhost:8888/login"
-      : "https://spotify-auth-proxy-server.herokuapp.com/login"
+      ? "http://localhost:8888/api/login"
+      : "https://quotes.vercel.app/api/login"
   }
 
   return (

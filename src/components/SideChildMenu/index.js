@@ -36,7 +36,7 @@ export const SideChildMenu = (props) => {
   const { sidePlayListData, top50TracksList, viral50TracksList } = useContext(
     PlaylistContext
   )
-  const { globalState, playFn } = useContext(PlayerContext)
+  const { globalState, playFn, pauseFn } = useContext(PlayerContext)
   const sideMenuRef = useRef(null)
   const { getToken } = useContext(AuthContext)
   let history = useHistory()
@@ -68,6 +68,18 @@ export const SideChildMenu = (props) => {
       .catch((err) => {
         console.error(err)
       })
+  }
+  async function getArtistSongs(validateToken, artistId) {
+    return fetch(
+      `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=TW`,
+      {
+        headers: {
+          Authorization: `Bearer ${validateToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
+      }
+    ).then((d) => d.json())
   }
 
   const getRelatedArtists = (validateToken, id) => {
@@ -134,7 +146,6 @@ export const SideChildMenu = (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response, "artistinof")
         setArtistInfo(response.data)
       })
       .catch((err) => {
@@ -244,7 +255,12 @@ export const SideChildMenu = (props) => {
           <div class="side-chart__wrap side-chart__contents mt-4">
             {relatedArtists.map((item, index) => {
               return (
-                <div class="side-chart__item container mt-2">
+                <div
+                  class="side-chart__item container mt-2"
+                  onClick={() => {
+                    history.push(`/artist/${item && item.id}`)
+                  }}
+                >
                   <div key={index} class="columns is-variable is-2 is-mobile">
                     <div
                       class="column is-2 has-text-right"
@@ -277,9 +293,43 @@ export const SideChildMenu = (props) => {
                         {/* {millisToMinutesAndSeconds(item.duration_ms)} */}
                       </button>
 
-                      <button class="button is-small side-chart__item__play__button">
+                      {/* <button class="button is-small side-chart__item__play__button">
                         <FontAwesomeIcon icon={faPlay} />
-                      </button>
+                      </button> */}
+                      {globalState &&
+                      globalState.isPlaying &&
+                      globalState.track &&
+                      globalState.track.artists &&
+                      globalState.track.artists.includes(item && item.name) ? (
+                        <button
+                          class="button is-small side-chart__item__play__button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            pauseFn(getToken())
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faPause} />
+                        </button>
+                      ) : (
+                        <button
+                          class="button is-small side-chart__item__play__button"
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            const { tracks } = await getArtistSongs(
+                              getToken(),
+                              item.id
+                            )
+                            playFn(
+                              getToken(),
+                              globalState.currentDeviceId,
+                              "",
+                              tracks
+                            )
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faPlay} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -293,7 +343,7 @@ export const SideChildMenu = (props) => {
       location.pathname !== "/collection/albums"
     ) {
       return (
-        <div class="main__wrap summary">
+        <div class="main__wrap summary" style={{ background: "transparent" }}>
           <div
             class="summary__bg"
             style={{
@@ -320,7 +370,12 @@ export const SideChildMenu = (props) => {
                   </strong>
                 </li>
                 <li>
-                  <button class="button is-light is-small is-rounded mt-2">
+                  <button
+                    class="button is-light is-small is-rounded mt-2"
+                    onClick={() => {
+                      history.push(`/artist/${artistInfo && artistInfo.id}`)
+                    }}
+                  >
                     View Artist
                   </button>
                 </li>
@@ -344,10 +399,24 @@ export const SideChildMenu = (props) => {
             {artistTopTracks.map((item, index) => {
               return (
                 <div
-                  class="side-chart__item container mt-2"
+                  class={
+                    globalState &&
+                    globalState.isPlaying &&
+                    globalState.track &&
+                    globalState.track.album &&
+                    globalState.track.album.uri == item.album.uri
+                      ? "side-chart__item container mt-2 nowplay"
+                      : "side-chart__item container mt-2 "
+                  }
                   style={{ opacity: 1 }}
                 >
-                  <div key={index} class="columns is-variable is-2 is-mobile">
+                  <div
+                    key={index}
+                    class="columns is-variable is-2 is-mobile"
+                    onClick={() => {
+                      history.push(`/album/${item.album.id}`)
+                    }}
+                  >
                     <div
                       class="column is-2 has-text-right"
                       style={{
@@ -376,12 +445,35 @@ export const SideChildMenu = (props) => {
                       <button
                         class="button is-small side-chart__item__play__duration is-text"
                         style={{ textDecoration: "none" }}
-                      >
-                        {/* {millisToMinutesAndSeconds(item.duration_ms)} */}
-                      </button>
+                      ></button>
 
-                      <button class="button is-small side-chart__item__play__button">
-                        <FontAwesomeIcon icon={faPlay} />
+                      <button
+                        class="button is-small side-chart__item__play__button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          playFn(
+                            getToken(),
+                            globalState.currentDeviceId,
+                            "",
+                            "",
+                            item.album.uri
+                          )
+                        }}
+                      >
+                        {globalState &&
+                        globalState.isPlaying &&
+                        globalState.track &&
+                        globalState.track.album &&
+                        globalState.track.album.uri.includes(
+                          item && item.album.uri
+                        ) ? (
+                          <SoundEqualizer />
+                        ) : (
+                          <FontAwesomeIcon
+                            icon={faPlay}
+                            style={{ color: "rgba(145, 143, 143, 0.3)" }}
+                          />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -390,21 +482,6 @@ export const SideChildMenu = (props) => {
             })}
           </div>
         </div>
-      )
-    } else {
-      return (
-        <>
-          <div class="side-chart__wrap side-chart__nav pl-3">
-            <ul class="nav">
-              <li class="nav__list pl-0">
-                <p class="title is-5">Charts</p>
-              </li>
-            </ul>
-          </div>
-          <div class="side-chart__wrap side-chart__contents">
-            <TabsGroup />
-          </div>
-        </>
       )
     }
   }

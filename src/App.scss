@@ -111,6 +111,9 @@ $outline-color: #16262e;
   }
 }
 
+.is-cursor {
+  cursor: pointer;
+}
 .wrap {
   width: 100%;
   min-width: 740px;
@@ -164,7 +167,8 @@ $outline-color: #16262e;
     background-position: center center;
     background-size: cover;
     border-radius: 10px;
-    box-shadow: 0 20px 20px 3px rgba(197, 196, 196, 0.1);
+    // box-shadow: 0 20px 20px 3px rgba(197, 196, 196, 0.1);
+    box-shadow: 0px -6px 10px rgba(0, 0, 0, 0), 0px 4px 15px rgba(0, 0, 0, 0.15);
     z-index: 1;
   }
 
@@ -269,7 +273,7 @@ $outline-color: #16262e;
   }
 
   &.on {
-    width: calc(100% - 580px);
+    width: 100%;
     min-width: 638px;
     height: 60px;
     position: fixed;
@@ -385,7 +389,6 @@ $outline-color: #16262e;
     &--more {
       opacity: 0;
     }
-
     &--hour {
       min-width: 104px;
     }
@@ -418,11 +421,11 @@ $outline-color: #16262e;
 .playbar {
   display: flex;
   width: 100%;
-  height: 86px;
+  height: 70px;
   padding: 18px 16px 12px;
   background-color: #ffffff;
   box-sizing: border-box;
-  border-top: 2px solid #eee;
+  border-top: 1px solid #eee;
 }
 // playbar - album cover and info
 .album-cover {
@@ -432,7 +435,6 @@ $outline-color: #16262e;
   &__img {
     width: 56px;
     height: 56px;
-    // background: url(https://i.scdn.co/image/ab67616d00001e02a00bcbae89bf421636fdd310);
     background-size: cover;
   }
   &__text-box {
@@ -444,7 +446,7 @@ $outline-color: #16262e;
   }
   &__title {
     color: rgb(0, 0, 0);
-
+    cursor: pointer;
     &:hover {
       text-decoration: underline;
     }
@@ -466,12 +468,10 @@ $outline-color: #16262e;
     }
   }
 }
-// playbar - play buttons
 .play-btns {
   width: 100%;
   min-width: 342px;
   flex: 3;
-
   &__wrap {
     @include flex-justify-btw;
   }
@@ -491,7 +491,7 @@ $outline-color: #16262e;
   }
 
   &__icon.fa-random {
-    color: rgba(67, 67, 67, 0.5);
+    color: rgba(67, 67, 67, 0.4);
     cursor: pointer;
   }
 
@@ -505,7 +505,7 @@ $outline-color: #16262e;
     cursor: pointer;
   }
   &__icon.fa-sync {
-    color: rgba(67, 67, 67, 0.5);
+    color: rgba(67, 67, 67, 0.4);
     cursor: pointer;
   }
 
@@ -776,18 +776,20 @@ $colsSmallDesktop: 4;
       cursor: pointer;
       position: relative;
       width: 220px;
-      background: grey;
+      background: rgb(233, 233, 233);
       height: 0;
       padding-bottom: 100%;
     }
     &__image {
-      box-shadow: 0 20px 20px 3px rgba(197, 196, 196, 0.1);
+      box-shadow: 0px -6px 10px rgba(0, 0, 0, 0),
+        0px 4px 15px rgba(0, 0, 0, 0.15);
       pointer-events: none;
       position: absolute;
       width: 100%;
       height: 100%;
       object-fit: cover;
       background: rgb(232, 232, 232);
+      transition: 0.2s;
     }
     &__play__button {
       cursor: pointer;
@@ -798,13 +800,14 @@ $colsSmallDesktop: 4;
     }
     &:hover &__image {
       filter: brightness(85%);
+      box-shadow: none;
     }
     &:hover &__play__button {
       z-index: 1;
-      margin: 0;
       position: absolute;
-      top: 35%;
       left: 50%;
+      top: 36%;
+      -webkit-transform: translate(-50%, -50%);
       transform: translate(-50%, -50%);
       display: block;
       button {
@@ -1147,4 +1150,179 @@ $colsSmallDesktop: 4;
   line-height: 1.5;
   font-size: 15px;
   color: rgb(135, 135, 135);
+}
+
+.episodes-list {
+  &__item {
+    cursor: pointer;
+    border-radius: 15px;
+    &__play__button {
+      cursor: pointer;
+      z-index: 1;
+      display: block;
+      button {
+        border: 0px;
+        background: rgb(255, 255, 255);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        color: rgb(28, 28, 28);
+        font-size: 10px;
+        box-shadow: 0px -6px 10px white, 0px 4px 15px rgba(0, 0, 0, 0.15);
+        &:hover {
+          background: #3d83ff;
+          color: rgb(255, 255, 255);
+        }
+      }
+    }
+    &:hover {
+      background: rgba(224, 224, 224, 0.2);
+    }
+    &:hover &__play__button {
+      cursor: pointer;
+      z-index: 1;
+      display: block;
+      button {
+        border: 0px;
+        background: rgb(255, 255, 255);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        color: rgb(0, 0, 0);
+        font-size: 10px;
+        &:hover {
+          background: #3d83ff;
+          color: rgb(255, 255, 255);
+        }
+      }
+    }
+  }
+}
+
+/* This CSS was inspired by the blue pulsing dot in Grammarly */
+:root {
+  --pulseSize: 45px;
+  --blue: rgba(222, 226, 235, 0.35);
+  --transparentBlue: rgba(95, 139, 250, 0);
+}
+
+// .center {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   height: 100vh;
+// }
+
+.pulse {
+  position: relative;
+  width: var(--pulseSize);
+  height: var(--pulseSize);
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 var(--blue);
+  animation: pulsing 2s infinite;
+  transition: all 0.2s;
+  cursor: pointer;
+  &__icon {
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+  }
+}
+
+.pulse:hover {
+  --blue: rgba(0, 123, 255, 0.65);
+  --transparentBlue: rgba(209, 167, 160, 0);
+}
+
+.pulse:active {
+  transform: scale(1.5);
+}
+
+@keyframes pulsing {
+  from {
+    box-shadow: 0 0 0 0 var(--blue);
+  }
+  70% {
+    box-shadow: 0 0 0 var(--pulseSize) var(--transparentBlue);
+  }
+  to {
+    box-shadow: 0 0 0 0 var(--transparentBlue);
+  }
+}
+
+.pulse2 {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0px -6px 10px rgba(0, 0, 0, 0), 0px 4px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  margin-top: -5px;
+  cursor: pointer;
+  &__icon {
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+    top: 59%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    svg {
+      color: #000000;
+    }
+  }
+}
+.full-screen-main {
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100%;
+  background: white;
+}
+
+#artwork {
+  position: fixed;
+  top: -30px;
+  right: -30px;
+  bottom: -30px;
+  left: -30px;
+  // background-image: url("https://raw.githubusercontent.com/himalayasingh/music-player-1/master/img/_1.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 100%;
+  filter: blur(40px);
+  -webkit-filter: blur(40px);
+  z-index: 1;
+}
+
+#layer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgb(0, 0, 0);
+  opacity: 0.41;
+  z-index: 2;
+}
+
+.fullscreen-player {
+  z-index: 3;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  &__item {
+    z-index: 3;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }

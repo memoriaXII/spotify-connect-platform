@@ -8,14 +8,9 @@ import React, {
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faCoffee,
-  faFastForward,
-  faFastBackward,
-  faBackward,
   faPlay,
   faPause,
   faPlayCircle,
-  faForward,
   faSync,
   faRandom,
   faVolumeUp,
@@ -40,8 +35,29 @@ import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
 import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
 import { useHistory } from "react-router-dom"
+import backwardIcon from "../../images/prev.svg"
+import forwardIcon from "../../images/next.svg"
+import pauseIcon from "../../images/pause2.svg"
+import shuffleIcon from "../../images/shuffle.svg"
+import repeatIcon from "../../images/repeat2.svg"
+import playIcon from "../../images/play2.svg"
+import lyricsIcon from "../../images/microphone.svg"
+
+import { usePrevious } from "../../utils/customHook"
+
+import useFullscreen from "@rooks/use-fullscreen"
 
 export const PlayerControl = (props) => {
+  const {
+    isEnabled,
+    toggle,
+    onChange,
+    onError,
+    request,
+    exit,
+    isFullscreen,
+    element,
+  } = useFullscreen()
   let history = useHistory()
   const {
     testText,
@@ -59,6 +75,7 @@ export const PlayerControl = (props) => {
   const [playerBackground, setPlayBackground] = useState("")
   const imgRef = useRef(null)
   const [isMagnified, setMagnified] = useState(true)
+  const [isfullScreenMode, setFullScreenMode] = useState(false)
   const { volume } = volumeBar
   const { position } = progressBar
   const [utilsState, setUtilsState] = useState({
@@ -144,7 +161,7 @@ export const PlayerControl = (props) => {
 
   const handleChangeRangeFn = debounce(({ x }) => {
     handleChangeRange(x)
-  }, 500)
+  }, 100)
 
   const Wrapper = ({ styles }) => {
     return (
@@ -179,38 +196,375 @@ export const PlayerControl = (props) => {
     handleChangeRange(position.x)
   }, 500)
 
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      }
+    }
+  }
+  const videoRef = useRef(null)
+  const toggleFullScrn = () => videoRef.current.actions.toggleFullscreen()
+
+  function toggleFullScreen2() {
+    if (document && !document.fullscreenElement) {
+      setFullScreenMode(!isfullScreenMode)
+      document.getElementById("fullscreen-div").requestFullscreen()
+    } else {
+      if (document.exitFullscreen) {
+        setFullScreenMode(!isfullScreenMode)
+        document.exitFullscreen()
+        setFullScreenMode(!isfullScreenMode)
+      }
+    }
+  }
+
   return (
-    <div class="playbar is-hidden-mobile">
-      <div class="album-cover">
-        <div class="album-cover__img">
+    <div
+      id="fullscreen-div"
+      allow="fullscreen"
+      class={isfullScreenMode ? "full-screen-main" : "full-screen-main"}
+    >
+      <div
+        id={isfullScreenMode ? "artwork" : ""}
+        style={{
+          backgroundImage: `
+            url(${
+              globalState && globalState.track && globalState.track.image
+            })`,
+        }}
+      ></div>
+      <div id={isfullScreenMode ? "layer" : ""}></div>
+      {isfullScreenMode ? (
+        <section class="fullscreen-player">
+          <div class="fullscreen-player__item">
+            <Player />
+          </div>
+        </section>
+      ) : null}
+
+      <div
+        class="playbar is-hidden-mobile"
+        style={
+          isfullScreenMode
+            ? { position: "absolute", bottom: 0, zIndex: 5, height: 80 }
+            : {}
+        }
+      >
+        <div class="album-cover">
+          <div class="album-cover__img">
+            <img
+              crossOrigin={"anonymous"}
+              ref={imgRef}
+              alt={""}
+              src={globalState && globalState.track && globalState.track.image}
+              class="wi-220px m0 dib p0 di"
+            />
+          </div>
+          <div class="album-cover__text-box">
+            <div class="album-cover__wrap">
+              <p
+                class="album-cover__title truncate"
+                style={{ fontSize: 12, width: 200 }}
+                onClick={() => {
+                  history.push(`/album/${globalState.track.album.id}`)
+                }}
+              >
+                {globalState && globalState.track && globalState.track.name}
+              </p>
+            </div>
+            <div class="album-cover">
+              <div class="marquee-wrapper" style={{ width: 120 }}>
+                {globalState &&
+                globalState.track &&
+                globalState.track.artistsArray &&
+                globalState.track.artistsArray.length !== 1 ? (
+                  <marquee behavior="scroll" direction="left" scrollamount="3">
+                    {globalState &&
+                      globalState.track &&
+                      globalState.track.artistsArray &&
+                      globalState.track.artistsArray.map((d, index) => {
+                        return (
+                          <span
+                            class={
+                              index == 0
+                                ? "album-cover__artist"
+                                : "album-cover__artist ml-1"
+                            }
+                            onClick={() => {
+                              history.push(`/artist/${d.id}`)
+                            }}
+                          >
+                            {d.name}
+                          </span>
+                        )
+                      })}
+                  </marquee>
+                ) : (
+                  <>
+                    {globalState &&
+                      globalState.track &&
+                      globalState.track.artistsArray &&
+                      globalState.track.artistsArray.map((d, index) => {
+                        return (
+                          <span
+                            class={
+                              index == 0
+                                ? "album-cover__artist"
+                                : "album-cover__artist ml-1"
+                            }
+                            onClick={() => {
+                              history.push(`/artist/${d.id}`)
+                            }}
+                          >
+                            {d.name}
+                          </span>
+                        )
+                      })}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="play-btns">
+          <ul class="play-btns__wrap play-btns__icon-box">
+            <li class="play-btns__list">
+              <i class="play-btns__icon fas fa-random">
+                <img
+                  class="icon mt-1"
+                  style={{ width: 15, opacity: 0.9 }}
+                  src={shuffleIcon}
+                  alt=""
+                />
+              </i>
+            </li>
+            <li class="play-btns__list">
+              <i
+                class="play-btns__icon fas fa-step-backward"
+                onClick={() => {
+                  previousFn(getToken())
+                }}
+              >
+                <img
+                  class="icon mt-1"
+                  style={{ width: 17, opacity: 0.5 }}
+                  src={backwardIcon}
+                  alt=""
+                />
+              </i>
+            </li>
+            <li>
+              {globalState.isPlaying ? (
+                <div
+                  class="pulse2"
+                  onClick={() => {
+                    pauseFn(getToken())
+                  }}
+                >
+                  <span class="pulse2__icon">
+                    {/* {brodcastIcon()} */}
+                    <img class="icon" src={pauseIcon} alt="" />
+                  </span>
+                </div>
+              ) : (
+                <div
+                  class="pulse2"
+                  onClick={() => {
+                    playFn(getToken(), globalState.currentDeviceId)
+                  }}
+                >
+                  <span class="pulse2__icon">
+                    <img
+                      class="icon"
+                      style={{ cursor: "pointer" }}
+                      src={playIcon}
+                      alt=""
+                    />
+                  </span>
+                </div>
+              )}
+            </li>
+            <li class="play-btns__list">
+              <i
+                class="play-btns__icon fas fa-step-forward"
+                onClick={() => {
+                  nextFn(getToken())
+                }}
+              >
+                <img
+                  class="icon mt-1"
+                  style={{ width: 17, opacity: 0.5 }}
+                  src={forwardIcon}
+                  alt=""
+                />
+              </i>
+            </li>
+            <li class="play-btns__list">
+              <i class="play-btns__icon fas fa-sync">
+                <img
+                  class="icon mt-1"
+                  style={{ width: 15 }}
+                  src={repeatIcon}
+                  alt=""
+                />
+              </i>
+            </li>
+          </ul>
+          <ul class="play-btns__wrap play-btns__range-bar">
+            <li>
+              <p class="has-text-grey-light">
+                {globalState.isPlaying
+                  ? millisToMinutesAndSeconds(progressBar.progressMs)
+                  : millisToMinutesAndSeconds(progressBar.progressMs)}
+              </p>
+            </li>
+            <li class="play-btns__bar">
+              <div
+                onMouseEnter={mouseEnter}
+                onMouseLeave={mouseLeave}
+                style={{ width: `${100}%` }}
+              >
+                <RangeSlider
+                  style={{ cursor: "pointer" }}
+                  axis="x"
+                  onDragEnd={handleTrackDragEnd}
+                  onChange={(x) => handleChangeRangeFn(x)}
+                  styles={{
+                    options: {
+                      handleBorder: 0,
+                      handleBorderRadius:
+                        getMergedStyles.sliderHandleBorderRadius,
+                      handleColor: getMergedStyles.sliderHandleColor,
+                      handleSize: isMagnified ? handleSize + 4 : handleSize,
+                      height: isMagnified
+                        ? getMergedStyles.sliderHeight + 4
+                        : getMergedStyles.sliderHeight + 4,
+                      padding: 0,
+                      rangeColor: getMergedStyles.sliderColor,
+                      trackBorderRadius:
+                        getMergedStyles.sliderTrackBorderRadius,
+                      trackColor: "rgba(176, 176, 176, 0.3)",
+                    },
+                  }}
+                  x={position}
+                  xMin={0}
+                  xMax={100}
+                  xStep={0.9}
+                />
+              </div>
+            </li>
+            <li>
+              <p class="has-text-grey-light">
+                {millisToMinutesAndSeconds(
+                  globalState.track && globalState.track.durationMs
+                )}
+              </p>
+            </li>
+          </ul>
+        </div>
+        <div class="ect-btns mt-1">
+          <ul class="ect-btns__inner">
+            <li class="ect-btns__list">
+              <i
+                ref={videoRef}
+                // id="toggle-fullscreen"
+                onClick={toggleFullScreen2}
+                class="ect-btns__icon fas fa-expand-alt has-text-grey-light"
+              >
+                <FontAwesomeIcon icon={faExpandAlt} />
+              </i>
+            </li>
+            <li class="ect-btns__list">
+              <i class="ect-btns__icon fas fa-list has-text-grey-light">
+                <FontAwesomeIcon icon={faList} />
+              </i>
+            </li>
+            <li class="ect-btns__list ect-btns__list--volume">
+              <i class="ect-btns__icon fas fa-volume-up has-text-grey-light">
+                <FontAwesomeIcon icon={faVolumeUp} />
+              </i>
+              <div class="ect-btns__bar" style={{ margin: "auto" }}>
+                <RangeSlider
+                  style={{ cursor: "pointer" }}
+                  axis="x"
+                  onDragEnd={handleVolumeDragEnd}
+                  styles={{
+                    options: {
+                      handleBorderRadius: 12,
+                      handleBorder: "1px solid  rgba(176, 176, 176, 0.4)",
+                      handleColor: getMergedStyles.bgColor,
+                      handleSize: 12,
+                      padding: 0,
+                      rangeColor: getMergedStyles.sliderColor,
+                      trackColor: "rgba(176, 176, 176, 0.3)",
+                      height: 5,
+                    },
+                  }}
+                  onChange={handleChangeVolume}
+                  x={volume * 100}
+                  xMin={0}
+                  xMax={100}
+                />
+              </div>
+            </li>
+            <li class="ect-btns__list">
+              <i
+                class="ect-btns__icon fas fa-expand-alt has-text-grey-light"
+                onClick={toggleFullScreen}
+              >
+                <FontAwesomeIcon icon={faExpandAlt} />
+              </i>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Player = (props) => {
+  const history = useHistory()
+  const { globalState } = useContext(PlayerContext)
+  const backgroundStyles = {
+    backgroundImage: `url(${
+      globalState && globalState.album && globalState.album.images[0].url
+    })`,
+  }
+
+  function millisToMinutesAndSeconds(millis) {
+    var minutes = Math.floor(millis / 60000)
+    var seconds = ((millis % 60000) / 1000).toFixed(0)
+    return minutes + ":" + (seconds < 10 ? "0" : "") + seconds
+  }
+
+  return (
+    <div className="App">
+      <div className="main-wrapper">
+        <div className="now-playing__side">
           <img
             crossOrigin={"anonymous"}
-            ref={imgRef}
             alt={""}
             src={globalState && globalState.track && globalState.track.image}
             class="wi-220px m0 dib p0 di"
           />
-        </div>
-        <div class="album-cover__text-box">
-          <div class="album-cover__wrap">
-            <p
-              class="album-cover__title truncate"
-              style={{ fontSize: 12, width: 200 }}
-              onClick={() => {
-                history.push(`/album/${globalState.track.album.id}`)
-              }}
-            >
-              {globalState && globalState.track && globalState.track.name}
-            </p>
+          <div className="now-playing__name">
+            {globalState.track && globalState.track.name}
           </div>
-          <div class="album-cover">
+          <div className="now-playing__artist">
             {globalState &&
               globalState.track &&
               globalState.track.artistsArray &&
-              globalState.track.artistsArray.map((d) => {
+              globalState.track.artistsArray.map((d, index) => {
                 return (
                   <span
-                    class="album-cover__artist"
+                    class={
+                      index == 0
+                        ? "album-cover__artist has-text-grey-light"
+                        : "album-cover__artist ml-1 has-text-grey-light"
+                    }
                     onClick={() => {
                       history.push(`/artist/${d.id}`)
                     }}
@@ -221,158 +575,6 @@ export const PlayerControl = (props) => {
               })}
           </div>
         </div>
-      </div>
-      <div class="play-btns">
-        <ul class="play-btns__wrap play-btns__icon-box">
-          <li class="play-btns__list">
-            <i class="play-btns__icon fas fa-random">
-              <FontAwesomeIcon
-                icon={faRandom}
-                style={{ color: globalState.isShuffled ? "#3D83FF" : "" }}
-              />
-            </i>
-          </li>
-          <li class="play-btns__list">
-            <i
-              class="play-btns__icon fas fa-step-backward"
-              onClick={() => {
-                previousFn(getToken())
-              }}
-            >
-              <FontAwesomeIcon icon={faBackward} />
-            </i>
-          </li>
-          <li class="play-btns__list">
-            {globalState.isPlaying ? (
-              <i
-                class="play-btns__icon far fa-play-circle"
-                onClick={() => {
-                  pauseFn(getToken())
-                }}
-              >
-                <FontAwesomeIcon icon={faPause} />
-              </i>
-            ) : (
-              <i
-                class="play-btns__icon far fa-play-circle"
-                onClick={() => {
-                  playFn(getToken(), globalState.currentDeviceId)
-                }}
-              >
-                <FontAwesomeIcon icon={faPlayCircle} />
-              </i>
-            )}
-          </li>
-          <li class="play-btns__list">
-            <i
-              class="play-btns__icon fas fa-step-forward"
-              onClick={() => {
-                nextFn(getToken())
-              }}
-            >
-              <FontAwesomeIcon icon={faForward} />
-            </i>
-          </li>
-          <li class="play-btns__list">
-            <i class="play-btns__icon fas fa-sync">
-              <FontAwesomeIcon
-                icon={faSync}
-                style={{ color: globalState.isRepeated ? "#3D83FF" : "" }}
-              />
-            </i>
-          </li>
-        </ul>
-        <ul class="play-btns__wrap play-btns__range-bar">
-          <li>
-            <p class="has-text-grey-light">
-              {globalState.isPlaying
-                ? millisToMinutesAndSeconds(progressBar.progressMs)
-                : millisToMinutesAndSeconds(progressBar.progressMs)}
-            </p>
-          </li>
-          <li class="play-btns__bar">
-            <div
-              onMouseEnter={mouseEnter}
-              onMouseLeave={mouseLeave}
-              style={{ width: `${100}%` }}
-            >
-              <RangeSlider
-                style={{ cursor: "pointer" }}
-                axis="x"
-                onDragEnd={handleTrackDragEnd}
-                onChange={(x) => handleChangeRangeFn(x)}
-                styles={{
-                  options: {
-                    handleBorder: 0,
-                    handleBorderRadius:
-                      getMergedStyles.sliderHandleBorderRadius,
-                    handleColor: getMergedStyles.sliderHandleColor,
-                    handleSize: isMagnified ? handleSize + 4 : handleSize,
-                    height: isMagnified
-                      ? getMergedStyles.sliderHeight + 4
-                      : getMergedStyles.sliderHeight + 4,
-                    padding: 0,
-                    rangeColor: getMergedStyles.sliderColor,
-                    trackBorderRadius: getMergedStyles.sliderTrackBorderRadius,
-                    trackColor: getMergedStyles.sliderTrackColor,
-                  },
-                }}
-                x={position}
-                xMin={0}
-                xMax={100}
-                xStep={0.9}
-              />
-            </div>
-          </li>
-          <li>
-            <p class="has-text-grey-light">
-              {millisToMinutesAndSeconds(
-                globalState.track && globalState.track.durationMs
-              )}
-            </p>
-          </li>
-        </ul>
-      </div>
-      <div class="ect-btns">
-        <ul class="ect-btns__inner">
-          <li class="ect-btns__list">
-            <i class="ect-btns__icon fas fa-list has-text-grey-light">
-              <FontAwesomeIcon icon={faList} />
-            </i>
-          </li>
-          <li class="ect-btns__list ect-btns__list--volume">
-            <i class="ect-btns__icon fas fa-volume-up has-text-grey-light">
-              <FontAwesomeIcon icon={faVolumeUp} />
-            </i>
-            <div class="ect-btns__bar" style={{ margin: "auto" }}>
-              <RangeSlider
-                style={{ cursor: "pointer" }}
-                axis="x"
-                onDragEnd={handleVolumeDragEnd}
-                styles={{
-                  options: {
-                    handleBorderRadius: 12,
-                    handleColor: getMergedStyles.bgColor,
-                    handleSize: 12,
-                    padding: 0,
-                    rangeColor: getMergedStyles.altColor,
-                    trackColor: getMergedStyles.color,
-                    height: 5,
-                  },
-                }}
-                onChange={handleChangeVolume}
-                x={volume * 100}
-                xMin={0}
-                xMax={100}
-              />
-            </div>
-          </li>
-          <li class="ect-btns__list">
-            <i class="ect-btns__icon fas fa-expand-alt has-text-grey-light">
-              <FontAwesomeIcon icon={faExpandAlt} />
-            </i>
-          </li>
-        </ul>
       </div>
     </div>
   )

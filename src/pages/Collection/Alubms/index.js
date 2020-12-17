@@ -61,8 +61,8 @@ export default (props) => {
 
   const getSaveAlbums = (validateToken, currentValue) => {
     let prevAlbumsArray = []
-    const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=8&offset=${
-      (currentValue - 1) * 8
+    const url = `https://api.spotify.com/v1/me/albums?market=TW&limit=12&offset=${
+      (currentValue - 1) * 12
     }`
     axios
       .get(url, {
@@ -107,36 +107,12 @@ export default (props) => {
     setTrimHeader(false)
   }, [getToken(), props.match.params.id])
 
-  // useEffect(() => {
-  //   if (testRef && testRef.current && saveAlbums) {
-  //     let someCollection = document.getElementsByClassName("album__item")
-  //     const arr = [...someCollection]
-  //     arr.forEach((el, i) => {
-  //       spring({
-  //         config: "wobbly",
-  //         values: {
-  //           translateY: [-40, 0],
-  //           opacity: [0.6, 1],
-  //         },
-  //         onUpdate: ({ translateY, opacity }) => {
-  //           el.style.opacity = opacity
-  //           el.style.transform = `translateY(${translateY}px)`
-  //         },
-  //         delay: i * 25,
-  //         onComplete: () => {
-  //           // add callback logic here if necessary
-  //         },
-  //       })
-  //     })
-  //   }
-  // }, [testRef, saveAlbums, current])
-
   const buildItems = () => {
     return (
       saveAlbums &&
       saveAlbums.map((item, index) => {
         return (
-          <div class="column is-3 album__item" key={index}>
+          <div class="column is-2 album__item" key={index}>
             <div
               class="album__item__image__wrapper"
               onClick={() => {
@@ -208,6 +184,7 @@ export default (props) => {
           </div>
         </div>
       </div>
+      <hr class="mt-0" />
       <div
         class="main__wrap summary on"
         style={{
@@ -244,83 +221,3 @@ export default (props) => {
     </div>
   )
 }
-
-const listData = [...Array(1).keys()]
-const createCardFlipId = (index) => `listItem-${index}`
-
-const shouldFlip = (index) => (prev, current) =>
-  index === prev || index === current
-
-const ListItem = ({ index, onClick }) => {
-  return (
-    <Flipped flipId={createCardFlipId(index)} shouldInvert={shouldFlip(index)}>
-      <div className="listItem" onClick={() => onClick(index)}>
-        <Flipped inverseFlipId={createCardFlipId(index)}>
-          <div className="listItemContent">
-            <Flipped
-              flipId={`avatar-${index}`}
-              stagger="card-content"
-              shouldFlip={shouldFlip(index)}
-              delayUntil={createCardFlipId(index)}
-            >
-              <div
-                className="avatar"
-                style={{
-                  backgroundImage: `url(https://images.unsplash.com/photo-1591367841100-d760a1393d71?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwc3Vuc2V0fGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60)`,
-                }}
-              />
-            </Flipped>
-          </div>
-        </Flipped>
-      </div>
-    </Flipped>
-  )
-}
-
-const ExpandedListItem = ({ index, onClick }) => {
-  return (
-    <Flipped flipId={createCardFlipId(index)}>
-      <div className="expandedListItem" onClick={() => onClick(index)}>
-        <Flipped inverseFlipId={createCardFlipId(index)}>
-          <div className="expandedListItemContent">
-            <Flipped
-              flipId={`avatar-${index}`}
-              delayUntil={createCardFlipId(index)}
-            >
-              <div
-                className="avatar avatarExpanded"
-                style={{
-                  backgroundImage: `url(https://images.unsplash.com/photo-1591367841100-d760a1393d71?ixid=MXwxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwc3Vuc2V0fGVufDB8fDB8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60)`,
-                }}
-              />
-            </Flipped>
-          </div>
-        </Flipped>
-      </div>
-    </Flipped>
-  )
-}
-
-// ;<Flipper
-//   flipKey={state.focused}
-//   className="staggered-list-content"
-//   spring="gentle"
-//   staggerConfig={{
-//     card: {
-//       reverse: state.focused !== null,
-//     },
-//   }}
-//   decisionData={state.focused}
-// >
-//   {listData.map((index) => {
-//     return (
-//       <li key={index}>
-//         {index === state.focused ? (
-//           <ExpandedListItem index={state.focused} onClick={onClick} />
-//         ) : (
-//           <ListItem index={index} key={index} onClick={onClick} />
-//         )}
-//       </li>
-//     )
-//   })}
-// </Flipper>

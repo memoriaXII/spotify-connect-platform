@@ -43,7 +43,7 @@ export default (props) => {
           Authorization: `Bearer ${getToken()}`,
         },
       })
-      console.log(result.data, "dat")
+
       setSearchState({
         albums: result.data.albums.items,
         artists: result.data.artists.items,
@@ -155,7 +155,7 @@ export default (props) => {
           class="summary__bg"
           style={{
             height: 1090,
-            background: `linear-gradient( to bottom ,rgba(0,0,0,0.85) 5%,${searchBackground} 80%),
+            background: `linear-gradient( to bottom ,rgba(0,0,0,0.85) 5%,${searchBackground} 50%),
             url(${
               searchState.artists &&
               searchState.artists[0] &&
@@ -635,7 +635,7 @@ const TopResult = (props) => {
               </h1>
               <div className="columns is-mobile search__box__top-result">
                 <div
-                  class="column is-2"
+                  class="column is-2 is-cursor"
                   style={{
                     borderRadius: `${50}%`,
                     width: 150,
@@ -747,7 +747,7 @@ const TopResult = (props) => {
               </h1>
               <div className="columns is-mobile">
                 <div
-                  class="column is-2"
+                  class="column is-2 is-cursor"
                   style={{
                     borderRadius: `${50}%`,
                     width: 150,
