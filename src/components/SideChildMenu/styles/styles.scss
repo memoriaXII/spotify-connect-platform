@@ -8,7 +8,12 @@
   z-index: 8;
 
   &__item {
+    opacity: 0;
     cursor: pointer;
+    &.nowplay {
+      background: rgba(213, 213, 213, 0.2);
+      color: #3d83ff;
+    }
     &__play__button {
       cursor: pointer;
       display: none;
@@ -17,8 +22,9 @@
       cursor: pointer;
       display: block;
     }
+
     &:hover {
-      background: rgba(213, 213, 213, 0.1);
+      background: rgba(213, 213, 213, 0.2);
     }
     &:hover &__play__button {
       cursor: pointer;
@@ -28,7 +34,7 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      color: rgb(121, 121, 121);
+      color: rgb(82, 81, 81);
     }
     &:hover &__play__duration {
       cursor: pointer;
