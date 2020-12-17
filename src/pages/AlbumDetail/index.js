@@ -362,8 +362,8 @@ export default (props) => {
       <div class="main__wrap mt-5">
         <table class="playlist">
           <colgroup>
-            <col width="3%" />
-            <col width="3%" />
+            <col width="5%" />
+            <col width="5%" />
             <col width="35%" />
             <col width="23%" />
             <col width="23%" />
@@ -412,7 +412,7 @@ export default (props) => {
                   ) : (
                     <FontAwesomeIcon
                       icon={faPlay}
-                      class="has-text-grey-light"
+                      class="icon has-text-grey-light is-small"
                     />
                   )}
                 </td>

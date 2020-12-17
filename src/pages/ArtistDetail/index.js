@@ -17,16 +17,18 @@ import AlbumContainer from "../../AlbumContainer"
 import ColorThief from "colorthief"
 
 import soundChartIcon from "../../images/soundChart.svg"
+import verifyIcon from "../../images/verified.svg"
 
 import { SoundEqualizer } from "../../components/SoundEqualizer"
 
 import { AuthContext } from "../../context/auth"
 import { PlayerContext } from "../../context/player"
+import { useHistory } from "react-router-dom"
 
 export default (props) => {
+  const history = useHistory()
   const { getToken } = useContext(AuthContext)
   const { globalState, playFn, pauseFn } = useContext(PlayerContext)
-
   const { trimHeader, setTrimHeader, setGradientNum } = props
 
   const [playlistInfo, setPlaylistInfo] = useState({})
@@ -125,8 +127,7 @@ export default (props) => {
   }
 
   useEffect(() => {
-    // setTrimHeader(false)
-    // setGradientNum(1000)
+    setTrimHeader(false)
     if (getToken()) {
       getArtistAlbums(getToken(), props.match.params.id)
       getArtistTopTracks(getToken(), props.match.params.id)
@@ -183,10 +184,18 @@ export default (props) => {
           <div class="summary__text">
             <ul>
               <li>
-                <span class="summary__text--white summary__text--for-me">
-                  Artist
-                </span>
+                <div class="columns">
+                  <div class="column is-3">
+                    <span class="summary__text--white summary__text--for-me">
+                      Artist
+                    </span>
+                  </div>
+                  <div class="column is-4 mt-1">
+                    <img class="icon is-small" src={verifyIcon} alt="" />
+                  </div>
+                </div>
               </li>
+
               <li>
                 <strong class="summary__text--title has-text-white">
                   {artistInfo.name}
@@ -197,14 +206,6 @@ export default (props) => {
                   {/* {playlistInfo.description} */}
                 </p>
               </li>
-              {/* <li class="summary__text--by-spotify has-text-white has-text-weight-light title is-6">
-                <p>
-                  <span class="summary__text">
-                    {artistInfo.followers && artistInfo.followers.total}
-                    Followers
-                  </span>
-                </p>
-              </li> */}
             </ul>
           </div>
           <div class="buttons mt-5">
@@ -288,30 +289,17 @@ export default (props) => {
               </li>
             </ul>
           </div>
-          {/* <div class="summary__button">
-            <ul class="button" style={{ border: 0 }}>
-              <li
-                class="button__list button__play-btn has-text-black has-text-centered has-text-weight-bold is-small"
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  await playFn(
-                    getToken(),
-                    globalState.currentDeviceId,
-                    "",
-                    artistTopTracks
-                  )
-                }}
-              >
-                <p class="button__text">PLAY</p>
-              </li>
-            </ul>
-          </div> */}
         </div>
       </div>
-      <div class="columns mt-5">
-        <div class="column is-2 mt-5">
+      <div class="columns mt-5 is-variable is-1">
+        <div
+          class="column is-2 mt-5"
+          onClick={() => {
+            history.push(`/album/${artistLastestRelease.id}`)
+          }}
+          style={{ cursor: "pointer" }}
+        >
           <p class="title is-5">Lastest Release</p>
-
           <img
             src={
               artistLastestRelease &&
@@ -320,8 +308,10 @@ export default (props) => {
             }
             alt=""
           />
-          <p class="title is-6">{artistLastestRelease.name}</p>
-          <p class="subtitle is-7">
+          <p class="title is-6 line-clamp-text has-text-black">
+            {artistLastestRelease.name}
+          </p>
+          <p class="subtitle is-7 line-clamp-text">
             {artistLastestRelease &&
               artistLastestRelease.artists &&
               artistLastestRelease.artists.map((d) => d.name).join(", ")}
@@ -329,7 +319,7 @@ export default (props) => {
         </div>
         <div class="column is-10">
           <div class="main__wrap mb-6 mt-5">
-            <p class="title is-5">Popular</p>
+            <p class="title is-5 ml-5">Popular</p>
             <table class="playlist">
               <colgroup>
                 <col width="3%" />
