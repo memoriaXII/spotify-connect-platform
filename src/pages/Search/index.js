@@ -11,17 +11,17 @@ import { useHistory } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import axios from "axios"
-
 import { PlaylistContext } from "../../context/playlist"
 import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
-
 import "./styles/style.scss"
 
 export default (props) => {
   const { playFn, globalState, pauseFn } = useContext(PlayerContext)
+  const { getToken } = useContext(AuthContext)
   const history = useHistory()
   const [historyArray, setHistoryArray] = useState([])
+  const [genreSeedsArray, setGenreSeedsArray] = useState([])
 
   const historymeetfilter = () => {
     var arr = JSON.parse(localStorage.getItem("setSearchHistory")) || []
@@ -34,7 +34,36 @@ export default (props) => {
 
     setHistoryArray(uniqueObjects)
   }
+
+  const getGenreSeeds = (validateToken) => {
+    const url = `https://api.spotify.com/v1/recommendations/available-genre-seeds`
+    axios
+      .get(url, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${validateToken}`,
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+      })
+      .then(function (response) {
+        setGenreSeedsArray(response.data.genres)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
+  const removeSearchHistory = () => {
+    localStorage.removeItem("setSearchHistory")
+    historymeetfilter()
+  }
   useEffect(() => {
+    getGenreSeeds(getToken())
     historymeetfilter()
   }, [])
 
@@ -51,17 +80,105 @@ export default (props) => {
         ) : (
           <div class="columns">
             <div class="column is-12">
-              <h1 class="title is-3 ml-5 has-text-black">Recent searches</h1>
+              <h1 class="title is-3 ml-5 has-text-black">
+                {historyArray.length !== 0 ? "Recent searches" : "Browse All"}
+              </h1>
               <hr style={{ opacity: 0.9 }} />
               <div class="columns recent-search__box is-multiline is-mobile">
-                {historyArray.map((item, i) => (
-                  <div
-                    class="column is-12 recent-search__box__content pl-5 p-2"
-                    key={i}
-                  >
-                    <RecentSearchList item={item} />
-                  </div>
-                ))}
+                {historyArray.length !== 0 ? (
+                  <>
+                    {historyArray.map((item, i) => (
+                      <div
+                        class="column is-12 recent-search__box__content pl-5 p-2"
+                        key={i}
+                      >
+                        <RecentSearchList item={item} />
+                      </div>
+                    ))}
+                    <button
+                      class="button is-light is-rounded mt-2"
+                      onClick={removeSearchHistory}
+                    >
+                      Clean recent search histories
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {genreSeedsArray &&
+                      genreSeedsArray.slice(0, 40).map((item, i) => {
+                        var rand = [
+                          "rgb(195, 240, 200)",
+                          "rgb(160, 195, 210)",
+                          "rgb(255, 100, 55)",
+                          "#FFFF99",
+                          "#00B3E6",
+                          "#3742FA",
+                          "#3366E6",
+                          "#99FF99",
+                          "#B34D4D",
+                          "#80B300",
+                          "#E6B3B3",
+                          "#6680B3",
+                          "#FF99E6",
+                          "#CCFF1A",
+                          "#FF1A66",
+                          "#E6331A",
+                          "#33FFCC",
+                          "#B366CC",
+                          "#B33300",
+                          "#CC80CC",
+                          "#991AFF",
+                          "#E666FF",
+                          "#4DB3FF",
+                          "#1AB399",
+                          "#00E680",
+                          "#E6FF80",
+                          "#1AFF33",
+                          "#FF3380",
+                          "#66E64D",
+                          "#4D80CC",
+                          "#9900B3",
+                          "#E64D66",
+                          "#4DB380",
+                          "#99E6E6",
+                          "#6666FF",
+                        ]
+                        return (
+                          <>
+                            <div
+                              class="column is-2 recent-search__box__content m-2"
+                              key={i}
+                              style={{
+                                background: rand[i],
+                                height: 200,
+                                position: "relative",
+                                borderRadius: 10,
+                              }}
+                            >
+                              <div
+                                class="column is-2 recent-search__box__content"
+                                key={i}
+                                style={{
+                                  background: `linear-gradient(${0}deg,transparent,rgba(0,0,0,.4))`,
+                                  height: `${100}%`,
+                                  position: "absolute",
+                                  width: `${100}%`,
+                                  left: 0,
+                                  top: 0,
+                                  zIndex: 0,
+                                  borderRadius: 10,
+                                }}
+                              >
+                                <span class="has-text-white title is-4 is-capitalized">
+                                  {item}
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })}
+                  </>
+                )}
               </div>
             </div>
           </div>
