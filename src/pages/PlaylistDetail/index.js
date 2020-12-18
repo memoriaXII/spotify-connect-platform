@@ -19,6 +19,7 @@ import { AuthContext } from "../../context/auth"
 import { PlayerContext } from "../../context/player"
 
 import { SoundEqualizer } from "../../components/SoundEqualizer"
+import LazyLoad from "react-lazy-load"
 
 export default (props) => {
   const playlistRef = useRef(null)
@@ -347,15 +348,17 @@ export default (props) => {
                     )}
                   </td>
                   <td style={{ verticalAlign: "middle" }}>
-                    <img
-                      style={{ borderRadius: 5 }}
-                      src={
-                        item.track &&
-                        item.track.album &&
-                        item.track.album.images[0].url
-                      }
-                      alt=""
-                    />
+                    <LazyLoad debounce={false} offsetVertical={500}>
+                      <img
+                        style={{ borderRadius: 5 }}
+                        src={
+                          item.track &&
+                          item.track.album &&
+                          item.track.album.images[0].url
+                        }
+                        alt=""
+                      />
+                    </LazyLoad>
                   </td>
                   <td class="playlist__td playlist__td--title title is-7 has-text-weight-normal">
                     {item.track && item.track.name}

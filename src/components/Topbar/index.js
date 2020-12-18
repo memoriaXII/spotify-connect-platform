@@ -1,4 +1,5 @@
 import React, {
+  memo,
   useRef,
   useState,
   useEffect,
@@ -22,7 +23,7 @@ import {
 import ColorThief from "colorthief"
 import "./styles/style.scss"
 
-export default (props) => {
+export default memo((props) => {
   const history = useHistory()
   const location = useLocation()
   const [clickedOutside, setClickedOutside] = useState(false)
@@ -157,4 +158,4 @@ export default (props) => {
       </div>
     </div>
   )
-}
+})

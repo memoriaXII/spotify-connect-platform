@@ -8,7 +8,6 @@ import React, {
 import { useLocation } from "react-router-dom"
 import { useSpring, a, config } from "react-spring"
 import { useDrag } from "react-use-gesture"
-import Slider from "react-slick"
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
@@ -292,23 +291,6 @@ export const PlayerControlMobile = (props) => {
           }
         ></div>
         <div class="sheet__cover">
-          {/* <Slider
-            ref={(slider) => (customSlider.current = slider)}
-            {...settings}
-          >
-            {cachedAlbumsArray.map((item, index) => {
-              return (
-                <div key={index}>
-                  <img
-                    crossOrigin={"anonymous"}
-                    ref={imgRef}
-                    alt={""}
-                    src={item && item.album.images[0].url}
-                  />
-                </div>
-              )
-            })}
-          </Slider> */}
           <div>
             <img
               crossOrigin={"anonymous"}

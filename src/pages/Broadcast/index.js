@@ -8,9 +8,6 @@ import React, {
   useLayoutEffect,
 } from "react"
 
-import Slider from "react-slick"
-import { motion, AnimateSharedLayout } from "framer-motion"
-
 import AlbumContainer from "./components/AlbumContainer"
 import RecentPlayedContainer from "./components/RecentPlayedContainer"
 import { PlaylistContext } from "../../context/playlist"

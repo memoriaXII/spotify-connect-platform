@@ -166,7 +166,6 @@ export const PlayerProvider = (props) => {
   const syncDevice = async (validateToken) => {
     try {
       const player = await getPlaybackState(validateToken)
-
       let track = emptyTrack
       if (!player) {
         throw new Error("No player")
@@ -354,8 +353,8 @@ export const PlayerProvider = (props) => {
     ;(async () => {
       const { Player } = await waitForSpotifyWebPlaybackSDKToLoad()
       player = new Player({
-        name: "Rex web player",
-        volume: 1.0,
+        name: "Spotify Connect Player",
+        volume: 0.6,
         getOAuthToken: (callback) => {
           callback(validateToken)
         },
@@ -429,7 +428,7 @@ export const PlayerProvider = (props) => {
   )
 
   const setDeviceVolume = async (volume, deviceId) => {
-    if (isExternalPlayer) {
+    if (!player) {
       await setVolume(authToken, Math.round(volume * 100), deviceId)
     } else if (player) {
       await player.setVolume(volume)
@@ -460,12 +459,6 @@ export const PlayerProvider = (props) => {
       // return d.json()
     })
   }
-
-  useEffect(() => {
-    if (globalState) {
-      isExternalPlayer(globalState)
-    }
-  }, [globalState])
 
   useEffect(() => {
     let parsed = queryString.parse(window.location.search)
@@ -520,7 +513,6 @@ export const PlayerProvider = (props) => {
         offset: { position: 0 },
       })
     }
-
     return await fetch(
       `https://api.spotify.com/v1/me/player/play?device_id=${id}`,
       {
@@ -545,7 +537,7 @@ export const PlayerProvider = (props) => {
   }
 
   useLayoutEffect(() => {
-    if (getToken() && prevState !== globalState) {
+    if (getToken() && globalState) {
       syncTimeout = setInterval(() => {
         syncDevice(getToken())
       }, 800)
