@@ -32,7 +32,7 @@ import { SoundEqualizer } from "../../components/SoundEqualizer"
 
 import "./styles/styles.scss"
 
-export const SideChildMenu = (props) => {
+export default (props) => {
   const { sidePlayListData, top50TracksList, viral50TracksList } = useContext(
     PlaylistContext
   )
