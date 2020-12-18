@@ -47,7 +47,7 @@ import { usePrevious } from "../../utils/customHook"
 
 import useFullscreen from "@rooks/use-fullscreen"
 
-export const PlayerControl = (props) => {
+export default (props) => {
   const {
     isEnabled,
     toggle,
@@ -206,7 +206,7 @@ export const PlayerControl = (props) => {
     }
   }
   const videoRef = useRef(null)
-  const toggleFullScrn = () => videoRef.current.actions.toggleFullscreen()
+  const buttonRef = useRef(null)
 
   function toggleFullScreen2() {
     if (document && !document.fullscreenElement) {
@@ -220,6 +220,40 @@ export const PlayerControl = (props) => {
       }
     }
   }
+
+  useEffect(() => {
+    if (document) {
+      document
+        .getElementById("fullscreen-div")
+        .addEventListener("fullscreenchange", (event) => {
+          if (document.fullscreenElement) {
+            console.log(
+              `Element: ${document.fullscreenElement.id} entered fullscreen mode.`
+            )
+            setFullScreenMode(true)
+          } else {
+            setFullScreenMode(false)
+            console.log("Leaving full-screen mode.")
+          }
+        })
+      document.addEventListener("fullscreenerror", (event) => {
+        console.error("an error occurred changing into fullscreen")
+        console.log(event)
+        return
+      })
+
+      // document
+      //   .getElementById("toggle-fullscreen")
+      //   .addEventListener("click", (event) => {
+      //     if (document.fullscreenElement) {
+      //       // exitFullscreen is only available on the Document object.
+      //       document.exitFullscreen()
+      //     } else {
+      //       document.getElementById("fullscreen-div").requestFullscreen()
+      //     }
+      //   })
+    }
+  }, [document])
 
   return (
     <div
@@ -470,7 +504,6 @@ export const PlayerControl = (props) => {
             <li class="ect-btns__list">
               <i
                 ref={videoRef}
-                // id="toggle-fullscreen"
                 onClick={toggleFullScreen2}
                 class="ect-btns__icon fas fa-expand-alt has-text-grey-light"
               >

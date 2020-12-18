@@ -37,7 +37,7 @@ import { PlaylistContext } from "../../context/playlist"
 
 import "./styles/style.scss"
 
-export const SideMenu = (props) => {
+export default (props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
   let location = useLocation()

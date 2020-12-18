@@ -26,11 +26,6 @@ import { millisToMinutesAndSeconds, rgbToHex } from "./utils/utils"
 import memoize from "memoize-one"
 import queryString from "query-string"
 
-import { PlayerControlMobile } from "./components/PlayerControlMobile"
-import { PlayerControl } from "./components/PlayerControl"
-import { SideMenu } from "./components/SideMenu"
-import { SideChildMenu } from "./components/SideChildMenu"
-import { Topbar } from "./components/Topbar"
 import PrivateRoute from "./routes/PrivateRoute"
 
 import { AuthProvider } from "./context/auth"
@@ -51,12 +46,16 @@ import Broadcast from "./pages/Broadcast"
 
 import { useScrollPosition } from "@n8tb1t/use-scroll-position"
 
-import { TweenLite, TimelineLite, Linear, Power1 } from "gsap"
+import closeIcon from "./images/close.svg"
 
 const Home = lazy(() => import("./pages/Home"))
 const Login = lazy(() => import("./pages/Login"))
 const Search = lazy(() => import("./pages/Search"))
 const SearchDetail = lazy(() => import("./pages/SearchDetail"))
+const PlayerControl = lazy(() => import("./components/PlayerControl"))
+const SideMenu = lazy(() => import("./components/SideMenu"))
+const SideChildMenu = lazy(() => import("./components/SideChildMenu"))
+const Topbar = lazy(() => import("./components/Topbar"))
 
 function App() {
   const location = useLocation()
@@ -65,6 +64,7 @@ function App() {
   const [gradientNum, setGradientNum] = useState(null)
   const [trimHeader, setTrimHeader] = useState(false)
   const [clientHeight, setClientHeight] = useState(0)
+  const [hintModal, setHintModal] = useState(false)
 
   const handleScroll = () => {
     if (
@@ -111,75 +111,79 @@ function App() {
     location.pathname.lastIndexOf("/") + 1
   )
 
+  useEffect(() => {
+    setHintModal(true)
+  }, [])
+
   return (
-    <>
+    <div>
       <div>
         <PodCastProvider>
           <ProfileProvider>
             <AuthProvider>
               <PlayerProvider>
                 <PlaylistProvider>
-                  <div className="wrap">
-                    <div
-                      className="list-area"
-                      style={{
-                        height: !routeDetection
-                          ? `calc(${100}vh - ${86}px)`
-                          : `${100}vh`,
-                      }}
-                    >
-                      {routeDetection ? null : (
-                        <>
-                          <SideMenu />
-                        </>
-                      )}
-                      <div className="main" ref={scrollContainer}>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <div className="wrap">
+                      <div
+                        className="list-area"
+                        style={{
+                          height: !routeDetection
+                            ? `calc(${100}vh - ${86}px)`
+                            : `${100}vh`,
+                        }}
+                      >
                         {routeDetection ? null : (
                           <>
-                            {!searchPageDetection ? (
-                              <div
-                                className="main__wrap top-scroll-bg"
-                                style={{
-                                  background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255,1) ${gradientNum}%)`,
-                                }}
-                              ></div>
-                            ) : null}
-
-                            <div
-                              className="main__wrap summary on ml-0"
-                              style={{
-                                display: trimHeader ? "block" : "none",
-                                borderBottom: !searchPageDetection
-                                  ? `1px solid #eee`
-                                  : `0px solid #eee`,
-                              }}
-                            >
-                              <div className="summary__box ml-3">
-                                <div className="summary__text">
-                                  <ul>
-                                    <li>
-                                      <strong className="summary__text--title title is-4">
-                                        {location.pathname === "/"
-                                          ? "Browse"
-                                          : null}
-                                      </strong>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="is-hidden-touch">
-                              <Topbar />
-                            </div>
+                            <SideMenu />
                           </>
                         )}
+                        <div className="main" ref={scrollContainer}>
+                          {routeDetection ? null : (
+                            <>
+                              {!searchPageDetection ? (
+                                <div
+                                  className="main__wrap top-scroll-bg"
+                                  style={{
+                                    background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255,1) ${gradientNum}%)`,
+                                  }}
+                                ></div>
+                              ) : null}
 
-                        <section
-                          className={routeDetection ? "" : "section"}
-                          ref={sectionRef}
-                        >
-                          <div className="hs__wrapper">
-                            <Suspense fallback={<div>Loading...</div>}>
+                              <div
+                                className="main__wrap summary on ml-0"
+                                style={{
+                                  display: trimHeader ? "block" : "none",
+                                  borderBottom: !searchPageDetection
+                                    ? `1px solid #eee`
+                                    : `0px solid #eee`,
+                                }}
+                              >
+                                <div className="summary__box ml-3">
+                                  <div className="summary__text">
+                                    <ul>
+                                      <li>
+                                        <strong className="summary__text--title title is-4">
+                                          {location.pathname === "/"
+                                            ? "Browse"
+                                            : null}
+                                        </strong>
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="is-hidden-touch">
+                                <Topbar />
+                              </div>
+                            </>
+                          )}
+
+                          <section
+                            className={routeDetection ? "" : "section"}
+                            ref={sectionRef}
+                          >
+                            <div className="hs__wrapper">
                               <Switch>
                                 <Route path="/login" component={Login} />
 
@@ -311,31 +315,98 @@ function App() {
                                   )}
                                 />
                               </Switch>
-                            </Suspense>
-                          </div>
-                        </section>
+                            </div>
+                          </section>
+                        </div>
+                        {routeDetection ||
+                        location.pathname == "/collection/albums" ||
+                        location.pathname ==
+                          "/collection/artists" ? null : customSideMenuDetection ? (
+                          <SideChildMenu />
+                        ) : null}
                       </div>
-                      {routeDetection ||
-                      location.pathname == "/collection/albums" ||
-                      location.pathname ==
-                        "/collection/artists" ? null : customSideMenuDetection ? (
-                        <SideChildMenu />
-                      ) : null}
+                      {routeDetection ? null : (
+                        <>
+                          <PlayerControl />
+                        </>
+                      )}
                     </div>
-                    {routeDetection ? null : (
-                      <>
-                        <PlayerControl />
-                      </>
-                    )}
-                  </div>
+                  </Suspense>
                 </PlaylistProvider>
               </PlayerProvider>
             </AuthProvider>
           </ProfileProvider>
         </PodCastProvider>
       </div>
-    </>
+      {location.pathname !== "/login" ? (
+        <HintModal hintModal={hintModal} setHintModal={setHintModal} />
+      ) : null}
+    </div>
   )
 }
 
 export default App
+
+const HintModal = ({ children, setHintModal, hintModal }) => {
+  if (!hintModal) {
+    return null
+  }
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+      }
+    }
+  }
+
+  return (
+    <div class="modal is-active has-text-centered">
+      <div class="modal-card" style={{ width: 300 }}>
+        <header
+          class="modal-card-head"
+          style={{ background: "white", border: 0 }}
+        >
+          <p class="modal-card-title"></p>
+          <img
+            class="icon is-cursor"
+            onClick={() => {
+              setHintModal(!hintModal)
+            }}
+            src={closeIcon}
+            alt=""
+          />
+        </header>
+        <section class="modal-card-body">
+          <div class="has-text-black">
+            <img
+              style={{ width: 40 }}
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAATlBMVEX///8AAAClpaX7+/vS0tL09PShoaGUlJTV1dX4+Pi8vLxNTU1TU1Orq6t9fX2MjIwvLy8/Pz8PDw9ZWVm+vr6urq5LS0u2trbMzMzGxsb73tvQAAACAUlEQVR4nO3dy1ICMRgFYSMMF5kRFQb0/V9US5Dt1PxJB2L1tz8kXcVlA8XTkyRJkiRJkiRJal+K2S3DJ24OwTPrFqZ0Dh54DJ9YuzB1ofO28QOrF46h88aGCteh81YNFQ6h884NFcZeh107hS/BA1t5L+03wfN+Pg9PdyoM35hmIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRZO2V3nfdFbldRn3nBz3ce/L0rLvuHli9fRb/zWcLnhMf4A3bAeYt/ZrqUb9+ftvS8hSZIkSZIkSZIkSZIkSZIkSZKkpizufYFJWTdcvKaU9qWuQsi94dvv76bey12ouMwb7q+/fYv9p0oNuTf8+4HmR9FblZR7w///K1kL789Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces8rVjg+z5HzVwrLYc5JY7HCmQ7Rvu0pemTlwnBiOLB6YVqGzvuMH1i9cBU6b23hAxXGnqVf7RRG32l20w/9GIXhT4tFP/3gRQtXsz7ob2JP0Yt5n/g3sde9JEmSJEmSpDm+AR4rFD68DEz5AAAAAElFTkSuQmCC"
+              alt=""
+            />
+            <h1 class="title is-5 has-text-black mt-2">Full Screen Mode</h1>
+            <p class="subtitle is-6 has-text-grey mt-2">
+              Enable full screen mode for better experience
+            </p>
+          </div>
+        </section>
+        <footer
+          class="modal-card-foot has-text-centered"
+          style={{ background: "white", border: 0 }}
+        >
+          <button
+            class="button is-fullwidth is-rounded"
+            style={{ background: "#3D83FF", color: "white" }}
+            onClick={() => {
+              setHintModal(!hintModal)
+              toggleFullScreen()
+            }}
+          >
+            Apply
+          </button>
+        </footer>
+      </div>
+    </div>
+  )
+}

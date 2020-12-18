@@ -15,8 +15,6 @@ import AlbumContainer from "./components/AlbumContainer"
 import RecentPlayedContainer from "./components/RecentPlayedContainer"
 import { PlaylistContext } from "../../context/playlist"
 
-import { TweenLite, TimelineLite, Linear, Power1 } from "gsap"
-
 export default (props) => {
   const { userRecommendListData } = useContext(PlaylistContext)
   const customSlider = useRef()
