@@ -22,7 +22,7 @@ import {
 import ColorThief from "colorthief"
 import "./styles/style.scss"
 
-export const Topbar = (props) => {
+export default (props) => {
   const history = useHistory()
   const location = useLocation()
   const [clickedOutside, setClickedOutside] = useState(false)
