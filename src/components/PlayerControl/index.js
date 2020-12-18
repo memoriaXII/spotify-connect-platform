@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useCallback,
   useContext,
+  memo,
 } from "react"
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -26,7 +27,6 @@ import {
 
 import debounce from "lodash/debounce"
 
-import volumeIcon from "../.././images/volume.svg"
 import ColorThief from "colorthief"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
@@ -34,7 +34,10 @@ import RangeSlider from "@gilbarbara/react-range-slider"
 import { IRangeSliderPosition } from "@gilbarbara/react-range-slider/lib/types"
 import { PlayerContext } from "../../context/player"
 import { AuthContext } from "../../context/auth"
+
 import { useHistory } from "react-router-dom"
+
+import volumeIcon from "../.././images/volume.svg"
 import backwardIcon from "../../images/prev.svg"
 import forwardIcon from "../../images/next.svg"
 import pauseIcon from "../../images/pause2.svg"
@@ -42,12 +45,11 @@ import shuffleIcon from "../../images/shuffle.svg"
 import repeatIcon from "../../images/repeat2.svg"
 import playIcon from "../../images/play2.svg"
 import lyricsIcon from "../../images/microphone.svg"
-
 import { usePrevious } from "../../utils/customHook"
-
 import useFullscreen from "@rooks/use-fullscreen"
+import LazyLoad from "react-lazy-load"
 
-export default (props) => {
+export default memo((props) => {
   const {
     isEnabled,
     toggle,
@@ -289,13 +291,17 @@ export default (props) => {
       >
         <div class="album-cover">
           <div class="album-cover__img">
-            <img
-              crossOrigin={"anonymous"}
-              ref={imgRef}
-              alt={""}
-              src={globalState && globalState.track && globalState.track.image}
-              class="wi-220px m0 dib p0 di"
-            />
+            <LazyLoad debounce={false} offsetVertical={500}>
+              <img
+                crossOrigin={"anonymous"}
+                ref={imgRef}
+                alt={""}
+                src={
+                  globalState && globalState.track && globalState.track.image
+                }
+                class="wi-220px m0 dib p0 di"
+              />
+            </LazyLoad>
           </div>
           <div class="album-cover__text-box">
             <div class="album-cover__wrap">
@@ -556,7 +562,7 @@ export default (props) => {
       </div>
     </div>
   )
-}
+})
 
 const Player = (props) => {
   const history = useHistory()

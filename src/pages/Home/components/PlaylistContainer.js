@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from "react"
+import React, { useRef, useState, useEffect, useContext, memo } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
@@ -7,6 +7,7 @@ import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
 import { AuthContext } from "../../../context/auth"
+import LazyLoad from "react-lazy-load"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -74,7 +75,9 @@ const PlaylistContainer = (props) => {
             }}
           >
             <div class="hs__item__image__wrapper">
-              <img class="hs__item__image" src={item.images[0].url} alt="" />
+              <LazyLoad debounce={false} offsetVertical={500}>
+                <img class="hs__item__image" src={item.images[0].url} alt="" />
+              </LazyLoad>
             </div>
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">{item.name}</span>
@@ -206,4 +209,4 @@ const PlaylistContainer = (props) => {
   )
 }
 
-export default PlaylistContainer
+export default memo(PlaylistContainer)

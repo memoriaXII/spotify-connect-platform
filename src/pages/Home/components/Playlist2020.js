@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from "react"
+import React, { useRef, useState, useEffect, useContext, memo } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
@@ -247,4 +247,4 @@ const Playlist2020 = (props) => {
   )
 }
 
-export default Playlist2020
+export default memo(Playlist2020)

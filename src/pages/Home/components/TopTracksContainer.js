@@ -8,6 +8,7 @@ import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
 import { AuthContext } from "../../../context/auth"
+import LazyLoad from "react-lazy-load"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -62,11 +63,13 @@ const TopTracksContainer = (props) => {
                 history.push(`/album/${item.album.id}`)
               }}
             >
-              <img
-                class="hs__item__image"
-                src={item && item.album.images && item.album.images[0].url}
-                alt=""
-              />
+              <LazyLoad debounce={false} offsetVertical={500}>
+                <img
+                  class="hs__item__image"
+                  src={item && item.album.images && item.album.images[1].url}
+                  alt=""
+                />
+              </LazyLoad>
             </div>
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">{item.name}</span>

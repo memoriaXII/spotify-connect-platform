@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from "react"
+import React, { useRef, useState, useEffect, useContext, memo } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
@@ -6,6 +6,7 @@ import { Link, BrowserRouter, useHistory } from "react-router-dom"
 import { PlayerContext } from "../../../context/player"
 import { PlaylistContext } from "../../../context/playlist"
 import { AuthContext } from "../../../context/auth"
+import LazyLoad from "react-lazy-load"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -82,12 +83,14 @@ const ArtistContainer = (props) => {
               class="hs__item__image__wrapper"
               style={{ borderRadius: `${50}%` }}
             >
-              <img
-                class="hs__item__image"
-                src={item.images[0].url}
-                style={{ borderRadius: `${50}%` }}
-                alt=""
-              />
+              <LazyLoad debounce={false} offsetVertical={500}>
+                <img
+                  class="hs__item__image"
+                  src={item.images[0].url}
+                  style={{ borderRadius: `${50}%` }}
+                  alt=""
+                />
+              </LazyLoad>
             </div>
             <div class="hs__item__description" style={{ margin: "auto" }}>
               <div style={{ marginTop: 20 }}></div>
@@ -216,4 +219,4 @@ const ArtistContainer = (props) => {
   )
 }
 
-export default ArtistContainer
+export default memo(ArtistContainer)
