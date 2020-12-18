@@ -34,16 +34,6 @@ import { PlayerProvider } from "./context/player"
 import { ProfileProvider } from "./context/profile"
 import { PodCastProvider } from "./context/podcast"
 
-import ShowDetail from "./pages/ShowDetail"
-import PlaylistDetail from "./pages/PlaylistDetail"
-import ArtistDetail from "./pages/ArtistDetail"
-import AlbumDetail from "./pages/AlbumDetail"
-import UserSaveTracks from "./pages/Collection/Tracks"
-import UserSaveAlbums from "./pages/Collection/Alubms"
-import UserSaveArtists from "./pages/Collection/Artists"
-import UserPlayedTracks from "./pages/Collection/RecentPlayed"
-import Broadcast from "./pages/Broadcast"
-
 import { useScrollPosition } from "@n8tb1t/use-scroll-position"
 
 import closeIcon from "./images/close.svg"
@@ -51,7 +41,17 @@ import closeIcon from "./images/close.svg"
 const Home = lazy(() => import("./pages/Home"))
 const Login = lazy(() => import("./pages/Login"))
 const Search = lazy(() => import("./pages/Search"))
+const Broadcast = lazy(() => import("./pages/Broadcast"))
 const SearchDetail = lazy(() => import("./pages/SearchDetail"))
+const ShowDetail = lazy(() => import("./pages/ShowDetail"))
+const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"))
+const ArtistDetail = lazy(() => import("./pages/ArtistDetail"))
+const AlbumDetail = lazy(() => import("./pages/AlbumDetail"))
+const UserSaveTracks = lazy(() => import("./pages//Collection/Tracks"))
+const UserSaveAlbums = lazy(() => import("./pages//Collection/Albums"))
+const UserSaveArtists = lazy(() => import("./pages//Collection/Artists"))
+const UserPlayedTracks = lazy(() => import("./pages/Collection/RecentPlayed"))
+
 const PlayerControl = lazy(() => import("./components/PlayerControl"))
 const SideMenu = lazy(() => import("./components/SideMenu"))
 const SideChildMenu = lazy(() => import("./components/SideChildMenu"))
@@ -363,6 +363,7 @@ const HintModal = ({ children, setHintModal, hintModal }) => {
 
   return (
     <div class="modal is-active has-text-centered">
+      <div class="modal-background"></div>
       <div class="modal-card" style={{ width: 300 }}>
         <header
           class="modal-card-head"

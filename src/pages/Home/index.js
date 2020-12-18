@@ -1,4 +1,6 @@
 import React, {
+  memo,
+  lazy,
   useRef,
   useState,
   useEffect,
@@ -8,19 +10,23 @@ import React, {
   useLayoutEffect,
 } from "react"
 
-import Slider from "react-slick"
 import useFullscreen from "@rooks/use-fullscreen"
-import AlbumContainer from "./components/AlbumContainer"
-import PlaylistContainer from "./components/PlaylistContainer"
-import TopTracksContainer from "./components/TopTracksContainer"
-import RecentPlayedContainer from "./components/RecentPlayedContainer"
-import ArtistContainer from "./components/ArtistContainer"
-import Playlist2020 from "./components/Playlist2020"
 
 import { PlaylistContext } from "../../context/playlist"
 import { PlayerContext } from "../../context/player"
 
-export default (props) => {
+import LazyLoad from "react-lazy-load"
+
+const AlbumContainer = lazy(() => import("./components/AlbumContainer"))
+const PlaylistContainer = lazy(() => import("./components/PlaylistContainer"))
+const TopTracksContainer = lazy(() => import("./components/TopTracksContainer"))
+const RecentPlayedContainer = lazy(() =>
+  import("./components/RecentPlayedContainer")
+)
+const ArtistContainer = lazy(() => import("./components/ArtistContainer"))
+const Playlist2020 = lazy(() => import("./components/Playlist2020"))
+
+export default memo((props) => {
   const { userRecommendListData } = useContext(PlaylistContext)
   const { globalState } = useContext(PlayerContext)
   const customSlider = useRef()
@@ -56,12 +62,13 @@ export default (props) => {
             height: 390,
           }}
         ></div>
-        <div
+
+        <img
           class="summary__img mb-6"
-          style={{
-            backgroundImage: `url("https://i.scdn.co/image/ab67616d0000b27392920063c6fd7bb2bcd83160")`,
-          }}
-        ></div>
+          src="https://i.scdn.co/image/ab67616d0000b27392920063c6fd7bb2bcd83160"
+          alt=""
+        />
+
         <div class="summary__box">
           <div class="summary__text mt-5" style={{ width: 200, bottom: 0 }}>
             <ul>
@@ -114,4 +121,4 @@ export default (props) => {
       <ArtistContainer globalState={globalState} />
     </div>
   )
-}
+})

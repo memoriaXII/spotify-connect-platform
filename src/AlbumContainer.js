@@ -1,14 +1,14 @@
-import React, { useRef, useState, useEffect, useContext } from "react"
+import React, { useRef, useState, useEffect, useContext, memo } from "react"
 import debounce from "lodash.debounce"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import axios from "axios"
-
 import { Link, BrowserRouter, useHistory } from "react-router-dom"
 
 import { PlaylistContext } from "./context/playlist"
 import { PlayerContext } from "./context/player"
 import { AuthContext } from "./context/auth"
+import LazyLoad from "react-lazy-load"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -57,7 +57,7 @@ const AlbumContainer = (props) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
   }
 
-  const getSingleAlbumTracks = (validateToken, id) => {
+  const getSingleAlbumTracks = async (validateToken, id) => {
     const url = `https://api.spotify.com/v1/albums/${id}/tracks`
     axios
       .get(url, {
@@ -91,11 +91,13 @@ const AlbumContainer = (props) => {
                 history.push(`/album/${item.id}`)
               }}
             >
-              <img
-                class="hs__item__image"
-                src={item && item.images[1].url}
-                alt=""
-              />
+              <LazyLoad debounce={false} offsetVertical={500}>
+                <img
+                  class="hs__item__image"
+                  src={item && item.images[1].url}
+                  alt=""
+                />
+              </LazyLoad>
             </div>
             <div class="hs__item__description">
               <span class="hs__item__title has-text-black">
@@ -229,4 +231,4 @@ const AlbumContainer = (props) => {
   )
 }
 
-export default AlbumContainer
+export default memo(AlbumContainer)

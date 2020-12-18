@@ -6,6 +6,7 @@ import { faPause, faPlay } from "@fortawesome/free-solid-svg-icons"
 import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
 import { AuthContext } from "../../../context/auth"
+import LazyLoad from "react-lazy-load"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -60,11 +61,13 @@ const RecentPlayedContainer = (props) => {
               history.push(`/album/${item.track.album.id}`)
             }}
           >
-            <img
-              class="hs__item__image"
-              src={item.track.album.images[0].url}
-              alt=""
-            />
+            <LazyLoad debounce={false} offsetVertical={500}>
+              <img
+                class="hs__item__image"
+                src={item.track.album.images[0].url}
+                alt=""
+              />
+            </LazyLoad>
           </div>
           <div class="hs__item__description">
             <div></div>

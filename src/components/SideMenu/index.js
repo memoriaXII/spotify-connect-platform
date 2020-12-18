@@ -1,4 +1,5 @@
 import React, {
+  memo,
   useRef,
   useState,
   useEffect,
@@ -10,6 +11,7 @@ import React, {
 
 import listIcon from "../../images/list.svg"
 import searchIcon from "../../images/search.svg"
+import LazyLoad from "react-lazyload"
 
 import playlistIcon from "../../images/playlist.svg"
 import plusIcon from "../../images/ios-plus-outline.svg"
@@ -37,7 +39,7 @@ import { PlaylistContext } from "../../context/playlist"
 
 import "./styles/style.scss"
 
-export default (props) => {
+export default memo((props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
   let history = useHistory()
   let location = useLocation()
@@ -97,16 +99,18 @@ export default (props) => {
                               class="contents__list__icon"
                               style={{ margin: "auto" }}
                             >
-                              <img
-                                width="18"
-                                src={
-                                  item &&
-                                  item.images &&
-                                  item.images[0] &&
-                                  item.images[0].url
-                                }
-                                alt=""
-                              />
+                              <LazyLoad debounce={false} offsetVertical={500}>
+                                <img
+                                  width="18"
+                                  src={
+                                    item &&
+                                    item.images &&
+                                    item.images[0] &&
+                                    item.images[0].url
+                                  }
+                                  alt=""
+                                />
+                              </LazyLoad>
                             </i>
                           </div>
                           <div
@@ -151,7 +155,7 @@ export default (props) => {
       </div>
     </div>
   )
-}
+})
 
 const UserNavLink = () => {
   let location = useLocation()
@@ -341,27 +345,6 @@ const browseIcon = () => {
     </svg>
   )
 }
-// const browseIcon = () => {
-//   return (
-//     <svg
-//       xmlns="http://www.w3.org/2000/svg"
-//       x="0px"
-//       y="0px"
-//       fill="currentColor"
-//       stroke="currentColor"
-//       width="18"
-//       height="18"
-//       viewBox="0 0 512 512"
-//     >
-//       <g>
-//         <path d="M64,144v304h303.9V144H64z M351.9,432H80V160h271.9V432z" />
-//         <g>
-//           <polygon points="448,64 144,64 144,128 160,128 160,80 432,80 432,352 384,352 384,368 448,368 		" />
-//         </g>
-//       </g>
-//     </svg>
-//   )
-// }
 
 const brodcastIcon = () => {
   return (
