@@ -11,7 +11,6 @@ import React, {
 
 import listIcon from "../../images/list.svg"
 import searchIcon from "../../images/search.svg"
-import LazyLoad from "react-lazyload"
 
 import playlistIcon from "../../images/playlist.svg"
 import plusIcon from "../../images/ios-plus-outline.svg"
@@ -38,6 +37,8 @@ import {
 import { PlaylistContext } from "../../context/playlist"
 
 import "./styles/style.scss"
+
+import LazyLoad from "react-lazy-load"
 
 export default memo((props) => {
   const { sidePlayListData } = useContext(PlaylistContext)
