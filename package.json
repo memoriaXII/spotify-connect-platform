@@ -24,9 +24,11 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-flip-toolkit": "^7.0.13",
+    "react-helmet": "^6.1.0",
     "react-lazy-load": "^3.1.13",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
+    "react-snap": "^1.23.0",
     "react-spring": "^9.0.0-rc.2",
     "react-use-gesture": "^8.0.0-beta.1",
     "replace-in-file": "^6.1.0",
@@ -34,7 +36,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node postinstall.js && react-scripts build ",
+    "build": "react-scripts build",
+    "postbuild": "react-snap",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
