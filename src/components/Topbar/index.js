@@ -34,7 +34,6 @@ export default memo((props) => {
   const searchRef = useRef()
   const [searchBackground, setSearchBackground] = useState("")
   const customSideMenuDetection =
-    location.pathname == "/collection/tracks" ||
     location.pathname.includes("artist") ||
     (location.pathname.includes("album") && pararm_id !== "albums")
 
