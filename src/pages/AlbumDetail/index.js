@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react"
-
+import { Helmet } from "react-helmet"
 import axios from "axios"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -181,6 +181,31 @@ export default (props) => {
 
   return (
     <div>
+      <Helmet>
+        <link
+          rel="icon"
+          href="https://image.flaticon.com/icons/png/512/8/8729.png"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content={albumInfo.description} />
+        <link
+          rel="apple-touch-icon"
+          href="https://image.flaticon.com/icons/png/512/8/8729.png"
+        />
+        <meta property="og:title" content={albumInfo.name} />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content="https://spotify--connect.herokuapp.com/"
+        />
+        <meta property="og:description" content={albumInfo.description} />
+        <meta
+          property="og:image"
+          content={albumInfo && albumInfo.images && albumInfo.images[0].url}
+        />
+        <title>Spotify Connect</title>
+      </Helmet>
       <div class="main__wrap summary">
         <div class="summary__banner"></div>
         <div

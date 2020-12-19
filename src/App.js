@@ -11,6 +11,8 @@ import React, {
   Suspense,
 } from "react"
 
+import { Helmet } from "react-helmet"
+
 import {
   BrowserRouter,
   Route,
@@ -117,6 +119,31 @@ function App() {
 
   return (
     <div>
+      <Helmet>
+        <link
+          rel="icon"
+          href="https://image.flaticon.com/icons/png/512/8/8729.png"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="description" content="Listening is everything" />
+        <link
+          rel="apple-touch-icon"
+          href="https://image.flaticon.com/icons/png/512/8/8729.png"
+        />
+        <meta property="og:title" content="Spotify Connect" />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content="https://spotify--connect.herokuapp.com/"
+        />
+        <meta property="og:description" content="Listening is everything" />
+        <meta
+          property="og:image"
+          content="https://www.scdn.co/i/_global/open-graph-default.png"
+        />
+        <title>Spotify Connect</title>
+      </Helmet>
       <div>
         <PodCastProvider>
           <ProfileProvider>
