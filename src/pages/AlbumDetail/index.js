@@ -1,4 +1,5 @@
 import React, {
+  lazy,
   useRef,
   useState,
   useEffect,
@@ -14,8 +15,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEllipsisH, faPlay, faPause } from "@fortawesome/free-solid-svg-icons"
 import { millisToMinutesAndSeconds } from "../../utils/utils"
 
-import AlbumContainer from "../../AlbumContainer"
-
 import { SoundEqualizer } from "../../components/SoundEqualizer"
 
 import { AuthContext } from "../../context/auth"
@@ -25,6 +24,12 @@ import ColorThief from "colorthief"
 
 import soundChartIcon from "../../images/soundChart.svg"
 import { useHistory } from "react-router-dom"
+
+const AlbumContainer = lazy(() => import("../../AlbumContainer"))
+
+const PlaylistTableContainer = lazy(() =>
+  import("../../components/PlaylistTableContainer")
+)
 
 export default (props) => {
   const history = useHistory()
@@ -204,7 +209,7 @@ export default (props) => {
           property="og:image"
           content={albumInfo && albumInfo.images && albumInfo.images[0].url}
         />
-        <title>Spotify Connect</title>
+        <title>{albumInfo.name}</title>
       </Helmet>
       <div class="main__wrap summary">
         <div class="summary__banner"></div>
@@ -250,13 +255,13 @@ export default (props) => {
               <li class="summary__text--by-spotify has-text-grey">
                 <p class="has-text-grey-light">
                   By
-                  <span class="summary__text--white ml-1 mr-1">
+                  <span class="summary__text--white ml-1 mr-1 is-cursor">
                     {albumInfo &&
                       albumInfo.artists &&
                       albumInfo.artists.map((item, index) => {
                         return (
                           <span
-                            class="ml-1"
+                            class="ml-1 is-cursor"
                             onClick={() => {
                               history.push(`/artist/${item.id}`)
                             }}
@@ -267,7 +272,8 @@ export default (props) => {
                         )
                       })}
                   </span>
-                  &bull; 30 songs, <HoursCounter />
+                  &bull; {albumTracks && albumTracks.length} songs,{" "}
+                  <HoursCounter />
                 </p>
               </li>
             </ul>
@@ -385,29 +391,7 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap mt-5">
-        <table class="playlist">
-          <colgroup>
-            <col width="5%" />
-            <col width="5%" />
-            <col width="35%" />
-            <col width="23%" />
-            <col width="23%" />
-            <col width="7%" />
-            <col width="3%" />
-            <col width="3%" />
-          </colgroup>
-          <tr class="playlist__tr">
-            <th class="playlist__th"></th>
-            <th class="playlist__th">Title</th>
-            <th class="playlist__th">Artist</th>
-            <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th">
-              <i class="far fa-calendar-alt"></i>
-            </th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-          </tr>
-
+        <PlaylistTableContainer>
           {albumTracks.map((item, index) => {
             return (
               <tr
@@ -428,6 +412,7 @@ export default (props) => {
                   )
                 }}
               >
+                <td></td>
                 <td
                   class="playlist__td playlist__td--play"
                   style={{ verticalAlign: "middle" }}
@@ -483,7 +468,7 @@ export default (props) => {
               </tr>
             )
           })}
-        </table>
+        </PlaylistTableContainer>
       </div>
       <hr />
 

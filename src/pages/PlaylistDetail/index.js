@@ -1,4 +1,5 @@
 import React, {
+  lazy,
   useRef,
   useState,
   useEffect,
@@ -20,6 +21,10 @@ import { PlayerContext } from "../../context/player"
 
 import { SoundEqualizer } from "../../components/SoundEqualizer"
 import LazyLoad from "react-lazy-load"
+
+const PlaylistTableContainer = lazy(() =>
+  import("../../components/PlaylistTableContainer")
+)
 
 export default (props) => {
   const playlistRef = useRef(null)
@@ -201,7 +206,7 @@ export default (props) => {
               <li class="summary__text--by-spotify has-text-grey-light">
                 <p>
                   Created by
-                  <span class="summary__text--white ml-1 mr-1">
+                  <span class="summary__text--white ml-1 mr-1 is-cursor">
                     {playlistInfo.owner && playlistInfo.owner.display_name}
                   </span>
                   &bull; {playlistInfo.tracks && playlistInfo.tracks.total}
@@ -285,30 +290,7 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap mt-6">
-        <table class="playlist">
-          <colgroup>
-            <col width="3%" />
-            <col width="3%" />
-            <col width="35%" />
-            <col width="23%" />
-            <col width="23%" />
-            <col width="7%" />
-            <col width="3%" />
-            <col width="3%" />
-          </colgroup>
-          <tr class="playlist__tr">
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th">TITLE</th>
-            <th class="playlist__th">ALBUM</th>
-            <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th">
-              <i class="far fa-calendar-alt"></i>
-            </th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-          </tr>
-
+        <PlaylistTableContainer>
           {playlistTracks &&
             playlistTracks.map((item, index) => {
               return (
@@ -399,7 +381,7 @@ export default (props) => {
                 </tr>
               )
             })}
-        </table>
+        </PlaylistTableContainer>
       </div>
     </div>
   )
