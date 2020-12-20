@@ -10,6 +10,7 @@ import { PlaylistContext } from "../../../context/playlist"
 import { PlayerContext } from "../../../context/player"
 import { AuthContext } from "../../../context/auth"
 import LazyLoad from "react-lazy-load"
+import { getSingleAlbumTracks } from "../../../apis/playlist"
 
 function usePrevious(value) {
   const ref = useRef()
@@ -44,7 +45,6 @@ const AlbumContainer = (props) => {
 
   const checkForOverflow = () => {
     const { scrollWidth, clientWidth } = container.current
-    // const hasOverflow = scrollWidth > clientWidth
     setstate({ hasOverflow: scrollWidth > clientWidth })
   }
 
@@ -53,28 +53,6 @@ const AlbumContainer = (props) => {
 
   const scrollContainerBy = (distance) => {
     container.current.scrollBy({ left: distance, behavior: "smooth" })
-  }
-
-  const getSingleAlbumTracks = (validateToken, id) => {
-    const url = `https://api.spotify.com/v1/albums/${id}/tracks`
-    axios
-      .get(url, {
-        method: "GET",
-        mode: "cors",
-        cache: "no-cache",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${validateToken}`,
-        },
-        redirect: "follow",
-        referrerPolicy: "no-referrer",
-      })
-      .then(function (response) {})
-      .catch((err) => {
-        // Handle Error Here
-        console.error(err)
-      })
   }
 
   const buildItems = () => {
@@ -123,7 +101,7 @@ const AlbumContainer = (props) => {
                   </button>
                 ) : (
                   <button
-                    class="button"
+                    class="button is-cursor"
                     onClick={(e) => {
                       e.stopPropagation()
                       playFn(

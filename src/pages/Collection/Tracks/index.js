@@ -1,4 +1,5 @@
 import React, {
+  lazy,
   useRef,
   useState,
   useEffect,
@@ -20,6 +21,10 @@ import { PlayerContext } from "../../../context/player"
 
 import { SoundEqualizer } from "../../../components/SoundEqualizer"
 import LazyLoad from "react-lazy-load"
+
+const PlaylistTableContainer = lazy(() =>
+  import("../../../components/PlaylistTableContainer")
+)
 
 export default (props) => {
   const playlistRef = useRef(null)
@@ -162,28 +167,7 @@ export default (props) => {
         </div>
       </div>
       <div class="main__wrap mt-5">
-        <table class="playlist">
-          <colgroup>
-            <col width="3%" />
-            <col width="4%" />
-            <col width="35%" />
-            <col width="23%" />
-            <col width="23%" />
-            <col width="7%" />
-            <col width="3%" />
-            <col width="3%" />
-          </colgroup>
-          <tr class="playlist__tr">
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th">TITLE</th>
-            <th class="playlist__th">ALBUM</th>
-            <th class="playlist__th">LENGTH</th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-            <th class="playlist__th"></th>
-          </tr>
-
+        <PlaylistTableContainer>
           {savedTracks.map((item, index) => {
             return (
               <tr
@@ -263,7 +247,8 @@ export default (props) => {
               </tr>
             )
           })}
-        </table>
+        </PlaylistTableContainer>
+
         <p class="mt-2 mb-2 has-text-centered" style={{ width: `${100}%` }}>
           <button
             class="button is-light is-outlined has-text-grey"

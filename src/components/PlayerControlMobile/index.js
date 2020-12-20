@@ -325,7 +325,7 @@ export const PlayerControlMobile = (props) => {
                   style={{ width: `${100}%` }}
                 >
                   <RangeSlider
-                    style={{ cursor: "pointer" }}
+                    class="is-cursor"
                     axis="x"
                     onChange={handleChangeRange}
                     styles={{

@@ -215,19 +215,21 @@ const UserNavLink = () => {
                     link.className +
                     (link.id === activeLink && location.pathname == link.to
                       ? " on "
-                      : "")
+                      : " ")
                   }
                   key={link.id}
                   onClick={async () => {
                     await handleClick(link.id)
                   }}
                 >
-                  <div class="columns">
+                  <div class="columns is-cursor">
                     <div class="column is-2">
-                      <i class="contents__list__icon">{link.icon}</i>
+                      <i class="contents__list__icon is-cursor">{link.icon}</i>
                     </div>
-                    <div class="column" style={{ margin: "auto" }}>
-                      <p class="contents__list__text title">{link.name}</p>
+                    <div class="column is-cursor" style={{ margin: "auto" }}>
+                      <p class="contents__list__text title is-cursor">
+                        {link.name}
+                      </p>
                     </div>
                   </div>
                 </li>
@@ -246,13 +248,6 @@ const MainNavLink = () => {
   })
 
   const navLinks = [
-    // {
-    //   id: 1,
-    //   icon: playOutlineIcon(),
-    //   name: "Listen now",
-    //   to: "/listen-now",
-    //   className: "nav__list",
-    // },
     {
       id: 1,
       icon: browseIcon(),
