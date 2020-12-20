@@ -7,7 +7,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@fortawesome/react-fontawesome": "^0.1.12",
     "@gilbarbara/react-range-slider": "^0.5.0",
-    "@n8tb1t/use-scroll-position": "^2.0.3",
     "@rooks/use-fullscreen": "^4.4.0",
     "@testing-library/jest-dom": "^5.11.5",
     "@testing-library/react": "^11.1.0",
@@ -58,12 +57,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
-  ,
+  },
   "reactSnap": {
     "puppeteerArgs": [
       "--no-sandbox",
       "--disable-setuid-sandbox"
     ]
-}
+  }
 }

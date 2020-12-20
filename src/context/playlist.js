@@ -52,7 +52,7 @@ export const PlaylistProvider = (props) => {
   const getCurrentPodCastPlaylist = async () => {
     try {
       const { data } = await getUserCurrentPodCastPlaylist()
-      console.log(data, "data")
+
       setUserPodCastData(data.items)
       return data.tracks
     } catch (e) {
