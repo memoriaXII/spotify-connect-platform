@@ -293,11 +293,10 @@ export default (props) => {
       </div>
       <div class="columns mt-5 is-variable is-1">
         <div
-          class="column is-2 mt-5"
+          class="column is-2 mt-5 is-cursor"
           onClick={() => {
             history.push(`/album/${artistLastestRelease.id}`)
           }}
-          style={{ cursor: "pointer" }}
         >
           <p class="title is-5">Lastest Release</p>
           <img

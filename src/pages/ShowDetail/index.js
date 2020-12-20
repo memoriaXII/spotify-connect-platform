@@ -383,7 +383,7 @@ export default (props) => {
                               globalState.track &&
                               globalState.track.uri == item.uri ? (
                                 <RangeSlider
-                                  style={{ cursor: "pointer" }}
+                                  class="is-cursor"
                                   axis="x"
                                   styles={{
                                     options: {

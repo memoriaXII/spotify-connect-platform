@@ -9,20 +9,9 @@ import React, {
 import { PlaylistProvider } from "../../context/playlist"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faPlay,
-  faPause,
-  faPlayCircle,
-  faSync,
-  faRandom,
   faVolumeUp,
   faList,
-  faMobile,
-  faExpand,
   faExpandAlt,
-  faSearch,
-  faTimesCircle,
-  faBan,
-  faHeart,
 } from "@fortawesome/free-solid-svg-icons"
 
 import debounce from "lodash/debounce"
@@ -47,7 +36,7 @@ import playIcon from "../../images/play2.svg"
 import lyricsIcon from "../../images/microphone.svg"
 import { usePrevious } from "../../utils/customHook"
 import useFullscreen from "@rooks/use-fullscreen"
-import LazyLoad from "react-lazy-load"
+import "./styles/style.scss"
 
 export default memo((props) => {
   const {
@@ -74,7 +63,6 @@ export default memo((props) => {
     handleChangeRange,
   } = useContext(PlayerContext)
   const { getToken } = useContext(AuthContext)
-  const [playerBackground, setPlayBackground] = useState("")
   const imgRef = useRef(null)
   const [isMagnified, setMagnified] = useState(true)
   const [isfullScreenMode, setFullScreenMode] = useState(false)
@@ -84,26 +72,6 @@ export default memo((props) => {
     isOpen: false,
     volume: volume,
   })
-
-  useEffect(() => {
-    if (globalState && globalState.track && globalState.track.image) {
-      const colorThief = new ColorThief()
-      const img = imgRef.current
-      img.onload = () => {
-        const result = colorThief.getColor(img)
-        rgbToHex(result[0], result[1], result[2])
-        setPlayBackground(rgbToHex(result[0], result[1], result[2]))
-      }
-      const rgbToHex = (r, g, b) =>
-        "#" +
-        [r, g, b]
-          .map((x) => {
-            const hex = x.toString(16)
-            return hex.length === 1 ? "0" + hex : hex
-          })
-          .join("")
-    }
-  }, [globalState])
 
   const getMergedStyles = {
     altColor: "#ccc",
@@ -243,17 +211,6 @@ export default memo((props) => {
         console.log(event)
         return
       })
-
-      // document
-      //   .getElementById("toggle-fullscreen")
-      //   .addEventListener("click", (event) => {
-      //     if (document.fullscreenElement) {
-      //       // exitFullscreen is only available on the Document object.
-      //       document.exitFullscreen()
-      //     } else {
-      //       document.getElementById("fullscreen-div").requestFullscreen()
-      //     }
-      //   })
     }
   }, [document])
 
@@ -291,17 +248,12 @@ export default memo((props) => {
       >
         <div class="album-cover">
           <div class="album-cover__img">
-            <LazyLoad debounce={false} offsetVertical={500}>
-              <img
-                crossOrigin={"anonymous"}
-                ref={imgRef}
-                alt={""}
-                src={
-                  globalState && globalState.track && globalState.track.image
-                }
-                class="wi-220px m0 dib p0 di"
-              />
-            </LazyLoad>
+            <img
+              crossOrigin={"anonymous"}
+              alt={""}
+              src={globalState && globalState.track && globalState.track.image}
+              class="wi-220px m0 dib p0 di"
+            />
           </div>
           <div class="album-cover__text-box">
             <div class="album-cover__wrap">

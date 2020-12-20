@@ -1,4 +1,5 @@
 import React, {
+  memo,
   useRef,
   useState,
   useEffect,
@@ -12,10 +13,9 @@ import axios from "axios"
 import logoIcon from "../../images/logo.svg"
 import queryString from "query-string"
 import "./styles/style.scss"
-import percentIcon from "../../images/percent.png"
 import LazyLoad from "react-lazy-load"
 
-export default (props) => {
+export default memo((props) => {
   const handlelogin = () => {
     window.location = window.location.href.includes("localhost")
       ? "http://localhost:8888/api/login"
@@ -82,4 +82,4 @@ export default (props) => {
       </div>
     </div>
   )
-}
+})

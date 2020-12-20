@@ -38,26 +38,76 @@ import { PodCastProvider } from "./context/podcast"
 
 import { useScrollPosition } from "@n8tb1t/use-scroll-position"
 
-import closeIcon from "./images/close.svg"
-
+const FullScreenModal = lazy(() => import("./components/FullScreenModal"))
 const Home = lazy(() => import("./pages/Home"))
 const Login = lazy(() => import("./pages/Login"))
-const Search = lazy(() => import("./pages/Search"))
-const Broadcast = lazy(() => import("./pages/Broadcast"))
-const SearchDetail = lazy(() => import("./pages/SearchDetail"))
-const ShowDetail = lazy(() => import("./pages/ShowDetail"))
-const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"))
-const ArtistDetail = lazy(() => import("./pages/ArtistDetail"))
-const AlbumDetail = lazy(() => import("./pages/AlbumDetail"))
-const UserSaveTracks = lazy(() => import("./pages//Collection/Tracks"))
-const UserSaveAlbums = lazy(() => import("./pages//Collection/Albums"))
-const UserSaveArtists = lazy(() => import("./pages//Collection/Artists"))
-const UserPlayedTracks = lazy(() => import("./pages/Collection/RecentPlayed"))
-
 const PlayerControl = lazy(() => import("./components/PlayerControl"))
 const SideMenu = lazy(() => import("./components/SideMenu"))
 const SideChildMenu = lazy(() => import("./components/SideChildMenu"))
 const Topbar = lazy(() => import("./components/Topbar"))
+const Search = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Search")), 300)
+  })
+})
+const Broadcast = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Broadcast")), 300)
+  })
+})
+const SearchDetail = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/SearchDetail")), 300)
+  })
+})
+
+const ShowDetail = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/ShowDetail")), 300)
+  })
+})
+
+const PlaylistDetail = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/PlaylistDetail")), 300)
+  })
+})
+
+const ArtistDetail = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/ArtistDetail")), 300)
+  })
+})
+
+const AlbumDetail = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/AlbumDetail")), 300)
+  })
+})
+
+const UserSaveTracks = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Collection/Tracks")), 300)
+  })
+})
+
+const UserSaveAlbums = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Collection/Albums")), 300)
+  })
+})
+
+const UserSaveArtists = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Collection/Artists")), 300)
+  })
+})
+
+const UserPlayedTracks = lazy(() => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(import("./pages/Collection/RecentPlayed")), 300)
+  })
+})
 
 function App() {
   const location = useLocation()
@@ -119,38 +169,48 @@ function App() {
 
   return (
     <div>
-      <Helmet>
-        <link
-          rel="icon"
-          href="https://image.flaticon.com/icons/png/512/8/8729.png"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="description" content="Listening is everything" />
-        <link
-          rel="apple-touch-icon"
-          href="https://image.flaticon.com/icons/png/512/8/8729.png"
-        />
-        <meta property="og:title" content="Spotify Connect" />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content="https://spotify--connect.herokuapp.com/"
-        />
-        <meta property="og:description" content="Listening is everything" />
-        <meta
-          property="og:image"
-          content="https://www.scdn.co/i/_global/open-graph-default.png"
-        />
-        <title>Spotify Connect</title>
-      </Helmet>
-      <div>
-        <PodCastProvider>
-          <ProfileProvider>
-            <AuthProvider>
-              <PlayerProvider>
-                <PlaylistProvider>
-                  <Suspense fallback={<div>Loading...</div>}>
+      <Suspense
+        fallback={
+          <div class="has-text-centered loading-section">
+            <div class="loading">
+              <span class="blob1 blob"></span>
+              <span class="blob2 blob"></span>
+              <span class="blob3 blob"></span>
+            </div>
+          </div>
+        }
+      >
+        <Helmet>
+          <link
+            rel="icon"
+            href="https://image.flaticon.com/icons/png/512/8/8729.png"
+          />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="theme-color" content="#000000" />
+          <meta name="description" content="Listening is everything" />
+          <link
+            rel="apple-touch-icon"
+            href="https://image.flaticon.com/icons/png/512/8/8729.png"
+          />
+          <meta property="og:title" content="Spotify Connect" />
+          <meta property="og:type" content="website" />
+          <meta
+            property="og:url"
+            content="https://spotify--connect.herokuapp.com/"
+          />
+          <meta property="og:description" content="Listening is everything" />
+          <meta
+            property="og:image"
+            content="https://www.scdn.co/i/_global/open-graph-default.png"
+          />
+          <title>Spotify Connect</title>
+        </Helmet>
+        <div>
+          <PodCastProvider>
+            <ProfileProvider>
+              <AuthProvider>
+                <PlayerProvider>
+                  <PlaylistProvider>
                     <div className="wrap">
                       <div
                         className="list-area"
@@ -358,83 +418,18 @@ function App() {
                         </>
                       )}
                     </div>
-                  </Suspense>
-                </PlaylistProvider>
-              </PlayerProvider>
-            </AuthProvider>
-          </ProfileProvider>
-        </PodCastProvider>
-      </div>
-      {location.pathname !== "/login" ? (
-        <HintModal hintModal={hintModal} setHintModal={setHintModal} />
-      ) : null}
+                  </PlaylistProvider>
+                </PlayerProvider>
+              </AuthProvider>
+            </ProfileProvider>
+          </PodCastProvider>
+        </div>
+        {location.pathname !== "/login" ? (
+          <FullScreenModal hintModal={hintModal} setHintModal={setHintModal} />
+        ) : null}
+      </Suspense>
     </div>
   )
 }
 
 export default App
-
-const HintModal = ({ children, setHintModal, hintModal }) => {
-  if (!hintModal) {
-    return null
-  }
-  function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      }
-    }
-  }
-
-  return (
-    <div class="modal is-active has-text-centered">
-      <div class="modal-background"></div>
-      <div class="modal-card" style={{ width: 300 }}>
-        <header
-          class="modal-card-head"
-          style={{ background: "white", border: 0 }}
-        >
-          <p class="modal-card-title"></p>
-          <img
-            class="icon is-cursor"
-            onClick={() => {
-              setHintModal(!hintModal)
-            }}
-            src={closeIcon}
-            alt=""
-          />
-        </header>
-        <section class="modal-card-body">
-          <div class="has-text-black">
-            <img
-              style={{ width: 40 }}
-              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAATlBMVEX///8AAAClpaX7+/vS0tL09PShoaGUlJTV1dX4+Pi8vLxNTU1TU1Orq6t9fX2MjIwvLy8/Pz8PDw9ZWVm+vr6urq5LS0u2trbMzMzGxsb73tvQAAACAUlEQVR4nO3dy1ICMRgFYSMMF5kRFQb0/V9US5Dt1PxJB2L1tz8kXcVlA8XTkyRJkiRJkiRJal+K2S3DJ24OwTPrFqZ0Dh54DJ9YuzB1ofO28QOrF46h88aGCteh81YNFQ6h884NFcZeh107hS/BA1t5L+03wfN+Pg9PdyoM35hmIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRbSe56F9J5nIb3nWUjveRZO2V3nfdFbldRn3nBz3ce/L0rLvuHli9fRb/zWcLnhMf4A3bAeYt/ZrqUb9+ftvS8hSZIkSZIkSZIkSZIkSZIkSZKkpizufYFJWTdcvKaU9qWuQsi94dvv76bey12ouMwb7q+/fYv9p0oNuTf8+4HmR9FblZR7w///K1kL789Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces+zkN7zLKT3PAvpPc9Ces8rVjg+z5HzVwrLYc5JY7HCmQ7Rvu0pemTlwnBiOLB6YVqGzvuMH1i9cBU6b23hAxXGnqVf7RRG32l20w/9GIXhT4tFP/3gRQtXsz7ob2JP0Yt5n/g3sde9JEmSJEmSpDm+AR4rFD68DEz5AAAAAElFTkSuQmCC"
-              alt=""
-            />
-            <h1 class="title is-5 has-text-black mt-2">Full Screen Mode</h1>
-            <p class="subtitle is-6 has-text-grey mt-2">
-              Enable full screen mode for better experience
-            </p>
-          </div>
-        </section>
-        <footer
-          class="modal-card-foot has-text-centered"
-          style={{ background: "white", border: 0 }}
-        >
-          <button
-            class="button is-fullwidth is-rounded"
-            style={{ background: "#3D83FF", color: "white" }}
-            onClick={() => {
-              setHintModal(!hintModal)
-              toggleFullScreen()
-            }}
-          >
-            Apply
-          </button>
-        </footer>
-      </div>
-    </div>
-  )
-}

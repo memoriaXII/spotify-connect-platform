@@ -104,3 +104,25 @@ export const getUserRecommendListFn = async () => {
     return e.response
   }
 }
+
+export const getSingleAlbumTracks = (validateToken, id) => {
+  const url = `https://api.spotify.com/v1/albums/${id}/tracks`
+  axios
+    .get(url, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${validateToken}`,
+      },
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+    })
+    .then(function (response) {})
+    .catch((err) => {
+      // Handle Error Here
+      console.error(err)
+    })
+}
