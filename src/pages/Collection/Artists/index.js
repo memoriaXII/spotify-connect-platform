@@ -203,7 +203,6 @@ export default (props) => {
               <button
                 class="button is-light is-outlined has-text-grey"
                 onClick={() => {
-                  console.log(afterRowsID)
                   handleNext(afterRowsID)
                 }}
               >

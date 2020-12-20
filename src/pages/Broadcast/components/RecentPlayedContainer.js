@@ -67,7 +67,6 @@ const RecentPlayedContainer = (props) => {
         referrerPolicy: "no-referrer",
       })
       .then(function (response) {
-        console.log(response, "list")
         setRelatedShowList(response.data.shows)
       })
       .catch((err) => {
@@ -78,8 +77,6 @@ const RecentPlayedContainer = (props) => {
   useEffect(() => {
     getRelatedShowList(getToken())
   }, [getToken()])
-
-  console.log(globalState, relatedShowList, "broadcast")
 
   const buildItems = () => {
     return relatedShowList.map((item, index) => {

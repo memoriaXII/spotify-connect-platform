@@ -13,7 +13,6 @@ export const previousFn = async () => {
 export const nextFn = async () => {
   try {
     const response = await SpotifyAPI.post("/me/player/next")
-    console.log(response, "response")
     return response
   } catch (e) {
     return e.response

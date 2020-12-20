@@ -40,7 +40,6 @@ export default (props) => {
 
   const [state, setstate] = useState({ focused: null })
   const onClick = (index) => {
-    console.log(index, "index")
     setstate({
       focused: state.focused === index ? null : index,
     })
@@ -52,7 +51,6 @@ export default (props) => {
 
   useEffect(() => {
     if (trimHeader) {
-      console.log(trimHeader, "trimheader")
       onClick(0)
     } else {
       onClick(1)
