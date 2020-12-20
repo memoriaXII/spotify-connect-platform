@@ -152,7 +152,7 @@ export default (props) => {
         // image  has been loaded
         const result = colorThief.getColor(img)
         rgbToHex(result[0], result[1], result[2])
-        console.log(rgbToHex(result[0], result[1], result[2]), "test")
+
         setArtistBackground(rgbToHex(result[0], result[1], result[2]))
       }
       const rgbToHex = (r, g, b) =>

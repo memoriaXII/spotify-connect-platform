@@ -13,7 +13,6 @@ import axios from "axios"
 import logoIcon from "../../images/logo.svg"
 import queryString from "query-string"
 import "./styles/style.scss"
-import LazyLoad from "react-lazy-load"
 
 export default memo((props) => {
   const handlelogin = () => {
@@ -31,13 +30,11 @@ export default memo((props) => {
               <div className="column is-4 has-text-centered">
                 <p class="mb-5 columns is-variable is-0">
                   <div class="column" style={{ marginTop: 9.5 }}>
-                    <LazyLoad debounce={false} offsetVertical={500}>
-                      <img
-                        width="200"
-                        src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png"
-                        alt=""
-                      />
-                    </LazyLoad>
+                    <img
+                      width="200"
+                      src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png"
+                      alt=""
+                    />
                   </div>
                   <div class="column has-text-left">
                     <span class="title is-3 has-text-white">Connect</span>
