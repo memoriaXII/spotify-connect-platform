@@ -41,65 +41,65 @@ const SideChildMenu = lazy(() => import("./components/SideChildMenu"))
 const Topbar = lazy(() => import("./components/Topbar"))
 const Search = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Search")), 150)
+    setTimeout(() => resolve(import("./pages/Search")), 100)
   })
 })
 const Broadcast = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Broadcast")), 150)
+    setTimeout(() => resolve(import("./pages/Broadcast")), 100)
   })
 })
 const SearchDetail = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/SearchDetail")), 150)
+    setTimeout(() => resolve(import("./pages/SearchDetail")), 100)
   })
 })
 
 const ShowDetail = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/ShowDetail")), 150)
+    setTimeout(() => resolve(import("./pages/ShowDetail")), 100)
   })
 })
 
 const PlaylistDetail = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/PlaylistDetail")), 150)
+    setTimeout(() => resolve(import("./pages/PlaylistDetail")), 100)
   })
 })
 
 const ArtistDetail = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/ArtistDetail")), 150)
+    setTimeout(() => resolve(import("./pages/ArtistDetail")), 100)
   })
 })
 
 const AlbumDetail = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/AlbumDetail")), 150)
+    setTimeout(() => resolve(import("./pages/AlbumDetail")), 100)
   })
 })
 
 const UserSaveTracks = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Collection/Tracks")), 150)
+    setTimeout(() => resolve(import("./pages/Collection/Tracks")), 100)
   })
 })
 
 const UserSaveAlbums = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Collection/Albums")), 150)
+    setTimeout(() => resolve(import("./pages/Collection/Albums")), 100)
   })
 })
 
 const UserSaveArtists = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Collection/Artists")), 150)
+    setTimeout(() => resolve(import("./pages/Collection/Artists")), 100)
   })
 })
 
 const UserPlayedTracks = lazy(() => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./pages/Collection/RecentPlayed")), 150)
+    setTimeout(() => resolve(import("./pages/Collection/RecentPlayed")), 100)
   })
 })
 
