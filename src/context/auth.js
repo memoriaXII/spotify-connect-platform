@@ -30,21 +30,30 @@ export const AuthProvider = (props) => {
 
   useEffect(() => {
     let parsed = queryString.parse(window.location.search)
-    const token = parsed.access_token
-    const expiration = new Date(new Date().getTime() + 1000 * parsed.expires_in)
-    if (token && expiration) {
-      setAuthToken(token)
-      setTokenExpirationDate(expiration)
-      localStorage.setItem(
-        "spotifyAuthToken",
-        JSON.stringify({
-          token,
-          expirationTime: expiration.toISOString(),
-        })
+    if (!token && parsed.expires_in && parsed.access_token) {
+      const token = parsed.access_token
+      const expiration = new Date(
+        new Date().getTime() + 1000 * parsed.expires_in
       )
-      history.push(`/`)
-    } else if (getToken()) {
-      setAuthToken(getToken())
+      console.log(
+        expiration,
+        new Date().getTime() + 1000 * parsed.expires_in,
+        "expiration"
+      )
+      if (token && expiration) {
+        setAuthToken(token)
+        setTokenExpirationDate(expiration)
+        localStorage.setItem(
+          "spotifyAuthToken",
+          JSON.stringify({
+            token,
+            expirationTime: expiration.toISOString(),
+          })
+        )
+        history.push(`/`)
+      } else if (getToken()) {
+        setAuthToken(getToken())
+      }
     }
   }, [])
 
