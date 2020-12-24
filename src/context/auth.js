@@ -32,7 +32,7 @@ export const AuthProvider = (props) => {
     let parsed = queryString.parse(window.location.search)
     const token = parsed.access_token
     const expiration = new Date(new Date().getTime() + 1000 * parsed.expires_in)
-    if (token) {
+    if (token && expiration) {
       setAuthToken(token)
       setTokenExpirationDate(expiration)
       localStorage.setItem(
