@@ -23,10 +23,12 @@ import {
 import { getUserCurrentPodCastPlaylist } from "../apis/podcast"
 
 import axios from "axios"
+import { AuthContext } from "../context/auth"
 
 export const PlaylistContext = createContext({})
 
 export const PlaylistProvider = (props) => {
+  const { getToken } = useContext(AuthContext)
   const [categoriesData, setCategoriesData] = useState([])
   const [userPlayedTracksListData, setUserPlayedTracksListData] = useState([])
   const [top50TracksList, setTop50TracksList] = useState([])
@@ -170,16 +172,6 @@ export const PlaylistProvider = (props) => {
     },
     [categoriesData]
   )
-
-  const getToken = () => {
-    const windowSetting = typeof window !== "undefined" && window
-
-    return (
-      windowSetting &&
-      windowSetting.localStorage &&
-      localStorage.getItem("spotifyAuthToken")
-    )
-  }
 
   useEffect(() => {
     if (getToken()) {

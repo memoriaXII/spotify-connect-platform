@@ -283,7 +283,7 @@ const MainNavLink = () => {
                     className={
                       link.className +
                       (link.id === activeLink && location.pathname == link.to
-                        ? " active "
+                        ? " active  "
                         : "")
                     }
                     key={link.id}
@@ -291,11 +291,11 @@ const MainNavLink = () => {
                       await handleClick(link.id)
                     }}
                   >
-                    <div class="columns">
-                      <div class="column is-2">
-                        <i class="nav__icon">{link.icon}</i>
+                    <div class="columns is-cursor">
+                      <div class="column is-2 is-cursor">
+                        <i class="nav__icon is-cursor">{link.icon}</i>
                       </div>
-                      <div class="column" style={{ margin: "auto" }}>
+                      <div class="column is-cursor" style={{ margin: "auto" }}>
                         <p class="nav__text title">{link.name}</p>
                       </div>
                     </div>
