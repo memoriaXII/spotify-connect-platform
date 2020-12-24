@@ -11,19 +11,52 @@ import React, {
 import { useHistory, useLocation } from "react-router-dom"
 import axios from "axios"
 import logoIcon from "../../images/logo.svg"
-import queryString from "query-string"
 import "./styles/style.scss"
+import { AuthContext } from "../../context/auth"
+
+const useProgressiveImage = (src) => {
+  const [sourceLoaded, setSourceLoaded] = useState(null)
+  useEffect(() => {
+    const img = new Image()
+    img.src = src
+    img.onload = () => setSourceLoaded(src)
+  }, [src])
+
+  return sourceLoaded
+}
 
 export default memo((props) => {
+  const { isLoggedIn, getToken } = useContext(AuthContext)
+  const history = useHistory()
   const handlelogin = () => {
     window.location = window.location.href.includes("localhost")
       ? "http://localhost:8888/api/login"
       : "https://quotes.vercel.app/api/login"
   }
 
+  const handleSignup = () => {
+    window.location = "https://www.spotify.com/us/signup/"
+  }
+
+  useEffect(() => {
+    if (isLoggedIn && getToken()) {
+      history.push(`/`)
+    } else {
+      return
+    }
+  }, [isLoggedIn, getToken()])
+
+  const loaded = useProgressiveImage(
+    "https://soundbetter.com/_next/image?url=https%3A%2F%2Fccra.scdn.co%2Fsoundbetter%2Fstatic%2Fhome%2FSB-Hero-Daramola-Singer_Songwriter-Producer.jpg&w=3840&q=95"
+  )
+  const placeholder = "https://im.ezgif.com/tmp/ezgif-1-618471dcef05.jpg"
+
   return (
     <div>
-      <div className="login__section">
+      <div
+        className="login__section"
+        style={{ backgroundImage: `url(${loaded || placeholder})` }}
+      >
         <div className="login__section__content">
           <h1 className="title is-1 has-text-white">
             <div className="columns is-variable is-5">
@@ -45,7 +78,7 @@ export default memo((props) => {
                   <div class="column is-12">
                     <button
                       class="button  has-text-white has-text-weight-bold  is-rounded is-fullwidth p-5"
-                      onClick={handlelogin}
+                      onClick={handleSignup}
                       style={{ background: "#3D83FF", border: 0 }}
                     >
                       SIGN UP
