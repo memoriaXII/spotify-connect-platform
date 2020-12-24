@@ -17,10 +17,12 @@ import axios from "axios"
 
 import ColorThief from "colorthief"
 import { useWindowDimensions } from "../utils/customHook"
+import { AuthContext } from "../context/auth"
 
 export const PlayerContext = createContext({})
 
 export const PlayerProvider = (props) => {
+  const { getToken, isLoggedIn } = useContext(AuthContext)
   var syncTimeout
   const { deviceWidth, deviceHeight } = useWindowDimensions()
   const imgRef = useRef(null)
@@ -42,13 +44,14 @@ export const PlayerProvider = (props) => {
   const [chartPlayListData, setChartPlayListData] = useState([])
   const [chartAlbumData, setChartAlbumData] = useState([])
   const [chartArtistData, setChartArtistData] = useState([])
-  const [authToken, setAuthToken] = useState("")
   const [sidePlayListData, setSidePlayListData] = useState([])
   const [cachedAlbumsArray, setCachedAlbumsArray] = useState([])
   const [userTopArtistListData, setUserTopArtistListData] = useState([])
   const [userCurrentPlayingTrack, setUserCurrentPlayingTrack] = useState({})
   const [userRecommendListData, setUserRecommendListData] = useState([])
   const [currentPlayingState, setCurrentPlayingState] = useState({})
+
+  const authToken = getToken()
 
   const ref = useRef(null)
   const scrollContainer = useRef(null)
@@ -460,17 +463,17 @@ export const PlayerProvider = (props) => {
     })
   }
 
-  useEffect(() => {
-    let parsed = queryString.parse(window.location.search)
-    const token = parsed.access_token
-    if (token) {
-      setAuthToken(token)
-      localStorage.setItem("spotifyAuthToken", token)
-      history.push(`/`)
-    } else if (getToken()) {
-      setAuthToken(getToken())
-    }
-  }, [])
+  // useEffect(() => {
+  //   let parsed = queryString.parse(window.location.search)
+  //   const token = parsed.access_token
+  //   if (token) {
+  //     setAuthToken(token)
+  //     localStorage.setItem("spotifyAuthToken", token)
+  //     history.push(`/`)
+  //   } else if (getToken()) {
+  //     setAuthToken(getToken())
+  //   }
+  // }, [])
 
   useLayoutEffect(() => {
     if (authToken) {
@@ -479,14 +482,6 @@ export const PlayerProvider = (props) => {
     return () => (player ? player.disconnect() : "")
   }, [authToken])
 
-  const getToken = () => {
-    const windowSetting = typeof window !== "undefined" && window
-    return (
-      windowSetting &&
-      windowSetting.localStorage &&
-      localStorage.getItem("spotifyAuthToken")
-    )
-  }
   const playFn = async (
     validateToken,
     id,
@@ -537,7 +532,7 @@ export const PlayerProvider = (props) => {
   }
 
   useLayoutEffect(() => {
-    if (getToken() && globalState) {
+    if (isLoggedIn && getToken() && globalState) {
       syncTimeout = setInterval(() => {
         syncDevice(getToken())
       }, 800)

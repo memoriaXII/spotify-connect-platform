@@ -86,9 +86,6 @@ export default (props) => {
 
   useLayoutEffect(() => {
     setTrimHeader(false)
-    // if (getToken()) {
-    //   getSavedArtists(getToken(), props.match.params.id)
-    // }
   }, [getToken(), props.match.params.id])
 
   const buildItems = () => {
@@ -113,7 +110,7 @@ export default (props) => {
               <div class="album__item__play__artist__button">
                 <a href="javascript:void(0)">
                   <button
-                    class="button"
+                    class="button mt-6"
                     onClick={(e) => {
                       e.stopPropagation()
                     }}

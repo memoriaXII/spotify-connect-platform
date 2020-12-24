@@ -11,10 +11,12 @@ import React, {
 import { getUserCurrentPodCastPlaylist } from "../apis/podcast"
 
 import axios from "axios"
+import { AuthContext } from "../context/auth"
 
 export const PodCastContext = createContext({})
 
 export const PodCastProvider = (props) => {
+  const { getToken, isLoggedIn } = useContext(AuthContext)
   const [userPodCastData, setUserPodCastData] = useState([])
 
   const getCurrentPodCastPlaylist = async () => {
@@ -25,15 +27,6 @@ export const PodCastProvider = (props) => {
     } catch (e) {
       return e.response
     }
-  }
-
-  const getToken = () => {
-    const windowSetting = typeof window !== "undefined" && window
-    return (
-      windowSetting &&
-      windowSetting.localStorage &&
-      localStorage.getItem("spotifyAuthToken")
-    )
   }
 
   useEffect(() => {

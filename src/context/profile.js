@@ -9,19 +9,13 @@ import React, {
 } from "react"
 import { getUserCurrentProfileFn } from "../apis/profile"
 import axios from "axios"
+import { AuthContext } from "./auth"
 
 export const ProfileContext = createContext({})
 
 export const ProfileProvider = (props) => {
+  const { getToken } = useContext(AuthContext)
   const [userprofile, setUserProfile] = useState({})
-  const getToken = () => {
-    const windowSetting = typeof window !== "undefined" && window
-    return (
-      windowSetting &&
-      windowSetting.localStorage &&
-      localStorage.getItem("spotifyAuthToken")
-    )
-  }
   const getUserCurrentProfile = async () => {
     try {
       const { data } = await getUserCurrentProfileFn()
