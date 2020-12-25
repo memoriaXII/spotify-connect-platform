@@ -47,69 +47,46 @@ export default memo((props) => {
   }, [isLoggedIn, getToken()])
 
   const loaded = useProgressiveImage(
-    "https://soundbetter.com/_next/image?url=https%3A%2F%2Fccra.scdn.co%2Fsoundbetter%2Fstatic%2Fhome%2FSB-Hero-Daramola-Singer_Songwriter-Producer.jpg&w=3840&q=95"
+    "https://storage.googleapis.com/pr-newsroom-wp/1/2020/02/020620_MissyElliott_Spotify_1920x733_2.jpg"
   )
-  const placeholder = "https://im.ezgif.com/tmp/ezgif-1-618471dcef05.jpg"
+  const placeholder = require("../../images/login_bg.jpg")
 
   return (
-    <div>
-      <div
-        className="login__section"
-        style={{ backgroundImage: `url(${loaded || placeholder})` }}
-      >
-        <div className="login__section__content">
-          <h1 className="title is-1 has-text-white">
-            <div className="columns is-variable is-5">
-              <div className="column is-4 has-text-centered">
-                <p class="mb-5 columns is-variable is-0">
-                  <div class="column" style={{ marginTop: 9.5 }}>
-                    <img
-                      width="200"
-                      src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png"
-                      alt=""
-                    />
-                  </div>
-                  <div class="column has-text-left">
-                    <span class="title is-3 has-text-white">Connect</span>
-                  </div>
-                </p>
-
-                <div class="columns is-mobile is-multiline">
-                  <div class="column is-12">
-                    <button
-                      class="button  has-text-white has-text-weight-bold  is-rounded is-fullwidth p-5"
-                      onClick={handleSignup}
-                      style={{ background: "#3D83FF", border: 0 }}
-                    >
-                      SIGN UP
-                    </button>
-                  </div>
-                  <div class="column is-12">
-                    <button
-                      class="button is-light is-rounded has-text-weight-bold is-fullwidth p-5"
-                      onClick={handlelogin}
-                    >
-                      LOGIN
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div
-                className="column is-8 has-text-centered"
-                style={{ margin: "auto" }}
-              >
-                <p class="has-text-left title is-1 has-text-white">
-                  Get the right music, righ now
-                </p>
-
-                <p className="subtitle is-5 has-text-white has-text-weight-light mt-2 ml-1 has-text-left">
-                  Listen to millions of songs for free
-                </p>
-              </div>
-            </div>
-          </h1>
+    <div class="login-section">
+      <img
+        src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Black.png"
+        alt=""
+      />
+      <div class="left">
+        <div class="header mb-5">
+          <p class="mb-2 columns is-variable is-0">
+            <div class="column is-4" style={{ marginTop: 9.5 }}></div>
+          </p>
+          <h2 class=" has-text-black title is-3">
+            Get the right music, righ now
+          </h2>
+          <h4 class="subtitle mt-1"> Listen to millions of songs for free</h4>
         </div>
+
+        <button
+          class="button  has-text-white has-text-weight-bold  is-rounded is-fullwidth p-5"
+          onClick={handleSignup}
+          style={{ background: "#3D83FF", border: 0 }}
+        >
+          SIGN UP
+        </button>
+
+        <button
+          class="button is-light is-rounded has-text-weight-bold is-fullwidth p-5 mt-2"
+          onClick={handlelogin}
+        >
+          LOGIN
+        </button>
       </div>
+      <div
+        class="right"
+        style={{ backgroundImage: `url(${loaded || placeholder})` }}
+      ></div>
     </div>
   )
 })
