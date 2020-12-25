@@ -1,53 +1,94 @@
-.login__section {
+.login-section {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background-size: 150%;
-  background-repeat: no-repeat;
-  background-position: left;
-  animation: slide 40s ease;
-  transform: translate3d(0, 0, 0);
   height: 100vh;
   position: relative;
-  // background: #3D83FF;
-  background-image: linear-gradient(
-    to bottom,
-    rgba(243, 121, 221, 0),
-    rgba(28, 29, 29, 0.3)
-  );
-  width: 100%;
-  background-size: cover;
-  color: white;
-  padding: 20px;
-  &__content {
-    box-sizing: border-box;
-
-    button {
-      box-shadow: 0 20px 20px 3px rgba(50, 49, 49, 0.2);
-      box-shadow: 0 20px 20px 3px rgba(50, 49, 49, 0.2);
-      border: 1px solid #ffffff;
-      background: transparent;
-      font-size: 15px;
-      color: white;
-      &:hover {
-        color: rgb(230, 230, 230);
-      }
-    }
+  img {
+    top: 50px;
+    left: 30px;
+    width: 120px;
+    position: absolute;
   }
 }
 
-.login__section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  // background: linear-gradient(
-  //   0deg,
-  //   #000 0%,
-  //   rgba(0, 0, 0, 0.5) 12%,
-  //   rgba(0, 0, 0, 0.1) 30%,
-  //   rgba(0, 0, 0, 0) 40%
-  // );
+.left {
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  animation-name: left;
+  animation-fill-mode: both;
+}
+
+.right {
+  flex: 1;
+  background-color: black;
+  transition: 1s;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.header > h2 {
+  margin: 0;
+  color: #4f46a5;
+}
+
+.header > h4 {
+  margin-top: 10px;
+  font-weight: normal;
+  font-size: 15px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.form {
+  max-width: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.form > p {
+  text-align: right;
+}
+
+.form > p > a {
+  color: #000;
+  font-size: 14px;
+}
+
+.form-field {
+  height: 46px;
+  padding: 0 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  outline: 0;
+  transition: 0.2s;
+  margin-top: 20px;
+}
+
+.form-field:focus {
+  border-color: #0f7ef1;
+}
+
+.form > button {
+  padding: 12px 10px;
+  border: 0;
+  background: linear-gradient(to right, #de48b5 0%, #0097ff 100%);
+  border-radius: 50px;
+  margin-top: 10px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+@keyframes left {
+  0% {
+    opacity: 0;
+    width: 0;
+  }
+
+  100% {
+    opacity: 1;
+    padding: 20px 40px;
+    width: 440px;
+  }
 }

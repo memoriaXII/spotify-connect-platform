@@ -11,10 +11,8 @@ import React, {
 
 import listIcon from "../../images/list.svg"
 import searchIcon from "../../images/search.svg"
-
 import playlistIcon from "../../images/playlist.svg"
 import plusIcon from "../../images/ios-plus-outline.svg"
-import downloadIcon from "../../images/download.svg"
 
 import {
   Link,
