@@ -20,7 +20,6 @@ import {
   generatePath,
   useLocation,
 } from "react-router-dom"
-import ColorThief from "colorthief"
 import "./styles/style.scss"
 
 export default memo((props) => {
@@ -48,7 +47,7 @@ export default memo((props) => {
     query: "",
   })
 
-  const { getToken } = useContext(AuthContext)
+  const { getToken, logout } = useContext(AuthContext)
   const token = getToken()
 
   const onSearchItemWithDebounce = debounce((query) => {
@@ -147,7 +146,7 @@ export default memo((props) => {
               style={{ background: "transparent", border: 0 }}
             >
               <div class="dropdown-content">
-                <div class="dropdown-item">
+                <div class="dropdown-item" onClick={logout}>
                   <p>Signout</p>
                 </div>
               </div>
