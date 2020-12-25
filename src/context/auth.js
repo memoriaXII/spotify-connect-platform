@@ -91,6 +91,7 @@ export const AuthProvider = (props) => {
       value={{
         getToken,
         isLoggedIn: !!token,
+        logout,
       }}
     >
       <>{props.children}</>
