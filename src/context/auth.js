@@ -30,15 +30,10 @@ export const AuthProvider = (props) => {
 
   useEffect(() => {
     let parsed = queryString.parse(window.location.search)
-    if (!token && parsed.expires_in && parsed.access_token) {
-      const token = parsed.access_token
+    const token = parsed.access_token
+    if (token && parsed.expires_in) {
       const expiration = new Date(
         new Date().getTime() + 1000 * parsed.expires_in
-      )
-      console.log(
-        expiration,
-        new Date().getTime() + 1000 * parsed.expires_in,
-        "expiration"
       )
       if (token && expiration) {
         setAuthToken(token)
